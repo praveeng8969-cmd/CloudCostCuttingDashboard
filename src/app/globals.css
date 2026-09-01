@@ -6,54 +6,23 @@
 
 @layer base {
   :root {
-    --bg-overlay: rgba(10, 15, 29, 0.78);
-    --card-bg: rgba(15, 23, 42, 0.72);
-    --card-hover-bg: rgba(30, 41, 59, 0.85);
-    --border-color: rgba(56, 189, 248, 0.18);
+    --card-bg: rgba(15, 23, 42, 0.65);
+    --card-hover-bg: rgba(30, 41, 59, 0.80);
+    --border-color: rgba(56, 189, 248, 0.20);
   }
 
   * {
     box-sizing: border-box;
   }
   
-  body {
+  html, body {
+    min-height: 100vh;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     color: #f8fafc;
+    /* Direct low-contrast cloud photo background with soft dark wash */
+    background: linear-gradient(rgba(11, 15, 25, 0.72), rgba(11, 15, 25, 0.82)),
+                url('/images/cloud-bg.jpg') center center / cover no-repeat fixed;
     background-color: #0b0f19;
-    min-height: 100vh;
-    position: relative;
-  }
-
-  /* Universal low-contrast cloud data-center backdrop across all pages */
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: url('/images/cloud-bg.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    opacity: 0.38; /* Low contrast blend */
-    filter: saturate(1.4) brightness(0.75) contrast(0.85);
-    z-index: -2;
-    pointer-events: none;
-  }
-
-  /* Deep subtle gradient overlay for readability */
-  body::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at 50% 20%, rgba(15, 23, 42, 0.65) 0%, rgba(8, 12, 24, 0.88) 100%);
-    z-index: -1;
-    pointer-events: none;
   }
 
   ::-webkit-scrollbar {
@@ -73,53 +42,53 @@
 }
 
 @layer components {
-  /* Colorful Glassmorphic Cards with Color Glows */
+  /* Translucent Glassmorphic Cards */
   .card {
     background: var(--card-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border: 1px solid var(--border-color);
     border-radius: 1.25rem;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .card:hover {
     background: var(--card-hover-bg);
-    box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.5), 0 0 24px 0 rgba(59, 130, 246, 0.15);
+    box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.5), 0 0 24px 0 rgba(59, 130, 246, 0.2);
   }
 
-  /* Vibrant Color Glow Tops & Borders */
+  /* Vibrant Color Glow Tops & Borders: Blue, Red, Orange, Yellow, Emerald */
   .card-glow-blue {
     border-top: 3px solid #3b82f6;
-    box-shadow: 0 4px 24px -2px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 4px 20px -2px rgba(59, 130, 246, 0.25);
   }
   .card-glow-red {
     border-top: 3px solid #ef4444;
-    box-shadow: 0 4px 24px -2px rgba(239, 68, 68, 0.2);
+    box-shadow: 0 4px 20px -2px rgba(239, 68, 68, 0.25);
   }
   .card-glow-orange {
     border-top: 3px solid #f97316;
-    box-shadow: 0 4px 24px -2px rgba(249, 115, 22, 0.2);
+    box-shadow: 0 4px 20px -2px rgba(249, 115, 22, 0.25);
   }
   .card-glow-yellow {
     border-top: 3px solid #eab308;
-    box-shadow: 0 4px 24px -2px rgba(234, 179, 8, 0.2);
+    box-shadow: 0 4px 20px -2px rgba(234, 179, 8, 0.25);
   }
   .card-glow-emerald {
     border-top: 3px solid #10b981;
-    box-shadow: 0 4px 24px -2px rgba(16, 185, 129, 0.2);
+    box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.25);
   }
   .card-glow-purple {
     border-top: 3px solid #a855f7;
-    box-shadow: 0 4px 24px -2px rgba(168, 85, 247, 0.2);
+    box-shadow: 0 4px 20px -2px rgba(168, 85, 247, 0.25);
   }
   .card-glow-cyan {
     border-top: 3px solid #06b6d4;
-    box-shadow: 0 4px 24px -2px rgba(6, 182, 212, 0.2);
+    box-shadow: 0 4px 20px -2px rgba(6, 182, 212, 0.25);
   }
 
-  /* Colorful Action Buttons */
+  /* Vibrant Colorful Buttons */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 text-white text-xs font-extrabold rounded-xl
            shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200 border border-blue-400/30;
@@ -207,7 +176,6 @@
   }
 }
 
-/* Animations */
 .page-enter {
   animation: fadeInSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -215,23 +183,4 @@
 @keyframes fadeInSlide {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-/* Animated glow pulse */
-@keyframes neonPulse {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.03); }
-}
-.neon-pulse {
-  animation: neonPulse 3s ease-in-out infinite;
-}
-
-/* Data packet pulse for diagrams */
-@keyframes pulseFlow {
-  0% { stroke-dashoffset: 40; }
-  100% { stroke-dashoffset: 0; }
-}
-.flow-line {
-  stroke-dasharray: 8 6;
-  animation: pulseFlow 1.2s linear infinite;
 }

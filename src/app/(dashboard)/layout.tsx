@@ -15,15 +15,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <DateRangeContext.Provider value={dateRange}>
-      <div className="flex h-screen overflow-hidden bg-gray-50">
+      <div className="flex h-screen overflow-hidden bg-transparent">
         <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
-        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden bg-transparent">
           <Navbar
             onMenuClick={() => setMobileOpen(true)}
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
           />
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1 overflow-y-auto bg-transparent">
             <div className="p-4 md:p-6 page-enter">
               {children}
             </div>

@@ -38,7 +38,6 @@ const initialNotifications = [
 export default function Navbar({ onMenuClick, dateRange, onDateRangeChange }: NavbarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const [dark, setDark] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showSearchModal, setShowSearchModal] = useState(false)
@@ -60,18 +59,6 @@ export default function Navbar({ onMenuClick, dateRange, onDateRangeChange }: Na
     }, 1000)
   }
 
-  function handleDark() {
-    const nextDark = !dark
-    setDark(nextDark)
-    if (nextDark) {
-      document.documentElement.classList.add('dark')
-      toast('Dark theme activated', { icon: '🌙' })
-    } else {
-      document.documentElement.classList.remove('dark')
-      toast('Light theme activated', { icon: '☀️' })
-    }
-  }
-
   function markAllRead() {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })))
     toast.success('All notifications marked as read')
@@ -85,10 +72,9 @@ export default function Navbar({ onMenuClick, dateRange, onDateRangeChange }: Na
 
   const selectedLabel = DATE_RANGES.find(r => r.value === dateRange)?.label ?? 'Last 30 days'
 
-  // Quick search results
   const searchResults = [
     { title: 'Duplicate Files (1,284 files)', category: 'Storage', href: '/duplicates', icon: Copy },
-    { title: 'Cost Trend & Service Breakdown', category: 'Cost', href: '/cost-analysis', icon: DollarSign },
+    { title: 'Cost Trajectory & Service Breakdown', category: 'Cost', href: '/cost-analysis', icon: DollarSign },
     { title: 'Old Backups (>180 days)', category: 'Recommendations', href: '/recommendations', icon: Sparkles },
     { title: 'AWS S3 Production Bucket', category: 'Cloud', href: '/cloud-providers', icon: HardDrive },
     { title: 'Monthly Cost Report (Sep 2026)', category: 'Reports', href: '/reports', icon: FileText },
@@ -100,36 +86,36 @@ export default function Navbar({ onMenuClick, dateRange, onDateRangeChange }: Na
 
   return (
     <>
-      <header className="h-16 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200/80 dark:border-gray-800 flex items-center px-4 md:px-6 gap-3 sticky top-0 z-40">
+      <header className="h-16 bg-slate-950/70 backdrop-blur-xl border-b border-slate-800/80 flex items-center px-4 md:px-6 gap-3 sticky top-0 z-40">
         {/* Hamburger (mobile) */}
         <button
           onClick={onMenuClick}
-          className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+          className="lg:hidden p-2 hover:bg-slate-800 rounded-xl transition-colors"
           aria-label="Open menu"
         >
-          <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          <Menu className="w-5 h-5 text-slate-300" />
         </button>
 
-        {/* Page title with vibrant badge */}
+        {/* Page title */}
         <div className="flex-1 min-w-0 flex items-center gap-3">
-          <h1 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight truncate">
+          <h1 className="text-base font-black text-white tracking-tight truncate">
             {pageTitle}
           </h1>
-          <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800">
-            Live Demo
+          <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-black bg-blue-500/20 text-blue-400 border border-blue-500/30">
+            Live Stream
           </span>
         </div>
 
         {/* Search trigger button */}
         <button
           onClick={() => setShowSearchModal(true)}
-          className="hidden md:flex items-center justify-between gap-3 bg-gray-100/80 dark:bg-gray-800/80 hover:bg-gray-200/60 dark:hover:bg-gray-700/60 border border-gray-200 dark:border-gray-700/60 rounded-xl px-3.5 py-2 w-52 lg:w-64 text-xs font-medium text-gray-500 dark:text-gray-400 transition-all shadow-inner"
+          className="hidden md:flex items-center justify-between gap-3 bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 w-52 lg:w-64 text-xs font-semibold text-slate-400 transition-all shadow-inner"
         >
           <div className="flex items-center gap-2">
-            <Search className="w-3.5 h-3.5 text-gray-400" />
+            <Search className="w-3.5 h-3.5 text-slate-400" />
             <span>Search cloud assets...</span>
           </div>
-          <kbd className="px-1.5 py-0.5 text-[10px] font-semibold bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded shadow-sm text-gray-400">
+          <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-slate-800 border border-slate-700 rounded shadow-sm text-slate-400">
             Ctrl K
           </kbd>
         </button>
@@ -138,17 +124,17 @@ export default function Navbar({ onMenuClick, dateRange, onDateRangeChange }: Na
         <div className="relative">
           <button
             onClick={() => setShowDatePicker(!showDatePicker)}
-            className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-gray-700 dark:text-gray-200 bg-gray-100/80 dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700 rounded-xl hover:bg-gray-200/60 dark:hover:bg-gray-700 transition-all shadow-sm"
+            className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-slate-200 bg-slate-900/80 border border-slate-700/80 rounded-xl hover:bg-slate-800 transition-all shadow-sm"
           >
-            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
             <span>{selectedLabel}</span>
-            <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
           </button>
           {showDatePicker && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShowDatePicker(false)} />
-              <div className="absolute right-0 top-11 z-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl py-1.5 w-48 animate-fade-in">
-                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">Time Filter</div>
+              <div className="absolute right-0 top-11 z-20 bg-slate-900/95 border border-slate-700 rounded-2xl shadow-2xl py-1.5 w-48 backdrop-blur-xl animate-fade-in">
+                <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400">Time Range</div>
                 {DATE_RANGES.map(r => (
                   <button
                     key={r.value}
@@ -158,14 +144,14 @@ export default function Navbar({ onMenuClick, dateRange, onDateRangeChange }: Na
                       toast.success(`Filter updated: ${r.label}`)
                     }}
                     className={clsx(
-                      'w-full text-left px-3.5 py-2 text-xs font-semibold flex items-center justify-between transition-colors',
+                      'w-full text-left px-3.5 py-2 text-xs font-bold flex items-center justify-between transition-colors',
                       dateRange === r.value
-                        ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400'
-                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                        ? 'bg-blue-600/30 text-blue-400'
+                        : 'text-slate-300 hover:bg-slate-800'
                     )}
                   >
                     <span>{r.label}</span>
-                    {dateRange === r.value && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                    {dateRange === r.value && <Check className="w-3.5 h-3.5 text-blue-400" />}
                   </button>
                 ))}
               </div>
@@ -176,44 +162,35 @@ export default function Navbar({ onMenuClick, dateRange, onDateRangeChange }: Na
         {/* Refresh button */}
         <button
           onClick={handleRefresh}
-          title="Refresh real-time data"
-          className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors text-gray-600 dark:text-gray-300"
+          title="Refresh live bucket telemetry"
+          className="p-2.5 hover:bg-slate-800 rounded-xl transition-colors text-slate-300"
         >
-          <RefreshCw className={clsx('w-4 h-4', refreshing && 'animate-spin text-blue-600')} />
-        </button>
-
-        {/* Dark mode toggle */}
-        <button
-          onClick={handleDark}
-          title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-          className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors text-gray-600 dark:text-gray-300"
-        >
-          {dark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-gray-600" />}
+          <RefreshCw className={clsx('w-4 h-4', refreshing && 'animate-spin text-blue-400')} />
         </button>
 
         {/* Notifications dropdown */}
         <div className="relative">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors text-gray-600 dark:text-gray-300"
+            className="relative p-2.5 hover:bg-slate-800 rounded-xl transition-colors text-slate-300"
             aria-label="Notifications"
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white dark:ring-gray-900 animate-pulse" />
+              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-slate-900 animate-pulse" />
             )}
           </button>
 
           {showNotifications && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShowNotifications(false)} />
-              <div className="absolute right-0 top-12 z-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl w-84 sm:w-96 overflow-hidden animate-fade-in">
+              <div className="absolute right-0 top-12 z-20 bg-slate-900/95 border border-slate-700 rounded-2xl shadow-2xl w-84 sm:w-96 overflow-hidden backdrop-blur-xl animate-fade-in">
                 <div className="flex items-center justify-between px-4 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
                   <div className="flex items-center gap-2">
                     <Bell className="w-4 h-4" />
-                    <span className="text-sm font-bold">Notifications</span>
+                    <span className="text-sm font-bold">Cloud Notifications</span>
                     {unreadCount > 0 && (
-                      <span className="px-1.5 py-0.2 bg-white/20 text-white text-[10px] font-extrabold rounded-full">
+                      <span className="px-1.5 py-0.2 bg-white/20 text-white text-[10px] font-black rounded-full">
                         {unreadCount} new
                       </span>
                     )}
@@ -228,9 +205,9 @@ export default function Navbar({ onMenuClick, dateRange, onDateRangeChange }: Na
                   </div>
                 </div>
 
-                <div className="max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
+                <div className="max-h-80 overflow-y-auto divide-y divide-slate-800">
                   {notifications.length === 0 ? (
-                    <div className="p-8 text-center text-xs text-gray-400">No active notifications</div>
+                    <div className="p-8 text-center text-xs text-slate-400">No active alerts</div>
                   ) : (
                     notifications.map(n => (
                       <div
@@ -240,34 +217,34 @@ export default function Navbar({ onMenuClick, dateRange, onDateRangeChange }: Na
                           router.push(n.route)
                         }}
                         className={clsx(
-                          'flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group',
-                          !n.read && 'bg-blue-50/40 dark:bg-blue-950/20'
+                          'flex items-start gap-3 px-4 py-3 hover:bg-slate-800/80 transition-colors cursor-pointer group',
+                          !n.read && 'bg-blue-950/30'
                         )}
                       >
                         <span className={clsx('w-2 h-2 rounded-full mt-1.5 flex-shrink-0', n.dot)} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 group-hover:text-blue-600 transition-colors">
+                          <p className="text-xs font-semibold text-slate-200 group-hover:text-blue-400 transition-colors">
                             {n.text}
                           </p>
-                          <p className="text-[10px] text-gray-400 mt-1">{n.time}</p>
+                          <p className="text-[10px] text-slate-400 mt-1">{n.time}</p>
                         </div>
-                        <ArrowRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-0.5" />
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-0.5" />
                       </div>
                     ))
                   )}
                 </div>
 
                 {notifications.length > 0 && (
-                  <div className="p-2 bg-gray-50 dark:bg-gray-800/80 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center px-4">
+                  <div className="p-2.5 bg-slate-900 border-t border-slate-800 flex justify-between items-center px-4">
                     <button
                       onClick={clearAllNotifs}
-                      className="text-[11px] font-semibold text-rose-500 hover:underline"
+                      className="text-[11px] font-bold text-rose-400 hover:underline"
                     >
                       Clear all
                     </button>
                     <button
                       onClick={() => { setShowNotifications(false); router.push('/recommendations') }}
-                      className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                      className="text-[11px] font-bold text-blue-400 hover:underline"
                     >
                       View All Opportunities →
                     </button>
@@ -279,35 +256,35 @@ export default function Navbar({ onMenuClick, dateRange, onDateRangeChange }: Na
         </div>
 
         {/* Demo Mode Badge */}
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-full">
-          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-          <span className="text-xs font-bold text-amber-700 dark:text-amber-400">Demo Active</span>
+        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/40 rounded-full">
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+          <span className="text-xs font-black text-amber-300">Demo Active</span>
         </div>
       </header>
 
       {/* Global Quick Search Modal */}
       {showSearchModal && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden">
-            <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
-              <Search className="w-5 h-5 text-blue-600" />
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-black/75 backdrop-blur-md animate-fade-in">
+          <div className="bg-slate-900/95 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden backdrop-blur-xl">
+            <div className="p-4 border-b border-slate-800 flex items-center gap-3">
+              <Search className="w-5 h-5 text-blue-400" />
               <input
                 autoFocus
                 type="text"
-                placeholder="Search storage, duplicate files, cost reports, cloud providers..."
+                placeholder="Search storage buckets, duplicate files, cost reports..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent text-sm font-medium text-gray-900 dark:text-white outline-none placeholder-gray-400"
+                className="w-full bg-transparent text-sm font-semibold text-white outline-none placeholder-slate-400"
               />
-              <button onClick={() => setShowSearchModal(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                <X className="w-4 h-4 text-gray-400" />
+              <button onClick={() => setShowSearchModal(false)} className="p-1 hover:bg-slate-800 rounded-lg">
+                <X className="w-4 h-4 text-slate-400" />
               </button>
             </div>
 
             <div className="max-h-72 overflow-y-auto p-2">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-3 py-1.5">Quick Jump</p>
+              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-3 py-1.5">Direct Navigation</p>
               {searchResults.length === 0 ? (
-                <div className="p-6 text-center text-xs text-gray-400">No matching assets or pages found.</div>
+                <div className="p-6 text-center text-xs text-slate-400">No matching assets or pages found.</div>
               ) : (
                 searchResults.map((item, idx) => (
                   <button
@@ -316,25 +293,25 @@ export default function Navbar({ onMenuClick, dateRange, onDateRangeChange }: Na
                       setShowSearchModal(false)
                       router.push(item.href)
                     }}
-                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 text-left transition-colors group"
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-blue-950/40 text-left transition-colors group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                      <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                         <item.icon className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400">{item.title}</p>
-                        <p className="text-[10px] text-gray-400">{item.category}</p>
+                        <p className="text-xs font-bold text-slate-200 group-hover:text-blue-400">{item.title}</p>
+                        <p className="text-[10px] text-slate-400">{item.category}</p>
                       </div>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-all" />
+                    <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-all" />
                   </button>
                 ))
               )}
             </div>
-            <div className="px-4 py-2.5 bg-gray-50 dark:bg-gray-850 border-t border-gray-100 dark:border-gray-700 text-[11px] text-gray-400 flex justify-between">
+            <div className="px-4 py-2.5 bg-slate-950 border-t border-slate-800 text-[11px] text-slate-400 flex justify-between">
               <span>Press ESC to close</span>
-              <span>CloudCut Search v1.0</span>
+              <span>CloudCut QuickJump</span>
             </div>
           </div>
         </div>
