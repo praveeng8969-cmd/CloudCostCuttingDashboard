@@ -6,22 +6,12 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, HardDrive, DollarSign, Zap, Copy,
   FileText, Cloud, Settings, HelpCircle, LogOut,
-  ChevronLeft, ChevronRight, User, X, Sparkles, TrendingDown
+  ChevronLeft, ChevronRight, UploadCloud, TrendingDown, Sparkles
 } from 'lucide-react'
 import clsx from 'clsx'
 import { APP_NAME } from '@/lib/constants'
+import { useStorageData } from '@/context/StorageDataContext'
 import toast from 'react-hot-toast'
-
-const navItems = [
-  { label: 'Dashboard',        href: '/dashboard',        icon: LayoutDashboard, badge: null, color: 'text-blue-400' },
-  { label: 'Storage Analysis', href: '/storage',          icon: HardDrive,       badge: '83%', color: 'text-cyan-400' },
-  { label: 'Cost Analysis',    href: '/cost-analysis',    icon: DollarSign,      badge: null, color: 'text-purple-400' },
-  { label: 'Recommendations',  href: '/recommendations',  icon: Zap,             badge: '5 New', badgeColor: 'bg-emerald-500 text-white', color: 'text-emerald-400' },
-  { label: 'Duplicate Files',  href: '/duplicates',       icon: Copy,            badge: '284 GB', badgeColor: 'bg-orange-500/20 text-orange-400', color: 'text-orange-400' },
-  { label: 'Reports',          href: '/reports',          icon: FileText,        badge: null, color: 'text-indigo-400' },
-  { label: 'Cloud Providers',  href: '/cloud-providers',  icon: Cloud,           badge: '2 Live', badgeColor: 'bg-blue-500/20 text-blue-400', color: 'text-sky-400' },
-  { label: 'Settings',         href: '/settings',         icon: Settings,        badge: null, color: 'text-slate-400' },
-]
 
 interface SidebarProps {
   mobileOpen: boolean
@@ -32,6 +22,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
+  const { analysisResult, hasData } = useStorageData()
 
   function handleLogout() {
     toast.success('Logged out successfully')
@@ -44,6 +35,18 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       style: { background: '#1e293b', color: '#fff' }
     })
   }
+
+  const navItems = [
+    { label: 'Dashboard',        href: '/dashboard',        icon: LayoutDashboard, badge: null, color: 'text-blue-400' },
+    { label: 'Import CSV Data',  href: '/import',           icon: UploadCloud,     badge: 'Upload', badgeColor: 'bg-blue-600 text-white', color: 'text-cyan-400' },
+    { label: 'Storage Analysis', href: '/storage',          icon: HardDrive,       badge: hasData ? `${(analysisResult.totalStorageGB / 1000).toFixed(1)} TB` : '0 TB', color: 'text-cyan-400' },
+    { label: 'Cost Analysis',    href: '/cost-analysis',    icon: DollarSign,      badge: null, color: 'text-purple-400' },
+    { label: 'Recommendations',  href: '/recommendations',  icon: Zap,             badge: hasData ? `${analysisResult.recommendations.length} Recs` : '0', badgeColor: 'bg-emerald-500 text-white', color: 'text-emerald-400' },
+    { label: 'Duplicate Files',  href: '/duplicates',       icon: Copy,            badge: hasData ? `${analysisResult.duplicateRecoverableStorageGB} GB` : '0 GB', badgeColor: 'bg-orange-500/20 text-orange-400', color: 'text-orange-400' },
+    { label: 'Reports',          href: '/reports',          icon: FileText,        badge: null, color: 'text-indigo-400' },
+    { label: 'Cloud Providers',  href: '/cloud-providers',  icon: Cloud,           badge: '3 Connected', badgeColor: 'bg-blue-500/20 text-blue-400', color: 'text-sky-400' },
+    { label: 'Settings',         href: '/settings',         icon: Settings,        badge: null, color: 'text-slate-400' },
+  ]
 
   const SidebarContent = (
     <div className={clsx(
@@ -73,10 +76,6 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
             </div>
           )}
         </Link>
-        {/* Mobile close */}
-        <button onClick={onMobileClose} className="lg:hidden p-1.5 hover:bg-slate-800 rounded-lg">
-          <X className="w-4 h-4 text-slate-400" />
-        </button>
       </div>
 
       {/* Navigation Links */}
@@ -118,19 +117,22 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
         })}
       </nav>
 
-      {/* Savings Summary Widget in Sidebar */}
+      {/* Dynamic Savings Summary Widget in Sidebar */}
       {!collapsed && (
         <div className="mx-3 mb-3 p-3.5 bg-gradient-to-br from-emerald-950/60 via-teal-950/40 to-slate-900/60 border border-emerald-500/30 rounded-2xl">
           <div className="flex items-center gap-2 mb-1.5">
             <TrendingDown className="w-4 h-4 text-emerald-400" />
             <span className="text-xs font-extrabold text-emerald-300">Recoverable Savings</span>
           </div>
-          <p className="text-lg font-black text-white leading-tight">₹31,800 <span className="text-xs font-medium text-slate-400">/mo</span></p>
+          <p className="text-lg font-black text-white leading-tight">
+            ₹{analysisResult.potentialMonthlySavings.toLocaleString('en-IN')}{' '}
+            <span className="text-xs font-medium text-slate-400">/mo</span>
+          </p>
           <Link
             href="/recommendations"
             className="mt-2 block text-center py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-black rounded-lg shadow-md transition-colors"
           >
-            Optimize Now →
+            Review {analysisResult.recommendations.length} Fixes →
           </Link>
         </div>
       )}

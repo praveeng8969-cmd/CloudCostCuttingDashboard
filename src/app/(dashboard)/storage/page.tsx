@@ -1,299 +1,385 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
-  Search, Filter, HardDrive, Database, Archive, FileText,
-  Video, Image, AlertCircle, ArrowUpRight, Check, Trash2, Zap
+  Search, Filter, ArrowUpDown, ChevronDown, Download,
+  HardDrive, AlertTriangle, CheckCircle2, Clock, Copy,
+  ArrowRight, Sparkles, ChevronLeft, ChevronRight, Layers, Database
 } from 'lucide-react'
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell
-} from 'recharts'
-import ChartCard from '@/components/ui/ChartCard'
-import ProgressBar from '@/components/ui/ProgressBar'
-import EmptyState from '@/components/ui/EmptyState'
 import PageHeader from '@/components/layout/PageHeader'
-import { kpiSummary, storageGrowthData, fileTypeData, filesData } from '@/lib/mockData'
-import type { FileRow } from '@/types'
-import toast from 'react-hot-toast'
+import { useStorageData } from '@/context/StorageDataContext'
+import { StorageRecord } from '@/types/storage'
 import clsx from 'clsx'
 
-const FILE_TYPES = ['All', 'Backup', 'Log', 'Video', 'Document', 'Image', 'Archive', 'Other']
-const STORAGE_CLASSES = ['All', 'Standard', 'Infrequent Access', 'Archive', 'Deep Archive']
-const RECOMMENDATIONS = ['All', 'Delete', 'Archive', 'Review', 'Compress', 'Keep']
-
 export default function StoragePage() {
+  const { records, analysisResult, hasData } = useStorageData()
+
+  // Filter & Search states
   const [search, setSearch] = useState('')
-  const [filterType, setFilterType] = useState('All')
-  const [filterClass, setFilterClass] = useState('All')
-  const [filterRec, setFilterRec] = useState('All')
-  const [fileList, setFileList] = useState<FileRow[]>(filesData)
+  const [selectedType, setSelectedType] = useState('All')
+  const [selectedBucket, setSelectedBucket] = useState('All')
+  const [selectedClass, setSelectedClass] = useState('All')
+  const [selectedStatus, setSelectedStatus] = useState('All')
+  const [sortBy, setSortBy] = useState<'sizeGB' | 'ageDays' | 'fileName' | 'lastAccessed'>('sizeGB')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 15
 
-  const filtered = useMemo(() => {
-    return fileList.filter(f => {
-      const matchSearch =
-        f.name.toLowerCase().includes(search.toLowerCase()) ||
-        f.owner.toLowerCase().includes(search.toLowerCase()) ||
-        f.department.toLowerCase().includes(search.toLowerCase())
-      const matchType = filterType === 'All' || f.type === filterType
-      const matchClass = filterClass === 'All' || f.storageClass === filterClass
-      const matchRec = filterRec === 'All' || f.recommendation === filterRec
-      return matchSearch && matchType && matchClass && matchRec
-    })
-  }, [fileList, search, filterType, filterClass, filterRec])
+  // Extract unique filter options dynamically from current records
+  const uniqueTypes = useMemo(() => ['All', ...Array.from(new Set(records.map(r => r.fileType)))], [records])
+  const uniqueBuckets = useMemo(() => ['All', ...Array.from(new Set(records.map(r => r.bucket)))], [records])
+  const uniqueClasses = useMemo(() => ['All', ...Array.from(new Set(records.map(r => r.storageClass)))], [records])
+  const uniqueStatuses = ['All', 'Active', 'Inactive', 'Highly Inactive', 'Duplicate Candidate']
 
-  function handleFileAction(file: FileRow) {
-    if (file.recommendation === 'Delete') {
-      setFileList(prev => prev.filter(f => f.id !== file.id))
-      toast.success(`Purged stale file "${file.name}" (freed ${file.size})!`, { icon: '🗑️' })
-    } else if (file.recommendation === 'Archive') {
-      setFileList(prev => prev.map(f => f.id === file.id ? { ...f, storageClass: 'Archive', recommendation: 'Keep' } : f))
-      toast.success(`Moved "${file.name}" to Deep Glacier Archive (-80% cost)!`, { icon: '📦' })
-    } else if (file.recommendation === 'Compress') {
-      setFileList(prev => prev.map(f => f.id === file.id ? { ...f, size: '7 GB', recommendation: 'Keep' } : f))
-      toast.success(`GZIP compression applied to "${file.name}" (-75% storage)!`, { icon: '🗜️' })
+  // Filter & Sort
+  const filteredRecords = useMemo(() => {
+    return records
+      .filter(r => {
+        if (search) {
+          const q = search.toLowerCase()
+          const matchName = r.fileName.toLowerCase().includes(q)
+          const matchBucket = r.bucket.toLowerCase().includes(q)
+          const matchType = r.fileType.toLowerCase().includes(q)
+          const matchClass = r.storageClass.toLowerCase().includes(q)
+          if (!matchName && !matchBucket && !matchType && !matchClass) return false
+        }
+        if (selectedType !== 'All' && r.fileType !== selectedType) return false
+        if (selectedBucket !== 'All' && r.bucket !== selectedBucket) return false
+        if (selectedClass !== 'All' && r.storageClass !== selectedClass) return false
+        if (selectedStatus !== 'All' && r.status !== selectedStatus) return false
+        return true
+      })
+      .sort((a, b) => {
+        let valA: any = a[sortBy]
+        let valB: any = b[sortBy]
+        if (sortBy === 'lastAccessed') {
+          valA = new Date(a.lastAccessed).getTime()
+          valB = new Date(b.lastAccessed).getTime()
+        }
+        if (typeof valA === 'string') {
+          return sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA)
+        }
+        return sortOrder === 'asc' ? valA - valB : valB - valA
+      })
+  }, [records, search, selectedType, selectedBucket, selectedClass, selectedStatus, sortBy, sortOrder])
+
+  // Pagination slice
+  const totalPages = Math.ceil(filteredRecords.length / pageSize) || 1
+  const paginatedRecords = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredRecords.slice(start, start + pageSize)
+  }, [filteredRecords, currentPage, pageSize])
+
+  function toggleSort(field: 'sizeGB' | 'ageDays' | 'fileName' | 'lastAccessed') {
+    if (sortBy === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')
     } else {
-      toast.success(`File "${file.name}" verified!`, { icon: '✅' })
+      setSortBy(field)
+      setSortOrder('desc')
     }
   }
 
-  const recColor: Record<string, string> = {
-    Delete: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
-    Archive: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
-    Review: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-    Compress: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
-    Keep: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+  // Export filtered CSV
+  function exportFilteredData() {
+    let csv = "file_name,size_gb,last_accessed,age_days,storage_class,file_type,bucket,status,recommendation,est_monthly_cost\n"
+    filteredRecords.forEach(r => {
+      csv += `"${r.fileName}",${r.sizeGB},"${r.lastAccessed}",${r.ageDays},"${r.storageClass}","${r.fileType}","${r.bucket}","${r.status}","${r.recommendation}",${r.estimatedMonthlyCost}\n`
+    })
+    const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(csv)
+    const link = document.createElement("a")
+    link.setAttribute("href", csvContent)
+    link.setAttribute("download", `cloudcut_storage_inventory_export_${filteredRecords.length}_rows.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   return (
     <div className="space-y-6 w-full min-w-0">
       {/* Standardized Page Header */}
       <PageHeader
-        title="Storage Utilization & Waste Inspector"
-        subtitle="Inspect multi-cloud object storage buckets, tier distribution, and identify large stale files."
-        badge="12.8 TB Monitored"
+        title="Cloud Storage Inventory & Object Explorer"
+        subtitle="Search, filter, and inspect individual storage objects across all monitored bucket containers."
+        badge={`${records.length.toLocaleString()} Objects Indexed`}
         actions={
-          <span className="px-3.5 py-1.5 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-xl text-xs font-black">
-            27 Bucket Containers
-          </span>
+          <button
+            onClick={exportFilteredData}
+            disabled={filteredRecords.length === 0}
+            className="btn-secondary text-xs flex items-center gap-1.5 flex-shrink-0"
+          >
+            <Download className="w-3.5 h-3.5 text-cyan-400" />
+            Export Filtered CSV ({filteredRecords.length})
+          </button>
         }
       />
 
-      {/* Top Overview Cards with Colorful Glows */}
+      {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full min-w-0">
-        {[
-          { label: 'Total Allocated', value: kpiSummary.totalStorage, sub: 'Across 3 Providers', icon: HardDrive, glow: 'card-glow-cyan', color: 'text-cyan-400', bg: 'bg-cyan-500/20' },
-          { label: 'Used Storage', value: kpiSummary.usedStorage, sub: 'Active & Inactive', icon: Database, glow: 'card-glow-purple', color: 'text-purple-400', bg: 'bg-purple-500/20' },
-          { label: 'Available Free', value: kpiSummary.availableStorage, sub: 'Remaining Quota', icon: Archive, glow: 'card-glow-emerald', color: 'text-emerald-400', bg: 'bg-emerald-500/20' },
-          { label: 'Utilization', value: `${kpiSummary.utilizationPercent}%`, sub: 'Above 80% threshold', icon: AlertCircle, glow: 'card-glow-amber', color: 'text-amber-400', bg: 'bg-amber-500/20' },
-        ].map(c => (
-          <div key={c.label} className={clsx('card p-5 min-w-0', c.glow)}>
-            <div className={clsx('w-10 h-10 rounded-xl flex items-center justify-center mb-3 shadow-sm border border-white/10 flex-shrink-0', c.bg)}>
-              <c.icon className={clsx('w-5 h-5', c.color)} />
-            </div>
-            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">{c.label}</p>
-            <p className={clsx('text-2xl font-black mt-1 tracking-tight truncate', c.color)}>{c.value}</p>
-            <p className="text-[11px] text-slate-400 mt-1 truncate">{c.sub}</p>
+        <div className="card p-5 card-glow-cyan flex items-center gap-3.5 min-w-0">
+          <div className="w-11 h-11 rounded-2xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 border border-cyan-500/30">
+            <HardDrive className="w-5 h-5" />
           </div>
-        ))}
-      </div>
-
-      {/* Storage Utilization Bar */}
-      <div className="card p-5 card-glow-blue w-full min-w-0">
-        <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <h3 className="section-title">Storage Utilization Progress</h3>
-            <span className="text-xs font-black text-amber-300 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/30">
-              83% Warning
-            </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Total Storage</p>
+            <p className="text-2xl font-black text-cyan-300 tracking-tight truncate">
+              {analysisResult.totalStorageGB >= 1000 ? `${(analysisResult.totalStorageGB / 1000).toFixed(2)} TB` : `${analysisResult.totalStorageGB} GB`}
+            </p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">{analysisResult.totalObjects} total objects</p>
           </div>
-          <span className="text-sm font-black text-white">10.6 TB of 12.8 TB</span>
         </div>
-        <ProgressBar value={kpiSummary.utilizationPercent} size="lg" color="bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-500" />
-        <div className="flex flex-col sm:flex-row justify-between mt-2 text-xs font-bold text-slate-400 gap-1">
-          <span>Used: 10.6 TB (Standard: 6.8 TB, Archive: 2.2 TB, Backups: 1.6 TB)</span>
-          <span>Free Headroom: 2.2 TB</span>
+
+        <div className="card p-5 card-glow-blue flex items-center gap-3.5 min-w-0">
+          <div className="w-11 h-11 rounded-2xl bg-blue-500/20 text-blue-300 flex items-center justify-center flex-shrink-0 border border-blue-500/30">
+            <Layers className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Average File Size</p>
+            <p className="text-2xl font-black text-blue-300 tracking-tight truncate">
+              {analysisResult.averageFileSizeGB} GB
+            </p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+              Largest: {analysisResult.largestFile?.sizeGB ?? 0} GB
+            </p>
+          </div>
+        </div>
+
+        <div className="card p-5 card-glow-red flex items-center gap-3.5 min-w-0">
+          <div className="w-11 h-11 rounded-2xl bg-red-500/20 text-red-300 flex items-center justify-center flex-shrink-0 border border-red-500/30">
+            <Clock className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Inactive Storage</p>
+            <p className="text-2xl font-black text-red-400 tracking-tight truncate">
+              {analysisResult.inactiveStorageGB} GB
+            </p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+              {analysisResult.inactiveObjectsCount} unaccessed objects (&gt;180d)
+            </p>
+          </div>
+        </div>
+
+        <div className="card p-5 card-glow-orange flex items-center gap-3.5 min-w-0">
+          <div className="w-11 h-11 rounded-2xl bg-orange-500/20 text-orange-300 flex items-center justify-center flex-shrink-0 border border-orange-500/30">
+            <Copy className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Duplicate Candidates</p>
+            <p className="text-2xl font-black text-orange-300 tracking-tight truncate">
+              {analysisResult.duplicateRecoverableStorageGB} GB
+            </p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+              {analysisResult.duplicateCandidatesCount} redundant copies
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full min-w-0">
-        <ChartCard title="12-Month Storage Consumption Curve" subtitle="TB usage progression across 2026">
-          <div className="w-full h-[240px] min-w-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={storageGrowthData} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
-                <defs>
-                  <linearGradient id="storageAreaGrad2" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.45}/>
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.07)" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} unit=" TB" axisLine={false} tickLine={false} />
-                <Tooltip
-                  formatter={(v: number) => [`${v} TB`, 'Storage']}
-                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', border: '1px solid rgba(139, 92, 246, 0.3)', color: '#fff' }}
-                />
-                <Area type="monotone" dataKey="storage" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#storageAreaGrad2)" activeDot={{ r: 6 }} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartCard>
-
-        <ChartCard title="Storage by Media / Object Category" subtitle="Breakdown by file extension and type">
-          <div className="flex flex-col sm:flex-row items-center gap-6 w-full min-w-0">
-            <div className="w-44 h-44 flex-shrink-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={fileTypeData} cx="50%" cy="50%" innerRadius={48} outerRadius={72} dataKey="value" paddingAngle={3}>
-                    {fileTypeData.map((e, i) => <Cell key={i} fill={e.color} stroke="none" />)}
-                  </Pie>
-                  <Tooltip
-                    formatter={(v: number) => [`${v} TB`, '']}
-                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', color: '#fff' }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="flex-1 w-full space-y-2.5 min-w-0">
-              {fileTypeData.map(d => (
-                <div key={d.name} className="flex items-center justify-between text-xs min-w-0">
-                  <div className="flex items-center gap-2 truncate">
-                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: d.color }} />
-                    <span className="font-semibold text-slate-300 truncate">{d.name}</span>
-                  </div>
-                  <span className="font-black text-white ml-2 flex-shrink-0">{d.value} TB</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </ChartCard>
-      </div>
-
-      {/* File Inventory Filterable Table */}
-      <div className="card w-full min-w-0">
-        <div className="p-5 border-b border-slate-800">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-            <div>
-              <h3 className="section-title">Object Storage File Inventory</h3>
-              <p className="section-sub">{filtered.length} files matching current filter criteria</p>
-            </div>
-
-            {/* Quick Filter Category Pills */}
-            <div className="flex flex-wrap gap-1.5">
-              {FILE_TYPES.map(t => (
-                <button
-                  key={t}
-                  onClick={() => setFilterType(t)}
-                  className={clsx(
-                    'px-3 py-1 rounded-xl text-xs font-black transition-all flex-shrink-0',
-                    filterType === t
-                      ? 'bg-blue-600 text-white shadow-md border border-blue-400/40'
-                      : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-700/60'
-                  )}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Search & Dropdown Filters */}
-          <div className="flex flex-wrap items-center gap-2.5 mt-4">
-            <div className="relative flex-1 min-w-[200px]">
+      {/* Main Table Card with Search & Filters */}
+      <div className="card overflow-hidden w-full min-w-0">
+        {/* Search & Filter Bar */}
+        <div className="p-5 border-b border-slate-800 bg-slate-900/60 space-y-3">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
+            <div className="relative flex-1 min-w-[240px] w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search file name, owner or department..."
+                placeholder="Search by file name, bucket, class, or type..."
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={e => { setSearch(e.target.value); setCurrentPage(1) }}
                 className="input pl-9"
               />
             </div>
 
-            <select
-              value={filterClass}
-              onChange={e => setFilterClass(e.target.value)}
-              className="text-xs font-bold border border-slate-700 rounded-xl px-3 py-2.5 bg-slate-900 text-slate-200 outline-none"
-            >
-              <option value="All">All Storage Classes</option>
-              {STORAGE_CLASSES.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
+            <div className="flex items-center gap-2 flex-wrap w-full lg:w-auto">
+              {/* File Type Filter */}
+              <select
+                value={selectedType}
+                onChange={e => { setSelectedType(e.target.value); setCurrentPage(1) }}
+                className="input text-xs py-1.5 px-3 max-w-[140px]"
+              >
+                {uniqueTypes.map(t => (
+                  <option key={t} value={t}>{t === 'All' ? 'All File Types' : t}</option>
+                ))}
+              </select>
 
-            <select
-              value={filterRec}
-              onChange={e => setFilterRec(e.target.value)}
-              className="text-xs font-bold border border-slate-700 rounded-xl px-3 py-2.5 bg-slate-900 text-slate-200 outline-none"
-            >
-              <option value="All">All Recommendations</option>
-              {RECOMMENDATIONS.filter(r => r !== 'All').map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
+              {/* Bucket Filter */}
+              <select
+                value={selectedBucket}
+                onChange={e => { setSelectedBucket(e.target.value); setCurrentPage(1) }}
+                className="input text-xs py-1.5 px-3 max-w-[160px]"
+              >
+                {uniqueBuckets.map(b => (
+                  <option key={b} value={b}>{b === 'All' ? 'All Buckets' : b}</option>
+                ))}
+              </select>
+
+              {/* Storage Class Filter */}
+              <select
+                value={selectedClass}
+                onChange={e => { setSelectedClass(e.target.value); setCurrentPage(1) }}
+                className="input text-xs py-1.5 px-3 max-w-[140px]"
+              >
+                {uniqueClasses.map(c => (
+                  <option key={c} value={c}>{c === 'All' ? 'All Classes' : c}</option>
+                ))}
+              </select>
+
+              {/* Status Filter */}
+              <select
+                value={selectedStatus}
+                onChange={e => { setSelectedStatus(e.target.value); setCurrentPage(1) }}
+                className="input text-xs py-1.5 px-3 max-w-[140px]"
+              >
+                {uniqueStatuses.map(s => (
+                  <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
+            <span>
+              Showing <strong className="text-white">{filteredRecords.length}</strong> of {records.length} total objects
+            </span>
+            <span className="text-[11px]">
+              Sorted by: <strong className="text-cyan-400 capitalize">{sortBy}</strong> ({sortOrder.toUpperCase()})
+            </span>
           </div>
         </div>
 
-        {filtered.length === 0 ? (
-          <EmptyState title="No files matched your filters" description="Try clearing search keywords or selecting 'All' filters." />
+        {/* Records Table */}
+        {filteredRecords.length === 0 ? (
+          <div className="p-12 text-center">
+            <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto mb-2" />
+            <p className="text-sm font-bold text-white">No matching storage objects found</p>
+            <p className="text-xs text-slate-400 mt-1">Try broadening your search query or reset active filters.</p>
+          </div>
         ) : (
           <div className="overflow-x-auto w-full">
-            <table className="w-full text-xs min-w-[700px]">
+            <table className="w-full text-xs min-w-[850px]">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-900/60 text-slate-400 font-black uppercase tracking-wider">
-                  <th className="text-left py-3.5 px-4">File Name</th>
-                  <th className="text-left py-3.5 px-4">Type</th>
-                  <th className="text-left py-3.5 px-4">Size</th>
-                  <th className="text-left py-3.5 px-4">Last Accessed</th>
-                  <th className="text-left py-3.5 px-4">Owner</th>
+                <tr className="border-b border-slate-800 bg-slate-900/80 text-slate-400 font-black uppercase tracking-wider">
+                  <th
+                    onClick={() => toggleSort('fileName')}
+                    className="text-left py-3.5 px-4 cursor-pointer hover:text-white transition-colors"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      File Name
+                      <ArrowUpDown className="w-3 h-3 text-slate-500" />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => toggleSort('sizeGB')}
+                    className="text-left py-3.5 px-4 cursor-pointer hover:text-white transition-colors"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      Size
+                      <ArrowUpDown className="w-3 h-3 text-slate-500" />
+                    </div>
+                  </th>
+                  <th className="text-left py-3.5 px-4">File Type</th>
+                  <th className="text-left py-3.5 px-4">Bucket</th>
                   <th className="text-left py-3.5 px-4">Storage Class</th>
-                  <th className="text-left py-3.5 px-4">Dept</th>
-                  <th className="text-left py-3.5 px-4">Recommendation</th>
-                  <th className="text-right py-3.5 px-4">Action</th>
+                  <th
+                    onClick={() => toggleSort('lastAccessed')}
+                    className="text-left py-3.5 px-4 cursor-pointer hover:text-white transition-colors"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      Last Accessed
+                      <ArrowUpDown className="w-3 h-3 text-slate-500" />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => toggleSort('ageDays')}
+                    className="text-left py-3.5 px-4 cursor-pointer hover:text-white transition-colors"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      Age
+                      <ArrowUpDown className="w-3 h-3 text-slate-500" />
+                    </div>
+                  </th>
+                  <th className="text-left py-3.5 px-4">Status</th>
+                  <th className="text-right py-3.5 px-4">Recommendation</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80">
-                {filtered.map(f => (
-                  <tr key={f.id} className="hover:bg-slate-800/50 transition-colors group">
-                    <td className="py-3 px-4 font-bold text-white max-w-[200px] truncate" title={f.name}>
-                      {f.name}
+                {paginatedRecords.map(rec => (
+                  <tr key={rec.id} className="hover:bg-slate-800/40 transition-colors">
+                    <td className="py-3.5 px-4 font-bold text-white max-w-[220px] truncate" title={rec.fileName}>
+                      {rec.fileName}
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3.5 px-4 font-black text-cyan-300">
+                      {rec.sizeGB} GB
+                    </td>
+                    <td className="py-3.5 px-4">
                       <span className="px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 font-bold text-slate-300">
-                        {f.type}
+                        {rec.fileType}
                       </span>
                     </td>
-                    <td className="py-3 px-4 font-black text-white">{f.size}</td>
-                    <td className="py-3 px-4 text-slate-400 whitespace-nowrap">{f.lastAccessed}</td>
-                    <td className="py-3 px-4 text-slate-300">{f.owner}</td>
-                    <td className="py-3 px-4">
-                      <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 font-bold">
-                        {f.storageClass}
+                    <td className="py-3.5 px-4 font-mono text-[11px] text-slate-300 max-w-[150px] truncate" title={rec.bucket}>
+                      {rec.bucket}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-[11px] text-slate-400">
+                      {rec.storageClass}
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-300 font-mono text-[11px]">
+                      {rec.lastAccessed}
+                    </td>
+                    <td className="py-3.5 px-4 font-bold text-slate-200">
+                      {rec.ageDays}d
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span className={clsx(
+                        'px-2.5 py-0.5 rounded-full text-[10px] font-black border',
+                        rec.status === 'Active' && 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+                        rec.status === 'Inactive' && 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+                        rec.status === 'Highly Inactive' && 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+                        rec.status === 'Duplicate Candidate' && 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+                      )}>
+                        {rec.status}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-slate-300">{f.department}</td>
-                    <td className="py-3 px-4">
-                      <span className={clsx('px-2.5 py-0.5 rounded-full text-[11px] font-black border', recColor[f.recommendation])}>
-                        {f.recommendation}
+                    <td className="py-3.5 px-4 text-right">
+                      <span className={clsx(
+                        'px-2.5 py-1 rounded-lg text-xs font-black',
+                        rec.recommendation === 'Archive' && 'bg-rose-500/20 text-rose-300 border border-rose-500/40',
+                        rec.recommendation === 'Tier Down' && 'bg-blue-500/20 text-blue-300 border border-blue-500/40',
+                        rec.recommendation === 'Delete' && 'bg-orange-500/20 text-orange-300 border border-orange-500/40',
+                        rec.recommendation === 'Compress' && 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40',
+                        rec.recommendation === 'Keep' && 'bg-slate-800 text-slate-400 border border-slate-700'
+                      )}>
+                        {rec.recommendation}
                       </span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => handleFileAction(f)}
-                        className={clsx(
-                          'px-2.5 py-1 text-xs font-black rounded-lg transition-all',
-                          f.recommendation === 'Delete' && 'bg-rose-600 hover:bg-rose-500 text-white shadow-sm',
-                          f.recommendation === 'Archive' && 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm',
-                          f.recommendation === 'Compress' && 'bg-purple-600 hover:bg-purple-500 text-white shadow-sm',
-                          f.recommendation === 'Keep' && 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700',
-                          f.recommendation === 'Review' && 'bg-amber-600 hover:bg-amber-500 text-white shadow-sm'
-                        )}
-                      >
-                        {f.recommendation === 'Delete' ? 'Delete' : f.recommendation === 'Archive' ? 'Archive' : f.recommendation === 'Compress' ? 'Compress' : 'Verify'}
-                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Pagination Bar */}
+        {filteredRecords.length > pageSize && (
+          <div className="p-4 border-t border-slate-800 bg-slate-900/60 flex items-center justify-between text-xs">
+            <span className="text-slate-400">
+              Page {currentPage} of {totalPages}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="btn-secondary py-1 px-2.5 text-xs disabled:opacity-40"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" /> Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="btn-secondary py-1 px-2.5 text-xs disabled:opacity-40"
+              >
+                Next <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         )}
       </div>

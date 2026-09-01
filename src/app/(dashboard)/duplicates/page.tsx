@@ -1,90 +1,50 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Search, Trash2, CheckSquare, Square, Copy, HardDrive, DollarSign, CheckCircle2, RotateCcw, AlertTriangle } from 'lucide-react'
-import toast from 'react-hot-toast'
-import Modal from '@/components/ui/Modal'
-import EmptyState from '@/components/ui/EmptyState'
+import React, { useState, useMemo } from 'react'
+import {
+  Search, Copy, HardDrive, DollarSign, CheckCircle2,
+  AlertTriangle, Eye, ShieldCheck, Sparkles, Filter, ExternalLink
+} from 'lucide-react'
 import PageHeader from '@/components/layout/PageHeader'
-import { duplicateFilesData } from '@/lib/mockData'
-import type { DuplicateFile } from '@/types'
+import Modal from '@/components/ui/Modal'
+import { useStorageData } from '@/context/StorageDataContext'
+import { DuplicateCandidateGroup } from '@/types/storage'
+import toast from 'react-hot-toast'
 import clsx from 'clsx'
 
 export default function DuplicatesPage() {
+  const { analysisResult, hasData } = useStorageData()
   const [search, setSearch] = useState('')
-  const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [deleteModal, setDeleteModal] = useState(false)
-  const [fileList, setFileList] = useState<DuplicateFile[]>(duplicateFilesData)
+  const [reviewGroup, setReviewGroup] = useState<DuplicateCandidateGroup | null>(null)
 
-  const filtered = useMemo(() =>
-    fileList.filter(f =>
-      f.name.toLowerCase().includes(search.toLowerCase()) ||
-      f.type.toLowerCase().includes(search.toLowerCase()) ||
-      f.original.toLowerCase().includes(search.toLowerCase())
-    ),
-    [fileList, search]
-  )
+  const groups = analysisResult.duplicateGroups
 
-  const totalSelectedSavings = fileList
-    .filter(f => selected.has(f.id))
-    .reduce((s, f) => s + f.potentialSavingAmount, 0)
+  const filteredGroups = useMemo(() => {
+    if (!search) return groups
+    const q = search.toLowerCase()
+    return groups.filter(g =>
+      g.baseName.toLowerCase().includes(q) ||
+      g.fileType.toLowerCase().includes(q) ||
+      g.canonicalFile.bucket.toLowerCase().includes(q)
+    )
+  }, [groups, search])
 
-  const totalRemainingSavings = fileList.reduce((s, f) => s + f.potentialSavingAmount, 0)
-
-  function toggleSelect(id: string) {
-    setSelected(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-
-  function selectAll() {
-    if (selected.size === filtered.length) {
-      setSelected(new Set())
-    } else {
-      setSelected(new Set(filtered.map(f => f.id)))
-    }
-  }
-
-  function confirmDelete() {
-    const count = selected.size
-    const saved = totalSelectedSavings
-    setFileList(prev => prev.filter(f => !selected.has(f.id)))
-    setSelected(new Set())
-    setDeleteModal(false)
-    toast.success(`Removed ${count} duplicate group${count > 1 ? 's' : ''}! Recovered ₹${saved.toLocaleString('en-IN')}/mo.`, {
+  function handleSimulateCleanup(group: DuplicateCandidateGroup) {
+    toast.success(`Simulated deduplication for "${group.baseName}"! Estimated savings: ₹${group.estimatedMonthlySavings.toLocaleString('en-IN')}/mo.`, {
       icon: '✨',
       duration: 5000,
       style: { background: '#064e3b', color: '#ecfdf5', borderRadius: '12px' }
     })
+    setReviewGroup(null)
   }
-
-  function resetDemo() {
-    setFileList(duplicateFilesData)
-    setSelected(new Set())
-    toast('Duplicate inventory reset to demo baseline', { icon: '🔄' })
-  }
-
-  const allSelected = filtered.length > 0 && selected.size === filtered.length
 
   return (
     <div className="space-y-6 w-full min-w-0">
-      {/* Standardized Page Header */}
+      {/* Page Header */}
       <PageHeader
-        title="Duplicate File Cleaner & Deduplicator"
-        subtitle="Detect byte-identical file copies stored across multiple directories and buckets."
-        badge={`${fileList.length} Duplicate Sets`}
-        actions={
-          <button
-            onClick={resetDemo}
-            className="btn-secondary text-xs flex items-center gap-1.5 flex-shrink-0"
-          >
-            <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
-            Reset Demo Data
-          </button>
-        }
+        title="Duplicate Candidate Detection & Deduplicator"
+        subtitle="Detect byte-identical and duplicate file candidates across all connected cloud storage buckets."
+        badge={`${groups.length} Candidate Sets Detected`}
       />
 
       {/* Summary KPI Cards */}
@@ -95,8 +55,8 @@ export default function DuplicatesPage() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Detected Redundancy</p>
-            <p className="text-2xl font-black text-amber-300 tracking-tight truncate">{fileList.length} Sets</p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">1,284 total duplicate objects</p>
+            <p className="text-2xl font-black text-amber-300 tracking-tight truncate">{groups.length} Sets</p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">{analysisResult.duplicateCandidatesCount} redundant copies</p>
           </div>
         </div>
 
@@ -106,8 +66,8 @@ export default function DuplicatesPage() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Recoverable Storage</p>
-            <p className="text-2xl font-black text-blue-400 tracking-tight truncate">284 GB</p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">Can be reclaimed with zero data loss</p>
+            <p className="text-2xl font-black text-blue-400 tracking-tight truncate">{analysisResult.duplicateRecoverableStorageGB} GB</p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">Zero data loss candidate targets</p>
           </div>
         </div>
 
@@ -116,9 +76,9 @@ export default function DuplicatesPage() {
             <DollarSign className="w-5 h-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Monthly Recoverable</p>
-            <p className="text-2xl font-black text-emerald-400 tracking-tight truncate">₹{totalRemainingSavings.toLocaleString('en-IN')}</p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">₹{(totalRemainingSavings * 12).toLocaleString('en-IN')} annual recovery</p>
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Estimated Monthly Savings</p>
+            <p className="text-2xl font-black text-emerald-400 tracking-tight truncate">₹{analysisResult.duplicateEstimatedSavings.toLocaleString('en-IN')}</p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">₹{(analysisResult.duplicateEstimatedSavings * 12).toLocaleString('en-IN')} annual recovery</p>
           </div>
         </div>
       </div>
@@ -127,118 +87,86 @@ export default function DuplicatesPage() {
       <div className="card overflow-hidden w-full min-w-0">
         <div className="p-5 border-b border-slate-800 bg-slate-900/60">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="relative flex-1 min-w-[220px] w-full">
+            <div className="relative flex-1 min-w-[240px] w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Filter by file name, original path or type..."
+                placeholder="Filter duplicate candidate groups by filename, bucket or type..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 className="input pl-9"
               />
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end flex-shrink-0">
-              {selected.size > 0 && (
-                <span className="text-xs font-bold text-slate-200 truncate">
-                  {selected.size} selected (<span className="text-emerald-400 font-black">+₹{totalSelectedSavings.toLocaleString('en-IN')}/mo</span>)
-                </span>
-              )}
-              <button onClick={selectAll} className="btn-secondary text-xs flex-shrink-0">
-                {allSelected ? 'Deselect All' : 'Select All'}
-              </button>
-              <button
-                onClick={() => selected.size > 0 && setDeleteModal(true)}
-                disabled={selected.size === 0}
-                className={clsx(
-                  'btn-danger text-xs flex-shrink-0',
-                  selected.size === 0 && 'opacity-40 cursor-not-allowed hover:scale-100'
-                )}
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                Purge Selected ({selected.size})
-              </button>
-            </div>
+            <span className="text-xs text-slate-400 flex-shrink-0">
+              Showing <strong className="text-white">{filteredGroups.length}</strong> groups
+            </span>
           </div>
         </div>
 
-        {filtered.length === 0 ? (
+        {filteredGroups.length === 0 ? (
           <div className="p-12 text-center">
-            <div className="w-14 h-14 bg-emerald-950 text-emerald-400 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto mb-3">
-              <CheckCircle2 className="w-8 h-8" />
-            </div>
-            <h3 className="text-sm font-bold text-white">All Duplicate Redundancies Cleaned!</h3>
-            <p className="text-xs text-slate-400 mt-1">Zero redundant replicas detected across all connected buckets.</p>
-            <button onClick={resetDemo} className="btn-secondary text-xs mt-4">
-              Reset Demo Baseline
-            </button>
+            <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
+            <h3 className="text-sm font-bold text-white">No Duplicate Candidates Found</h3>
+            <p className="text-xs text-slate-400 mt-1">All objects in the current dataset appear distinct and non-redundant.</p>
           </div>
         ) : (
           <div className="overflow-x-auto w-full">
-            <table className="w-full text-xs min-w-[700px]">
+            <table className="w-full text-xs min-w-[750px]">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-900/60 text-slate-400 font-black uppercase tracking-wider">
-                  <th className="py-3.5 px-4 w-12 text-center">
-                    <button onClick={selectAll} className="flex items-center justify-center mx-auto">
-                      {allSelected
-                        ? <CheckSquare className="w-4 h-4 text-blue-400" />
-                        : <Square className="w-4 h-4 text-slate-500" />}
-                    </button>
-                  </th>
-                  <th className="text-left py-3.5 px-4">Duplicate File</th>
+                <tr className="border-b border-slate-800 bg-slate-900/80 text-slate-400 font-black uppercase tracking-wider">
+                  <th className="text-left py-3.5 px-4">Primary Candidate File</th>
                   <th className="text-left py-3.5 px-4">Type</th>
-                  <th className="text-left py-3.5 px-4">Master Location</th>
+                  <th className="text-left py-3.5 px-4">Master Bucket</th>
                   <th className="text-left py-3.5 px-4">Redundant Copies</th>
-                  <th className="text-left py-3.5 px-4">Total Size</th>
-                  <th className="text-left py-3.5 px-4">Est. Savings</th>
+                  <th className="text-left py-3.5 px-4">Recoverable Storage</th>
+                  <th className="text-left py-3.5 px-4">Estimated Savings</th>
+                  <th className="text-left py-3.5 px-4">Priority</th>
                   <th className="text-right py-3.5 px-4">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80">
-                {filtered.map(f => (
-                  <tr
-                    key={f.id}
-                    onClick={() => toggleSelect(f.id)}
-                    className={clsx(
-                      'cursor-pointer transition-colors group select-none',
-                      selected.has(f.id) ? 'bg-blue-950/40' : 'hover:bg-slate-800/40'
-                    )}
-                  >
-                    <td className="py-3.5 px-4 text-center">
-                      {selected.has(f.id)
-                        ? <CheckSquare className="w-4 h-4 text-blue-400 mx-auto" />
-                        : <Square className="w-4 h-4 text-slate-600 mx-auto" />}
-                    </td>
-                    <td className="py-3.5 px-4 font-bold text-white max-w-[200px] truncate" title={f.name}>
-                      {f.name}
+                {filteredGroups.map(group => (
+                  <tr key={group.id} className="hover:bg-slate-800/40 transition-colors">
+                    <td className="py-3.5 px-4 font-bold text-white max-w-[200px] truncate" title={group.baseName}>
+                      {group.baseName}
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 font-bold text-slate-300">
-                        {f.type}
+                        {group.fileType}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px] max-w-[140px] truncate" title={f.original}>
-                      {f.original}
+                    <td className="py-3.5 px-4 font-mono text-[11px] text-slate-300 max-w-[140px] truncate" title={group.canonicalFile.bucket}>
+                      {group.canonicalFile.bucket}
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="px-2.5 py-0.5 bg-amber-500/20 text-amber-300 font-black rounded-full border border-amber-500/30">
-                        {f.copies} copies
+                        {group.duplicates.length} replicas ({group.totalCopies} total)
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 font-black text-white">{f.size}</td>
+                    <td className="py-3.5 px-4 font-black text-cyan-300">
+                      {group.recoverableSizeGB} GB
+                    </td>
                     <td className="py-3.5 px-4 font-black text-emerald-400 text-xs">
-                      {f.potentialSaving}
+                      ₹{group.estimatedMonthlySavings.toLocaleString('en-IN')}/mo
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span className={clsx(
+                        'px-2.5 py-0.5 rounded-full text-[10px] font-black border',
+                        group.priority === 'HIGH' && 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+                        group.priority === 'MEDIUM' && 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+                        group.priority === 'LOW' && 'bg-blue-500/20 text-blue-300 border border-blue-500/40'
+                      )}>
+                        {group.priority}
+                      </span>
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <button
-                        onClick={e => {
-                          e.stopPropagation()
-                          setSelected(new Set([f.id]))
-                          setDeleteModal(true)
-                        }}
-                        className="px-2.5 py-1 text-xs font-bold text-rose-300 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 rounded-lg transition-all"
+                        onClick={() => setReviewGroup(group)}
+                        className="btn-secondary py-1 px-3 text-xs font-bold"
                       >
-                        Delete
+                        <Eye className="w-3.5 h-3.5 mr-1" />
+                        Review
                       </button>
                     </td>
                   </tr>
@@ -249,42 +177,66 @@ export default function DuplicatesPage() {
         )}
       </div>
 
-      {/* Confirmation Modal */}
+      {/* Duplicate Review Inspection Modal */}
       <Modal
-        open={deleteModal}
-        onClose={() => setDeleteModal(false)}
-        title="Confirm Duplicate Deletion"
-        size="sm"
+        open={!!reviewGroup}
+        onClose={() => setReviewGroup(null)}
+        title={`Inspect Duplicate Candidate Group — ${reviewGroup?.baseName}`}
+        size="md"
         footer={
-          <>
-            <button onClick={() => setDeleteModal(false)} className="btn-secondary">
-              Cancel
-            </button>
-            <button onClick={confirmDelete} className="btn-danger">
-              Confirm & Purge Copies
-            </button>
-          </>
+          reviewGroup ? (
+            <div className="flex items-center justify-between w-full">
+              <button onClick={() => setReviewGroup(null)} className="btn-secondary text-xs">
+                Close
+              </button>
+              <button onClick={() => handleSimulateCleanup(reviewGroup)} className="btn-emerald text-xs">
+                Simulate Purge (+₹{reviewGroup.estimatedMonthlySavings.toLocaleString('en-IN')}/mo)
+              </button>
+            </div>
+          ) : undefined
         }
       >
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 bg-amber-950/40 border border-amber-500/40 rounded-xl text-amber-300 text-xs">
-            <AlertTriangle className="w-5 h-5 flex-shrink-0 text-amber-400" />
-            <span>Master copies will remain preserved. Only redundant duplicate replicas will be deleted.</span>
+        {reviewGroup && (
+          <div className="space-y-4">
+            <div className="p-3 bg-amber-950/40 border border-amber-500/40 rounded-xl text-amber-300 text-xs flex items-center gap-2.5">
+              <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+              <span>
+                Prototype Notice: Primary file is preserved. Candidate replicas can be queued for automated lifecycle purging.
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs font-black uppercase tracking-wider text-slate-400">Primary Canonical File:</p>
+              <div className="p-3 rounded-xl bg-slate-900/90 border border-emerald-500/40 text-xs flex justify-between items-center">
+                <div>
+                  <p className="font-bold text-white truncate max-w-sm">{reviewGroup.canonicalFile.fileName}</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Bucket: <span className="text-slate-200 font-mono">{reviewGroup.canonicalFile.bucket}</span> · Size: {reviewGroup.canonicalFile.sizeGB} GB</p>
+                </div>
+                <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-black text-[10px]">PRESERVE</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs font-black uppercase tracking-wider text-slate-400">Redundant Replicas ({reviewGroup.duplicates.length}):</p>
+              <div className="space-y-1.5 max-h-56 overflow-y-auto">
+                {reviewGroup.duplicates.map(dup => (
+                  <div key={dup.id} className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs flex justify-between items-center">
+                    <div>
+                      <p className="font-bold text-slate-200 truncate max-w-xs">{dup.fileName}</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">Bucket: <span className="text-slate-300 font-mono">{dup.bucket}</span> · Last accessed: {dup.lastAccessed}</p>
+                    </div>
+                    <span className="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 font-black text-[10px]">CANDIDATE PURGE</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-3 bg-emerald-950/50 border border-emerald-500/40 rounded-xl text-xs flex justify-between items-center font-bold text-emerald-300">
+              <span>Potential Group Savings:</span>
+              <span className="text-base font-black text-emerald-400">₹{reviewGroup.estimatedMonthlySavings.toLocaleString('en-IN')} / mo</span>
+            </div>
           </div>
-
-          <p className="text-xs text-slate-300 leading-relaxed">
-            You are about to purge <strong>{selected.size} duplicate file set{selected.size > 1 ? 's' : ''}</strong>.
-          </p>
-
-          <div className="p-3.5 bg-emerald-950/50 border border-emerald-500/40 rounded-xl text-xs flex justify-between items-center font-bold text-emerald-300">
-            <span>Estimated Savings Recovered:</span>
-            <span className="text-base font-black text-emerald-400">₹{totalSelectedSavings.toLocaleString('en-IN')} / mo</span>
-          </div>
-
-          <p className="text-[11px] text-slate-400">
-            Demo Mode simulation — no destructive cloud API calls will be executed.
-          </p>
-        </div>
+        )}
       </Modal>
     </div>
   )
