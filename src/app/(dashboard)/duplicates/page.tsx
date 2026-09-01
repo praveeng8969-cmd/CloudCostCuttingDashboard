@@ -39,7 +39,7 @@ export default function DuplicatesPage() {
   }
 
   return (
-    <div className="space-y-6 w-full min-w-0">
+    <div className="space-y-6 w-full min-w-0 pb-10">
       {/* Page Header */}
       <PageHeader
         title="Duplicate Candidate Detection & Deduplicator"
@@ -47,59 +47,59 @@ export default function DuplicatesPage() {
         badge={`${groups.length} Candidate Sets Detected`}
       />
 
-      {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full min-w-0">
-        <div className="card p-5 card-glow-amber flex items-center gap-3.5 min-w-0">
-          <div className="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center flex-shrink-0 border border-amber-500/30">
-            <Copy className="w-5 h-5" />
+      {/* Summary KPI Cards with generous spacing and anti-clipping */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 w-full min-w-0">
+        <div className="card p-5.5 card-glow-amber flex items-center gap-4 min-w-0 shadow-lg">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center flex-shrink-0 border border-amber-500/30 shadow-inner">
+            <Copy className="w-6 h-6" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Detected Redundancy</p>
-            <p className="text-2xl font-black text-amber-300 tracking-tight truncate">{groups.length} Sets</p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">{analysisResult.duplicateCandidatesCount} redundant copies</p>
+            <p className="text-2xl sm:text-3xl font-black text-amber-300 tracking-tight truncate mt-0.5">{groups.length} Sets</p>
+            <p className="text-xs text-slate-400 mt-0.5 truncate">{analysisResult.duplicateCandidatesCount} redundant copies</p>
           </div>
         </div>
 
-        <div className="card p-5 card-glow-blue flex items-center gap-3.5 min-w-0">
-          <div className="w-11 h-11 rounded-2xl bg-blue-500/20 text-blue-300 flex items-center justify-center flex-shrink-0 border border-blue-500/30">
-            <HardDrive className="w-5 h-5" />
+        <div className="card p-5.5 card-glow-blue flex items-center gap-4 min-w-0 shadow-lg">
+          <div className="w-12 h-12 rounded-2xl bg-blue-500/20 text-blue-300 flex items-center justify-center flex-shrink-0 border border-blue-500/30 shadow-inner">
+            <HardDrive className="w-6 h-6" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Recoverable Storage</p>
-            <p className="text-2xl font-black text-blue-400 tracking-tight truncate">{analysisResult.duplicateRecoverableStorageGB} GB</p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">Zero data loss candidate targets</p>
+            <p className="text-2xl sm:text-3xl font-black text-blue-400 tracking-tight truncate mt-0.5">{analysisResult.duplicateRecoverableStorageGB} GB</p>
+            <p className="text-xs text-slate-400 mt-0.5 truncate">Zero data loss candidate targets</p>
           </div>
         </div>
 
-        <div className="card p-5 card-glow-emerald flex items-center gap-3.5 min-w-0">
-          <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
-            <DollarSign className="w-5 h-5" />
+        <div className="card p-5.5 card-glow-emerald flex items-center gap-4 min-w-0 shadow-lg">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center flex-shrink-0 border border-emerald-500/30 shadow-inner">
+            <DollarSign className="w-6 h-6" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Estimated Monthly Savings</p>
-            <p className="text-2xl font-black text-emerald-400 tracking-tight truncate">₹{analysisResult.duplicateEstimatedSavings.toLocaleString('en-IN')}</p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">₹{(analysisResult.duplicateEstimatedSavings * 12).toLocaleString('en-IN')} annual recovery</p>
+            <p className="text-2xl sm:text-3xl font-black text-emerald-400 tracking-tight truncate mt-0.5">₹{analysisResult.duplicateEstimatedSavings.toLocaleString('en-IN')}</p>
+            <p className="text-xs text-slate-400 mt-0.5 truncate">₹{(analysisResult.duplicateEstimatedSavings * 12).toLocaleString('en-IN')} annual recovery</p>
           </div>
         </div>
       </div>
 
-      {/* Main Table Card */}
-      <div className="card overflow-hidden w-full min-w-0">
-        <div className="p-5 border-b border-slate-800 bg-slate-900/60">
+      {/* Main Table Card with Perfect Column Alignment */}
+      <div className="card overflow-hidden w-full min-w-0 shadow-xl">
+        <div className="p-5 border-b border-slate-800 bg-slate-900/70">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="relative flex-1 min-w-[240px] w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <div className="relative flex-1 min-w-[260px] w-full">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
                 placeholder="Filter duplicate candidate groups by filename, bucket or type..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="input pl-9"
+                className="input pl-10"
               />
             </div>
 
-            <span className="text-xs text-slate-400 flex-shrink-0">
-              Showing <strong className="text-white">{filteredGroups.length}</strong> groups
+            <span className="text-xs font-bold text-slate-300 flex-shrink-0">
+              Showing <strong className="text-cyan-300 font-black">{filteredGroups.length}</strong> groups
             </span>
           </div>
         </div>
@@ -112,47 +112,60 @@ export default function DuplicatesPage() {
           </div>
         ) : (
           <div className="overflow-x-auto w-full">
-            <table className="w-full text-xs min-w-[750px]">
+            <table className="w-full text-xs min-w-[820px] border-collapse">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-900/80 text-slate-400 font-black uppercase tracking-wider">
-                  <th className="text-left py-3.5 px-4">Primary Candidate File</th>
-                  <th className="text-left py-3.5 px-4">Type</th>
-                  <th className="text-left py-3.5 px-4">Master Bucket</th>
-                  <th className="text-left py-3.5 px-4">Redundant Copies</th>
-                  <th className="text-left py-3.5 px-4">Recoverable Storage</th>
-                  <th className="text-left py-3.5 px-4">Estimated Savings</th>
-                  <th className="text-left py-3.5 px-4">Priority</th>
-                  <th className="text-right py-3.5 px-4">Action</th>
+                <tr className="border-b border-slate-800 bg-slate-900/90 text-slate-400 font-black uppercase tracking-wider text-[11px]">
+                  <th className="text-left py-4 px-4 font-black">Primary Candidate File</th>
+                  <th className="text-left py-4 px-4 font-black">Type</th>
+                  <th className="text-left py-4 px-4 font-black">Master Bucket</th>
+                  <th className="text-left py-4 px-4 font-black">Redundant Copies</th>
+                  <th className="text-left py-4 px-4 font-black">Recoverable Storage</th>
+                  <th className="text-left py-4 px-4 font-black">Estimated Savings</th>
+                  <th className="text-center py-4 px-4 font-black">Priority</th>
+                  <th className="text-right py-4 px-4 font-black">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80">
                 {filteredGroups.map(group => (
-                  <tr key={group.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3.5 px-4 font-bold text-white max-w-[200px] truncate" title={group.baseName}>
+                  <tr key={group.id} className="hover:bg-slate-800/40 transition-colors group">
+                    {/* File Name */}
+                    <td className="py-4 px-4 font-bold text-white max-w-[220px] truncate" title={group.baseName}>
                       {group.baseName}
                     </td>
-                    <td className="py-3.5 px-4">
-                      <span className="px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 font-bold text-slate-300">
+
+                    {/* File Type */}
+                    <td className="py-4 px-4 whitespace-nowrap">
+                      <span className="px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 font-semibold text-slate-300">
                         {group.fileType}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-[11px] text-slate-300 max-w-[140px] truncate" title={group.canonicalFile.bucket}>
+
+                    {/* Bucket */}
+                    <td className="py-4 px-4 font-mono text-[11px] text-slate-300 max-w-[150px] truncate whitespace-nowrap" title={group.canonicalFile.bucket}>
                       {group.canonicalFile.bucket}
                     </td>
-                    <td className="py-3.5 px-4">
-                      <span className="px-2.5 py-0.5 bg-amber-500/20 text-amber-300 font-black rounded-full border border-amber-500/30">
+
+                    {/* Redundant Copies Badge */}
+                    <td className="py-4 px-4 whitespace-nowrap">
+                      <span className="inline-flex items-center px-2.5 py-1 bg-amber-500/20 text-amber-300 font-black rounded-full border border-amber-500/30 text-[11px]">
                         {group.duplicates.length} replicas ({group.totalCopies} total)
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 font-black text-cyan-300">
+
+                    {/* Recoverable Storage */}
+                    <td className="py-4 px-4 font-black text-cyan-300 text-xs whitespace-nowrap">
                       {group.recoverableSizeGB} GB
                     </td>
-                    <td className="py-3.5 px-4 font-black text-emerald-400 text-xs">
+
+                    {/* Estimated Savings */}
+                    <td className="py-4 px-4 font-black text-emerald-400 text-xs whitespace-nowrap">
                       ₹{group.estimatedMonthlySavings.toLocaleString('en-IN')}/mo
                     </td>
-                    <td className="py-3.5 px-4">
+
+                    {/* Priority Badge */}
+                    <td className="py-4 px-4 text-center whitespace-nowrap">
                       <span className={clsx(
-                        'px-2.5 py-0.5 rounded-full text-[10px] font-black border',
+                        'inline-block px-2.5 py-1 rounded-full text-[10px] font-black border uppercase tracking-wider',
                         group.priority === 'HIGH' && 'bg-rose-500/20 text-rose-300 border-rose-500/40',
                         group.priority === 'MEDIUM' && 'bg-amber-500/20 text-amber-300 border-amber-500/40',
                         group.priority === 'LOW' && 'bg-blue-500/20 text-blue-300 border border-blue-500/40'
@@ -160,12 +173,14 @@ export default function DuplicatesPage() {
                         {group.priority}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right">
+
+                    {/* Action Button */}
+                    <td className="py-4 px-4 text-right whitespace-nowrap">
                       <button
                         onClick={() => setReviewGroup(group)}
-                        className="btn-secondary py-1 px-3 text-xs font-bold"
+                        className="btn-secondary py-1.5 px-3.5 text-xs font-bold inline-flex items-center gap-1.5"
                       >
-                        <Eye className="w-3.5 h-3.5 mr-1" />
+                        <Eye className="w-3.5 h-3.5" />
                         Review
                       </button>
                     </td>

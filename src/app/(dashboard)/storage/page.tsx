@@ -95,7 +95,7 @@ export default function StoragePage() {
   }
 
   return (
-    <div className="space-y-6 w-full min-w-0">
+    <div className="space-y-6 w-full min-w-0 pb-10">
       {/* Standardized Page Header */}
       <PageHeader
         title="Cloud Storage Inventory & Object Explorer"
@@ -114,60 +114,60 @@ export default function StoragePage() {
       />
 
       {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full min-w-0">
-        <div className="card p-5 card-glow-cyan flex items-center gap-3.5 min-w-0">
-          <div className="w-11 h-11 rounded-2xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 border border-cyan-500/30">
-            <HardDrive className="w-5 h-5" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full min-w-0">
+        <div className="card p-5.5 card-glow-cyan flex items-center gap-4 min-w-0 shadow-lg">
+          <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 border border-cyan-500/30 shadow-inner">
+            <HardDrive className="w-6 h-6" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Total Storage</p>
-            <p className="text-2xl font-black text-cyan-300 tracking-tight truncate">
+            <p className="text-2xl sm:text-3xl font-black text-cyan-300 tracking-tight truncate mt-0.5">
               {analysisResult.totalStorageGB >= 1000 ? `${(analysisResult.totalStorageGB / 1000).toFixed(2)} TB` : `${analysisResult.totalStorageGB} GB`}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">{analysisResult.totalObjects} total objects</p>
+            <p className="text-xs text-slate-400 mt-0.5 truncate">{analysisResult.totalObjects} total objects</p>
           </div>
         </div>
 
-        <div className="card p-5 card-glow-blue flex items-center gap-3.5 min-w-0">
-          <div className="w-11 h-11 rounded-2xl bg-blue-500/20 text-blue-300 flex items-center justify-center flex-shrink-0 border border-blue-500/30">
-            <Layers className="w-5 h-5" />
+        <div className="card p-5.5 card-glow-blue flex items-center gap-4 min-w-0 shadow-lg">
+          <div className="w-12 h-12 rounded-2xl bg-blue-500/20 text-blue-300 flex items-center justify-center flex-shrink-0 border border-blue-500/30 shadow-inner">
+            <Layers className="w-6 h-6" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Average File Size</p>
-            <p className="text-2xl font-black text-blue-300 tracking-tight truncate">
+            <p className="text-2xl sm:text-3xl font-black text-blue-300 tracking-tight truncate mt-0.5">
               {analysisResult.averageFileSizeGB} GB
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+            <p className="text-xs text-slate-400 mt-0.5 truncate">
               Largest: {analysisResult.largestFile?.sizeGB ?? 0} GB
             </p>
           </div>
         </div>
 
-        <div className="card p-5 card-glow-red flex items-center gap-3.5 min-w-0">
-          <div className="w-11 h-11 rounded-2xl bg-red-500/20 text-red-300 flex items-center justify-center flex-shrink-0 border border-red-500/30">
-            <Clock className="w-5 h-5" />
+        <div className="card p-5.5 card-glow-red flex items-center gap-4 min-w-0 shadow-lg">
+          <div className="w-12 h-12 rounded-2xl bg-red-500/20 text-red-300 flex items-center justify-center flex-shrink-0 border border-red-500/30 shadow-inner">
+            <Clock className="w-6 h-6" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Inactive Storage</p>
-            <p className="text-2xl font-black text-red-400 tracking-tight truncate">
+            <p className="text-2xl sm:text-3xl font-black text-red-400 tracking-tight truncate mt-0.5">
               {analysisResult.inactiveStorageGB} GB
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+            <p className="text-xs text-slate-400 mt-0.5 truncate">
               {analysisResult.inactiveObjectsCount} unaccessed objects (&gt;180d)
             </p>
           </div>
         </div>
 
-        <div className="card p-5 card-glow-orange flex items-center gap-3.5 min-w-0">
-          <div className="w-11 h-11 rounded-2xl bg-orange-500/20 text-orange-300 flex items-center justify-center flex-shrink-0 border border-orange-500/30">
-            <Copy className="w-5 h-5" />
+        <div className="card p-5.5 card-glow-orange flex items-center gap-4 min-w-0 shadow-lg">
+          <div className="w-12 h-12 rounded-2xl bg-orange-500/20 text-orange-300 flex items-center justify-center flex-shrink-0 border border-orange-500/30 shadow-inner">
+            <Copy className="w-6 h-6" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Duplicate Candidates</p>
-            <p className="text-2xl font-black text-orange-300 tracking-tight truncate">
+            <p className="text-2xl sm:text-3xl font-black text-orange-300 tracking-tight truncate mt-0.5">
               {analysisResult.duplicateRecoverableStorageGB} GB
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+            <p className="text-xs text-slate-400 mt-0.5 truncate">
               {analysisResult.duplicateCandidatesCount} redundant copies
             </p>
           </div>
@@ -175,18 +175,18 @@ export default function StoragePage() {
       </div>
 
       {/* Main Table Card with Search & Filters */}
-      <div className="card overflow-hidden w-full min-w-0">
+      <div className="card overflow-hidden w-full min-w-0 shadow-xl">
         {/* Search & Filter Bar */}
-        <div className="p-5 border-b border-slate-800 bg-slate-900/60 space-y-3">
+        <div className="p-5 border-b border-slate-800 bg-slate-900/70 space-y-3">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
-            <div className="relative flex-1 min-w-[240px] w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <div className="relative flex-1 min-w-[260px] w-full">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search by file name, bucket, class, or type..."
                 value={search}
                 onChange={e => { setSearch(e.target.value); setCurrentPage(1) }}
-                className="input pl-9"
+                className="input pl-10"
               />
             </div>
 
@@ -195,7 +195,7 @@ export default function StoragePage() {
               <select
                 value={selectedType}
                 onChange={e => { setSelectedType(e.target.value); setCurrentPage(1) }}
-                className="input text-xs py-1.5 px-3 max-w-[140px]"
+                className="input text-xs py-2 px-3 max-w-[140px]"
               >
                 {uniqueTypes.map(t => (
                   <option key={t} value={t}>{t === 'All' ? 'All File Types' : t}</option>
@@ -206,7 +206,7 @@ export default function StoragePage() {
               <select
                 value={selectedBucket}
                 onChange={e => { setSelectedBucket(e.target.value); setCurrentPage(1) }}
-                className="input text-xs py-1.5 px-3 max-w-[160px]"
+                className="input text-xs py-2 px-3 max-w-[160px]"
               >
                 {uniqueBuckets.map(b => (
                   <option key={b} value={b}>{b === 'All' ? 'All Buckets' : b}</option>
@@ -217,7 +217,7 @@ export default function StoragePage() {
               <select
                 value={selectedClass}
                 onChange={e => { setSelectedClass(e.target.value); setCurrentPage(1) }}
-                className="input text-xs py-1.5 px-3 max-w-[140px]"
+                className="input text-xs py-2 px-3 max-w-[140px]"
               >
                 {uniqueClasses.map(c => (
                   <option key={c} value={c}>{c === 'All' ? 'All Classes' : c}</option>
@@ -228,7 +228,7 @@ export default function StoragePage() {
               <select
                 value={selectedStatus}
                 onChange={e => { setSelectedStatus(e.target.value); setCurrentPage(1) }}
-                className="input text-xs py-1.5 px-3 max-w-[140px]"
+                className="input text-xs py-2 px-3 max-w-[140px]"
               >
                 {uniqueStatuses.map(s => (
                   <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s}</option>
@@ -256,12 +256,12 @@ export default function StoragePage() {
           </div>
         ) : (
           <div className="overflow-x-auto w-full">
-            <table className="w-full text-xs min-w-[850px]">
+            <table className="w-full text-xs min-w-[850px] border-collapse">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-900/80 text-slate-400 font-black uppercase tracking-wider">
+                <tr className="border-b border-slate-800 bg-slate-900/90 text-slate-400 font-black uppercase tracking-wider text-[11px]">
                   <th
                     onClick={() => toggleSort('fileName')}
-                    className="text-left py-3.5 px-4 cursor-pointer hover:text-white transition-colors"
+                    className="text-left py-4 px-4 cursor-pointer hover:text-white transition-colors"
                   >
                     <div className="flex items-center gap-1.5">
                       File Name
@@ -270,19 +270,19 @@ export default function StoragePage() {
                   </th>
                   <th
                     onClick={() => toggleSort('sizeGB')}
-                    className="text-left py-3.5 px-4 cursor-pointer hover:text-white transition-colors"
+                    className="text-left py-4 px-4 cursor-pointer hover:text-white transition-colors"
                   >
                     <div className="flex items-center gap-1.5">
                       Size
                       <ArrowUpDown className="w-3 h-3 text-slate-500" />
                     </div>
                   </th>
-                  <th className="text-left py-3.5 px-4">File Type</th>
-                  <th className="text-left py-3.5 px-4">Bucket</th>
-                  <th className="text-left py-3.5 px-4">Storage Class</th>
+                  <th className="text-left py-4 px-4">File Type</th>
+                  <th className="text-left py-4 px-4">Bucket</th>
+                  <th className="text-left py-4 px-4">Storage Class</th>
                   <th
                     onClick={() => toggleSort('lastAccessed')}
-                    className="text-left py-3.5 px-4 cursor-pointer hover:text-white transition-colors"
+                    className="text-left py-4 px-4 cursor-pointer hover:text-white transition-colors"
                   >
                     <div className="flex items-center gap-1.5">
                       Last Accessed
@@ -291,46 +291,46 @@ export default function StoragePage() {
                   </th>
                   <th
                     onClick={() => toggleSort('ageDays')}
-                    className="text-left py-3.5 px-4 cursor-pointer hover:text-white transition-colors"
+                    className="text-left py-4 px-4 cursor-pointer hover:text-white transition-colors"
                   >
                     <div className="flex items-center gap-1.5">
                       Age
                       <ArrowUpDown className="w-3 h-3 text-slate-500" />
                     </div>
                   </th>
-                  <th className="text-left py-3.5 px-4">Status</th>
-                  <th className="text-right py-3.5 px-4">Recommendation</th>
+                  <th className="text-center py-4 px-4">Status</th>
+                  <th className="text-right py-4 px-4">Recommendation</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80">
                 {paginatedRecords.map(rec => (
                   <tr key={rec.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3.5 px-4 font-bold text-white max-w-[220px] truncate" title={rec.fileName}>
+                    <td className="py-4 px-4 font-bold text-white max-w-[220px] truncate" title={rec.fileName}>
                       {rec.fileName}
                     </td>
-                    <td className="py-3.5 px-4 font-black text-cyan-300">
+                    <td className="py-4 px-4 font-black text-cyan-300 whitespace-nowrap">
                       {rec.sizeGB} GB
                     </td>
-                    <td className="py-3.5 px-4">
-                      <span className="px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 font-bold text-slate-300">
+                    <td className="py-4 px-4 whitespace-nowrap">
+                      <span className="px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 font-semibold text-slate-300">
                         {rec.fileType}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-[11px] text-slate-300 max-w-[150px] truncate" title={rec.bucket}>
+                    <td className="py-4 px-4 font-mono text-[11px] text-slate-300 max-w-[150px] truncate whitespace-nowrap" title={rec.bucket}>
                       {rec.bucket}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-[11px] text-slate-400">
+                    <td className="py-4 px-4 font-mono text-[11px] text-slate-400 whitespace-nowrap">
                       {rec.storageClass}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-300 font-mono text-[11px]">
+                    <td className="py-4 px-4 text-slate-300 font-mono text-[11px] whitespace-nowrap">
                       {rec.lastAccessed}
                     </td>
-                    <td className="py-3.5 px-4 font-bold text-slate-200">
+                    <td className="py-4 px-4 font-bold text-slate-200 whitespace-nowrap">
                       {rec.ageDays}d
                     </td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-4 px-4 text-center whitespace-nowrap">
                       <span className={clsx(
-                        'px-2.5 py-0.5 rounded-full text-[10px] font-black border',
+                        'inline-block px-2.5 py-1 rounded-full text-[10px] font-black border uppercase tracking-wider',
                         rec.status === 'Active' && 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
                         rec.status === 'Inactive' && 'bg-amber-500/20 text-amber-300 border-amber-500/30',
                         rec.status === 'Highly Inactive' && 'bg-rose-500/20 text-rose-300 border-rose-500/30',
@@ -339,9 +339,9 @@ export default function StoragePage() {
                         {rec.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="py-4 px-4 text-right whitespace-nowrap">
                       <span className={clsx(
-                        'px-2.5 py-1 rounded-lg text-xs font-black',
+                        'inline-block px-2.5 py-1 rounded-lg text-xs font-black',
                         rec.recommendation === 'Archive' && 'bg-rose-500/20 text-rose-300 border border-rose-500/40',
                         rec.recommendation === 'Tier Down' && 'bg-blue-500/20 text-blue-300 border border-blue-500/40',
                         rec.recommendation === 'Delete' && 'bg-orange-500/20 text-orange-300 border border-orange-500/40',
