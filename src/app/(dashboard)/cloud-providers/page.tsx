@@ -1,7 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { RefreshCw, Settings, Plus, CheckCircle, XCircle, Wifi } from 'lucide-react'
+import {
+  RefreshCw, Settings, Plus, CheckCircle2, XCircle,
+  Wifi, ShieldCheck, Database, Layers, ArrowUpRight, ExternalLink
+} from 'lucide-react'
 import toast from 'react-hot-toast'
 import Modal from '@/components/ui/Modal'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
@@ -9,47 +12,59 @@ import { cloudProvidersData } from '@/lib/mockData'
 import type { CloudProvider } from '@/types'
 import clsx from 'clsx'
 
-// Provider logos (SVG)
 function AWSLogo() {
   return (
-    <svg viewBox="0 0 80 48" fill="none" className="w-12 h-8">
-      <text x="0" y="32" fontSize="28" fontWeight="800" fill="#FF9900" fontFamily="Arial">aws</text>
-    </svg>
+    <div className="w-12 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center font-black text-amber-600 text-sm">
+      AWS
+    </div>
   )
 }
 function GCPLogo() {
   return (
-    <svg viewBox="0 0 80 48" fill="none" className="w-12 h-8">
-      <text x="0" y="32" fontSize="20" fontWeight="700" fill="#4285F4" fontFamily="Arial">GCP</text>
-    </svg>
+    <div className="w-12 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center font-black text-blue-600 text-sm">
+      GCP
+    </div>
   )
 }
 function AzureLogo() {
   return (
-    <svg viewBox="0 0 80 48" fill="none" className="w-12 h-8">
-      <text x="0" y="32" fontSize="16" fontWeight="700" fill="#0078D4" fontFamily="Arial">Azure</text>
-    </svg>
+    <div className="w-12 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center font-black text-sky-600 text-sm">
+      Azure
+    </div>
   )
 }
 
 const logos: Record<string, React.ElementType> = { aws: AWSLogo, gcp: GCPLogo, azure: AzureLogo }
 
 export default function CloudProvidersPage() {
+  const [providers, setProviders] = useState<CloudProvider[]>(cloudProvidersData)
   const [connectModal, setConnectModal] = useState(false)
+  const [manageModal, setManageModal] = useState<CloudProvider | null>(null)
   const [syncing, setSyncing] = useState<string | null>(null)
   const [connectStep, setConnectStep] = useState(0)
+  const [selectedProviderToConnect, setSelectedProviderToConnect] = useState('Azure Blob Storage')
 
   function handleSync(p: CloudProvider) {
     setSyncing(p.id)
     setTimeout(() => {
       setSyncing(null)
-      toast.success(`${p.shortName} synced successfully!`)
-    }, 2000)
+      setProviders(prev => prev.map(item => item.id === p.id ? { ...item, lastSync: 'Just now' } : item))
+      toast.success(`${p.shortName} bucket indexes synchronized!`, {
+        icon: '⚡',
+        style: { background: '#064e3b', color: '#ecfdf5', borderRadius: '12px' }
+      })
+    }, 1500)
   }
 
   function handleConnect() {
     setConnectStep(1)
-    setTimeout(() => setConnectStep(2), 1500)
+    setTimeout(() => {
+      setConnectStep(2)
+      setProviders(prev => prev.map(item =>
+        item.id === 'azure' ? { ...item, status: 'connected', storageUsed: '1.8 TB', monthlyCost: '₹13,900', lastSync: 'Just now', buckets: 4, regions: 2 } : item
+      ))
+      toast.success('Azure Blob Storage connected successfully!')
+    }, 1800)
   }
 
   function closeConnect() {
@@ -57,102 +72,141 @@ export default function CloudProvidersPage() {
     setConnectStep(0)
   }
 
+  const connectedCount = providers.filter(p => p.status === 'connected').length
+
   return (
-    <div className="space-y-6 max-w-[1000px] mx-auto">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+    <div className="space-y-6 max-w-[1200px] mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Cloud Providers</h2>
-          <p className="text-sm text-gray-500 mt-0.5">Manage connected cloud storage accounts.</p>
+          <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">Multi-Cloud Storage Integrations</h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Manage read-only telemetry telemetry connectors across Amazon S3, Google Cloud & Azure Blob.</p>
         </div>
-        <button onClick={() => setConnectModal(true)} className="btn-primary">
+        <button onClick={() => setConnectModal(true)} className="btn-primary self-start">
           <Plus className="w-4 h-4" />
-          Connect Provider
+          Connect New Provider
         </button>
       </div>
 
-      {/* Summary */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: 'Connected', value: '2 of 3', color: 'text-green-600' },
-          { label: 'Total Storage', value: '11.0 TB', color: 'text-blue-600' },
-          { label: 'Total Monthly Cost', value: '₹1,10,600', color: 'text-purple-600' },
-        ].map(s => (
-          <div key={s.label} className="card p-4">
-            <p className="text-xs text-gray-500">{s.label}</p>
-            <p className={clsx('text-xl font-bold mt-0.5', s.color)}>{s.value}</p>
+      {/* Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="card p-4.5 card-glow-emerald flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 text-emerald-600 flex items-center justify-center flex-shrink-0 font-black">
+            <CheckCircle2 className="w-6 h-6" />
           </div>
-        ))}
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Connection Status</p>
+            <p className="text-2xl font-black text-emerald-600 tracking-tight">{connectedCount} of 3 Live</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">Automated 15-min sync schedule</p>
+          </div>
+        </div>
+
+        <div className="card p-4.5 card-glow-blue flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-blue-500/15 text-blue-600 flex items-center justify-center flex-shrink-0">
+            <Database className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Total Monitored Footprint</p>
+            <p className="text-2xl font-black text-blue-600 tracking-tight">12.8 TB</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">27 total bucket containers</p>
+          </div>
+        </div>
+
+        <div className="card p-4.5 card-glow-purple flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-purple-500/15 text-purple-600 flex items-center justify-center flex-shrink-0">
+            <Layers className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Total Multi-Cloud Spend</p>
+            <p className="text-2xl font-black text-purple-600 tracking-tight">₹1,24,500</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">Consolidated monthly billing</p>
+          </div>
+        </div>
       </div>
 
-      {/* Provider cards */}
+      {/* Provider Cards */}
       <div className="space-y-4">
-        {cloudProvidersData.map(p => {
+        {providers.map(p => {
           const Logo = logos[p.icon] ?? AWSLogo
-          const connected = p.status === 'connected'
+          const isConnected = p.status === 'connected'
           return (
-            <div key={p.id} className="card p-6">
-              <div className="flex items-start gap-4 flex-wrap">
-                {/* Logo */}
-                <div className="w-16 h-12 rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-center flex-shrink-0">
+            <div
+              key={p.id}
+              className={clsx(
+                'card p-6 transition-all',
+                isConnected ? 'card-glow-blue' : 'opacity-85'
+              )}
+            >
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                {/* Provider Logo & Info */}
+                <div className="flex items-start gap-4">
                   <Logo />
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <h3 className="text-sm font-semibold text-gray-900">{p.name}</h3>
-                    <span className={clsx(
-                      'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold',
-                      connected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                    )}>
-                      {connected
-                        ? <CheckCircle className="w-3 h-3" />
-                        : <XCircle className="w-3 h-3" />}
-                      {connected ? 'Connected' : 'Not Connected'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-400 mb-3">Last synced: {p.lastSync}</p>
-
-                  {connected && (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {[
-                        { label: 'Storage Used', value: p.storageUsed },
-                        { label: 'Monthly Cost', value: p.monthlyCost },
-                        { label: 'Regions', value: `${p.regions} regions` },
-                        { label: 'Buckets', value: `${p.buckets} buckets` },
-                      ].map(m => (
-                        <div key={m.label} className="bg-gray-50 rounded-lg px-3 py-2">
-                          <p className="text-[10px] text-gray-400">{m.label}</p>
-                          <p className="text-sm font-semibold text-gray-800 mt-0.5">{m.value}</p>
-                        </div>
-                      ))}
+                  <div>
+                    <div className="flex items-center gap-2.5">
+                      <h3 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight">{p.name}</h3>
+                      <span className={clsx(
+                        'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border',
+                        isConnected
+                          ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/20'
+                          : 'bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-800'
+                      )}>
+                        {isConnected ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
+                        {isConnected ? 'Active & Polling' : 'Disconnected'}
+                      </span>
                     </div>
-                  )}
+                    <p className="text-xs text-gray-400 mt-1">
+                      Bucket Telemetry: <span className="font-semibold text-gray-700 dark:text-gray-300">{p.shortName}</span> · Last synchronized: <strong className="text-blue-600 dark:text-blue-400">{p.lastSync}</strong>
+                    </p>
+                  </div>
                 </div>
+
+                {/* Metrics */}
+                {isConnected && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full lg:w-auto">
+                    {[
+                      { label: 'Storage Used', value: p.storageUsed },
+                      { label: 'Monthly Spend', value: p.monthlyCost },
+                      { label: 'Regions', value: `${p.regions} Regions` },
+                      { label: 'Buckets', value: `${p.buckets} Buckets` },
+                    ].map(m => (
+                      <div key={m.label} className="bg-gray-50 dark:bg-gray-800/60 p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 text-center min-w-[100px]">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{m.label}</p>
+                        <p className="text-xs font-black text-gray-900 dark:text-white mt-0.5">{m.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Actions */}
-                <div className="flex gap-2 flex-shrink-0">
-                  {connected ? (
+                <div className="flex items-center gap-2 self-end lg:self-center">
+                  {isConnected ? (
                     <>
-                      <button className="btn-secondary text-xs">
+                      <button
+                        onClick={() => setManageModal(p)}
+                        className="btn-secondary text-xs"
+                      >
                         <Settings className="w-3.5 h-3.5" />
-                        Manage
+                        Manage Buckets
                       </button>
                       <button
                         onClick={() => handleSync(p)}
                         disabled={syncing === p.id}
                         className="btn-primary text-xs"
                       >
-                        {syncing === p.id
-                          ? <LoadingSpinner size={14} className="text-white" />
-                          : <RefreshCw className="w-3.5 h-3.5" />}
+                        <RefreshCw className={clsx('w-3.5 h-3.5', syncing === p.id && 'animate-spin')} />
                         {syncing === p.id ? 'Syncing...' : 'Sync Now'}
                       </button>
                     </>
                   ) : (
-                    <button onClick={() => setConnectModal(true)} className="btn-primary text-xs">
+                    <button
+                      onClick={() => {
+                        setSelectedProviderToConnect('Azure Blob Storage')
+                        setConnectModal(true)
+                      }}
+                      className="btn-primary text-xs"
+                    >
                       <Plus className="w-3.5 h-3.5" />
-                      Connect
+                      Connect Account
                     </button>
                   )}
                 </div>
@@ -162,59 +216,121 @@ export default function CloudProvidersPage() {
         })}
       </div>
 
-      {/* Connect modal */}
+      {/* Connect Modal */}
       <Modal
         open={connectModal}
         onClose={closeConnect}
-        title="Connect Cloud Provider"
+        title="Connect Multi-Cloud Storage Account"
         size="md"
-        footer={connectStep === 0 ? (
-          <>
-            <button onClick={closeConnect} className="btn-secondary">Cancel</button>
-            <button onClick={handleConnect} className="btn-primary">Connect</button>
-          </>
-        ) : connectStep === 2 ? (
-          <button onClick={() => { closeConnect(); toast.success('Azure Blob Storage connected!') }} className="btn-primary w-full justify-center">
-            Done
-          </button>
-        ) : undefined}
+        footer={
+          connectStep === 0 ? (
+            <>
+              <button onClick={closeConnect} className="btn-secondary">
+                Cancel
+              </button>
+              <button onClick={handleConnect} className="btn-primary">
+                Authenticate & Connect
+              </button>
+            </>
+          ) : connectStep === 2 ? (
+            <button onClick={closeConnect} className="btn-emerald w-full justify-center">
+              Done & Return to Providers
+            </button>
+          ) : undefined
+        }
       >
         {connectStep === 0 && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">Enter your Azure Blob Storage credentials to connect.</p>
             <div>
-              <label className="label">Account Name</label>
-              <input className="input" placeholder="mystorageaccount" defaultValue="cloudcut-azure-demo" />
+              <label className="label">Target Cloud Provider</label>
+              <select
+                value={selectedProviderToConnect}
+                onChange={e => setSelectedProviderToConnect(e.target.value)}
+                className="input font-semibold"
+              >
+                <option>Microsoft Azure Blob Storage</option>
+                <option>Amazon Web Services (AWS S3)</option>
+                <option>Google Cloud Storage (GCS)</option>
+                <option>Cloudflare R2 Storage</option>
+              </select>
             </div>
+
             <div>
-              <label className="label">Account Key / SAS Token</label>
-              <input className="input" type="password" placeholder="Enter key or SAS token" defaultValue="demo-key-placeholder" />
+              <label className="label">Storage Account / IAM Role ARN</label>
+              <input className="input font-mono text-xs" defaultValue="arn:aws:iam::8948194:role/CloudCutReadOnlyAudit" />
             </div>
+
             <div>
-              <label className="label">Container Name (optional)</label>
-              <input className="input" placeholder="Leave empty to scan all containers" />
+              <label className="label">Access Key or SAS Token</label>
+              <input className="input font-mono text-xs" type="password" defaultValue="demo-access-key-cloudcut-secure" />
             </div>
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700">
-              <strong>Demo mode:</strong> No real credentials are required. Click Connect to simulate the integration.
+
+            <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl text-blue-800 dark:text-blue-300 text-xs flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 flex-shrink-0 text-blue-600" />
+              <span>Read-only metadata permissions are used. CloudCut never accesses file payloads.</span>
             </div>
           </div>
         )}
+
         {connectStep === 1 && (
-          <div className="flex flex-col items-center py-8 gap-3">
-            <LoadingSpinner size={36} />
-            <p className="text-sm font-medium text-gray-700">Connecting to Azure...</p>
-            <p className="text-xs text-gray-400">Verifying credentials and scanning storage</p>
-          </div>
-        )}
-        {connectStep === 2 && (
-          <div className="text-center py-6">
-            <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <CheckCircle className="w-7 h-7 text-green-600" />
+          <div className="py-8 flex flex-col items-center gap-4">
+            <LoadingSpinner size={42} className="text-blue-600" />
+            <div className="text-center">
+              <h4 className="text-sm font-bold text-gray-900 dark:text-white">Connecting to {selectedProviderToConnect}...</h4>
+              <p className="text-xs text-gray-400 mt-1">Validating IAM permissions & discovering container buckets</p>
             </div>
-            <p className="text-sm font-semibold text-gray-900 mb-1">Azure Connected!</p>
-            <p className="text-xs text-gray-500">Your Azure Blob Storage account has been successfully integrated.</p>
           </div>
         )}
+
+        {connectStep === 2 && (
+          <div className="py-6 text-center space-y-3">
+            <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+            <h4 className="text-base font-extrabold text-gray-900 dark:text-white">Successfully Connected!</h4>
+            <p className="text-xs text-gray-500 max-w-sm mx-auto">
+              <strong>{selectedProviderToConnect}</strong> has been integrated. 4 storage containers have been indexed for cost optimization.
+            </p>
+          </div>
+        )}
+      </Modal>
+
+      {/* Manage Buckets Modal */}
+      <Modal
+        open={!!manageModal}
+        onClose={() => setManageModal(null)}
+        title={`Manage Buckets — ${manageModal?.name}`}
+        size="md"
+        footer={
+          <button onClick={() => setManageModal(null)} className="btn-secondary w-full justify-center">
+            Close Bucket View
+          </button>
+        }
+      >
+        <div className="space-y-3">
+          <p className="text-xs text-gray-500">Connected bucket partitions actively indexed by CloudCut:</p>
+          {[
+            { name: 'prod-media-assets-us-east', size: '4.2 TB', cost: '₹42,000/mo', tier: 'Standard', status: 'Healthy' },
+            { name: 'db-backups-archive-eu-west', size: '2.1 TB', cost: '₹18,500/mo', tier: 'Glacier Deep', status: 'Optimized' },
+            { name: 'cicd-build-artifacts-temp', size: '900 GB', cost: '₹9,000/mo', tier: 'Standard', status: 'Waste Detected' },
+          ].map(b => (
+            <div key={b.name} className="p-3.5 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/60 flex items-center justify-between text-xs">
+              <div>
+                <p className="font-bold text-gray-900 dark:text-white font-mono">{b.name}</p>
+                <p className="text-[11px] text-gray-400 mt-0.5">{b.tier} · {b.size}</p>
+              </div>
+              <div className="text-right">
+                <span className="font-extrabold text-gray-900 dark:text-white">{b.cost}</span>
+                <span className={clsx(
+                  'block text-[10px] font-bold mt-0.5',
+                  b.status === 'Waste Detected' ? 'text-rose-500' : 'text-emerald-500'
+                )}>
+                  {b.status}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </Modal>
     </div>
   )

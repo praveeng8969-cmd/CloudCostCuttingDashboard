@@ -1,17 +1,20 @@
 'use client'
 
 import { useState } from 'react'
-import { User, Bell, Cloud, DollarSign, Palette, Shield, Save, RotateCcw } from 'lucide-react'
+import {
+  User, Bell, Cloud, DollarSign, Palette, Shield, Save,
+  RotateCcw, Check, Sparkles, AlertCircle, Moon, Sun, Lock
+} from 'lucide-react'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
 
 const TABS = [
-  { id: 'account',      label: 'Account',        icon: User },
-  { id: 'notifications', label: 'Notifications',  icon: Bell },
-  { id: 'cloud',        label: 'Cloud Settings',  icon: Cloud },
-  { id: 'budget',       label: 'Budget & Alerts', icon: DollarSign },
-  { id: 'appearance',   label: 'Appearance',      icon: Palette },
-  { id: 'security',     label: 'Security',        icon: Shield },
+  { id: 'account',       label: 'Account Profile',    icon: User },
+  { id: 'notifications', label: 'Alert Channels',      icon: Bell },
+  { id: 'cloud',         label: 'Cloud Polling',      icon: Cloud },
+  { id: 'budget',        label: 'Budget Thresholds',  icon: DollarSign },
+  { id: 'appearance',    label: 'Appearance & Themes', icon: Palette },
+  { id: 'security',      label: 'Security & 2FA',     icon: Shield },
 ]
 
 export default function SettingsPage() {
@@ -19,16 +22,16 @@ export default function SettingsPage() {
   const [form, setForm] = useState({
     name: 'Admin User',
     email: 'admin@cloudcut.demo',
-    company: 'CloudCut Inc.',
+    company: 'Acme Cloud Enterprises',
     currency: 'INR',
     budget: '150000',
     alertThreshold: '80',
-    notifFreq: 'daily',
+    notifFreq: 'realtime',
     syncInterval: '15',
     theme: 'light',
-    twoFA: false,
+    twoFA: true,
     emailNotif: true,
-    slackNotif: false,
+    slackNotif: true,
     budgetAlert: true,
     unusualAlert: true,
   })
@@ -37,225 +40,255 @@ export default function SettingsPage() {
     setForm(prev => ({ ...prev, [k]: v }))
   }
 
+  function handleThemeChange(newTheme: string) {
+    update('theme', newTheme)
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark')
+      toast('Dark theme activated', { icon: '🌙' })
+    } else {
+      document.documentElement.classList.remove('dark')
+      toast('Light theme activated', { icon: '☀️' })
+    }
+  }
+
   function save() {
-    toast.success('Settings saved successfully.')
+    toast.success('Configuration settings saved successfully!', {
+      icon: '💾',
+      style: { background: '#1e293b', color: '#fff', borderRadius: '12px' }
+    })
   }
 
   function reset() {
-    toast('Settings reset to defaults.', { icon: '↩️' })
+    setForm({
+      name: 'Admin User',
+      email: 'admin@cloudcut.demo',
+      company: 'Acme Cloud Enterprises',
+      currency: 'INR',
+      budget: '150000',
+      alertThreshold: '80',
+      notifFreq: 'daily',
+      syncInterval: '15',
+      theme: 'light',
+      twoFA: false,
+      emailNotif: true,
+      slackNotif: false,
+      budgetAlert: true,
+      unusualAlert: true,
+    })
+    document.documentElement.classList.remove('dark')
+    toast('Settings reset to default baseline.', { icon: '🔄' })
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
+      {/* Header */}
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Settings</h2>
-        <p className="text-sm text-gray-500 mt-0.5">Manage your account preferences and configuration.</p>
+        <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">System Configuration & Governance</h2>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Customize notification thresholds, multi-cloud polling intervals, and display preferences.</p>
       </div>
 
-      <div className="flex gap-6">
-        {/* Tab nav */}
-        <div className="w-48 flex-shrink-0 space-y-0.5">
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Navigation Sidebar */}
+        <div className="w-full md:w-56 flex-shrink-0 space-y-1">
           {TABS.map(t => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
               className={clsx(
-                'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left',
+                'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left',
                 tab === t.id
-                  ? 'bg-blue-50 text-blue-700'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               )}
             >
-              <t.icon className={clsx('w-4 h-4', tab === t.id ? 'text-blue-600' : 'text-gray-400')} />
-              {t.label}
+              <t.icon className="w-4 h-4" />
+              <span>{t.label}</span>
             </button>
           ))}
         </div>
 
-        {/* Content */}
-        <div className="flex-1 card p-6 space-y-5">
+        {/* Form Container */}
+        <div className="flex-1 card p-6 space-y-6">
           {tab === 'account' && (
-            <>
-              <h3 className="section-title border-b border-gray-100 pb-3">Account Information</h3>
+            <div className="space-y-4">
+              <h3 className="section-title border-b border-gray-100 dark:border-gray-800 pb-3">User Profile & Organization</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Full Name</label>
-                  <input className="input" value={form.name} onChange={e => update('name', e.target.value)} />
+                  <input className="input font-semibold" value={form.name} onChange={e => update('name', e.target.value)} />
                 </div>
                 <div>
                   <label className="label">Email Address</label>
-                  <input className="input" type="email" value={form.email} onChange={e => update('email', e.target.value)} />
+                  <input className="input font-semibold" type="email" value={form.email} onChange={e => update('email', e.target.value)} />
                 </div>
                 <div>
-                  <label className="label">Company / Organization</label>
-                  <input className="input" value={form.company} onChange={e => update('company', e.target.value)} />
+                  <label className="label">Company / Entity Name</label>
+                  <input className="input font-semibold" value={form.company} onChange={e => update('company', e.target.value)} />
                 </div>
                 <div>
-                  <label className="label">Currency</label>
-                  <select className="input" value={form.currency} onChange={e => update('currency', e.target.value)}>
+                  <label className="label">Currency Display</label>
+                  <select className="input font-semibold" value={form.currency} onChange={e => update('currency', e.target.value)}>
                     <option value="INR">INR (₹) — Indian Rupee</option>
                     <option value="USD">USD ($) — US Dollar</option>
                     <option value="EUR">EUR (€) — Euro</option>
                   </select>
                 </div>
               </div>
-            </>
+            </div>
           )}
 
           {tab === 'notifications' && (
-            <>
-              <h3 className="section-title border-b border-gray-100 pb-3">Notification Preferences</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="label">Notification Frequency</label>
-                  <select className="input max-w-xs" value={form.notifFreq} onChange={e => update('notifFreq', e.target.value)}>
-                    <option value="realtime">Real-time</option>
-                    <option value="hourly">Hourly digest</option>
-                    <option value="daily">Daily digest</option>
-                    <option value="weekly">Weekly summary</option>
-                  </select>
-                </div>
+            <div className="space-y-4">
+              <h3 className="section-title border-b border-gray-100 dark:border-gray-800 pb-3">Alert Delivery Channels</h3>
+              <div className="space-y-3">
                 {[
-                  { key: 'emailNotif', label: 'Email Notifications', desc: 'Receive alerts via email' },
-                  { key: 'slackNotif', label: 'Slack Notifications', desc: 'Send alerts to Slack channel' },
-                  { key: 'budgetAlert', label: 'Budget Alerts', desc: 'Alert when budget threshold is reached' },
-                  { key: 'unusualAlert', label: 'Unusual Activity Alerts', desc: 'Alert on unusual storage spikes' },
+                  { key: 'emailNotif', label: 'Email Digest Alerts', desc: 'Daily PDF summaries sent to admin@cloudcut.demo' },
+                  { key: 'slackNotif', label: 'Slack Webhook Notifications', desc: 'Post storage spikes to #finops-alerts' },
+                  { key: 'budgetAlert', label: 'Budget Threshold Breaches', desc: 'Immediate SMS/Email when spending exceeds 80%' },
+                  { key: 'unusualAlert', label: 'Unusual Ingestion Anomaly Detection', desc: 'AI alert when bucket growth exceeds 2 TB/day' },
                 ].map(n => (
-                  <div key={n.key} className="flex items-center justify-between py-2 border-b border-gray-50">
+                  <div key={n.key} className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-gray-800/60 rounded-xl">
                     <div>
-                      <p className="text-sm font-medium text-gray-800">{n.label}</p>
-                      <p className="text-xs text-gray-400">{n.desc}</p>
+                      <p className="text-xs font-bold text-gray-900 dark:text-white">{n.label}</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">{n.desc}</p>
                     </div>
                     <button
                       onClick={() => update(n.key, !(form as Record<string, boolean | string>)[n.key] as boolean)}
                       className={clsx(
-                        'w-10 h-6 rounded-full transition-colors relative flex-shrink-0',
-                        (form as Record<string, boolean | string>)[n.key] ? 'bg-blue-600' : 'bg-gray-200'
+                        'w-11 h-6 rounded-full transition-colors relative flex-shrink-0',
+                        (form as Record<string, boolean | string>)[n.key] ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-700'
                       )}
                     >
                       <span className={clsx(
                         'w-4 h-4 rounded-full bg-white absolute top-1 transition-transform',
-                        (form as Record<string, boolean | string>)[n.key] ? 'translate-x-5' : 'translate-x-1'
+                        (form as Record<string, boolean | string>)[n.key] ? 'translate-x-6' : 'translate-x-1'
                       )} />
                     </button>
                   </div>
                 ))}
               </div>
-            </>
+            </div>
           )}
 
           {tab === 'cloud' && (
-            <>
-              <h3 className="section-title border-b border-gray-100 pb-3">Cloud Sync Settings</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="label">Cloud Sync Interval</label>
-                  <select className="input max-w-xs" value={form.syncInterval} onChange={e => update('syncInterval', e.target.value)}>
-                    <option value="5">Every 5 minutes</option>
-                    <option value="15">Every 15 minutes</option>
-                    <option value="30">Every 30 minutes</option>
-                    <option value="60">Every hour</option>
-                  </select>
-                  <p className="text-xs text-gray-400 mt-1">How often CloudCut polls your cloud providers for updated data.</p>
-                </div>
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm font-medium text-blue-800">Connected Providers</p>
-                  <p className="text-xs text-blue-600 mt-1">AWS S3 · Google Cloud Storage</p>
-                  <p className="text-xs text-gray-400 mt-0.5">Azure Blob Storage — not connected</p>
-                </div>
+            <div className="space-y-4">
+              <h3 className="section-title border-b border-gray-100 dark:border-gray-800 pb-3">Telemetry Polling Frequency</h3>
+              <div>
+                <label className="label">Cloud Polling Schedule</label>
+                <select className="input max-w-sm font-semibold" value={form.syncInterval} onChange={e => update('syncInterval', e.target.value)}>
+                  <option value="5">Every 5 Minutes (High Precision)</option>
+                  <option value="15">Every 15 Minutes (Recommended)</option>
+                  <option value="30">Every 30 Minutes</option>
+                  <option value="60">Hourly</option>
+                </select>
+                <p className="text-xs text-gray-400 mt-1.5">How frequently CloudCut calls AWS CloudWatch & Azure Monitor telemetry endpoints.</p>
               </div>
-            </>
+
+              <div className="p-4 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20 rounded-2xl">
+                <p className="text-xs font-bold text-blue-700 dark:text-blue-300">Active Polling Connectors</p>
+                <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">AWS S3 · Google Cloud Storage (Azure Blob standby)</p>
+              </div>
+            </div>
           )}
 
           {tab === 'budget' && (
-            <>
-              <h3 className="section-title border-b border-gray-100 pb-3">Budget & Alert Configuration</h3>
+            <div className="space-y-4">
+              <h3 className="section-title border-b border-gray-100 dark:border-gray-800 pb-3">Budget Guardrails & Thresholds</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="label">Monthly Budget (₹)</label>
-                  <input className="input" type="number" value={form.budget} onChange={e => update('budget', e.target.value)} />
-                  <p className="text-xs text-gray-400 mt-1">Current spend: ₹1,24,500 (83% of budget)</p>
+                  <label className="label">Monthly Target Budget (₹)</label>
+                  <input className="input font-mono font-bold" type="number" value={form.budget} onChange={e => update('budget', e.target.value)} />
+                  <p className="text-[11px] text-gray-400 mt-1">Current spend: ₹1,24,500 (<span className="text-amber-600 font-bold">83% utilized</span>)</p>
                 </div>
                 <div>
-                  <label className="label">Alert Threshold (%)</label>
-                  <input className="input" type="number" min="50" max="100" value={form.alertThreshold}
-                    onChange={e => update('alertThreshold', e.target.value)} />
-                  <p className="text-xs text-gray-400 mt-1">Alert when spend exceeds {form.alertThreshold}% of budget</p>
+                  <label className="label">Alert Trigger Threshold (%)</label>
+                  <input className="input font-mono font-bold" type="number" min="50" max="100" value={form.alertThreshold} onChange={e => update('alertThreshold', e.target.value)} />
+                  <p className="text-[11px] text-gray-400 mt-1">Notifications dispatched when spend &gt; {form.alertThreshold}% of ceiling</p>
                 </div>
               </div>
-            </>
+            </div>
           )}
 
           {tab === 'appearance' && (
-            <>
-              <h3 className="section-title border-b border-gray-100 pb-3">Appearance</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="label">Theme</label>
-                  <div className="flex gap-3">
-                    {['light', 'dark', 'system'].map(t => (
-                      <button
-                        key={t}
-                        onClick={() => update('theme', t)}
-                        className={clsx(
-                          'px-4 py-2 rounded-lg border text-sm font-medium capitalize transition-colors',
-                          form.theme === t
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-                        )}
-                      >
-                        {t}
-                      </button>
-                    ))}
-                  </div>
+            <div className="space-y-4">
+              <h3 className="section-title border-b border-gray-100 dark:border-gray-800 pb-3">Theme & UI Personalization</h3>
+              <div>
+                <label className="label">Color Palette Theme</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <button
+                    onClick={() => handleThemeChange('light')}
+                    className={clsx(
+                      'p-4 rounded-2xl border text-center transition-all flex flex-col items-center gap-2',
+                      form.theme === 'light'
+                        ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 font-bold shadow-md'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-600 dark:text-gray-300'
+                    )}
+                  >
+                    <Sun className="w-5 h-5 text-amber-500" />
+                    <span className="text-xs font-extrabold">Executive Light</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleThemeChange('dark')}
+                    className={clsx(
+                      'p-4 rounded-2xl border text-center transition-all flex flex-col items-center gap-2',
+                      form.theme === 'dark'
+                        ? 'border-purple-600 bg-purple-50/50 dark:bg-purple-950/40 text-purple-600 font-bold shadow-md'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-600 dark:text-gray-300'
+                    )}
+                  >
+                    <Moon className="w-5 h-5 text-purple-400" />
+                    <span className="text-xs font-extrabold">Enterprise Dark</span>
+                  </button>
                 </div>
               </div>
-            </>
+            </div>
           )}
 
           {tab === 'security' && (
-            <>
-              <h3 className="section-title border-b border-gray-100 pb-3">Security Settings</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between py-2">
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">Two-Factor Authentication</p>
-                    <p className="text-xs text-gray-400">Add an extra layer of security to your account</p>
-                  </div>
-                  <button
-                    onClick={() => update('twoFA', !form.twoFA)}
-                    className={clsx(
-                      'w-10 h-6 rounded-full transition-colors relative',
-                      form.twoFA ? 'bg-blue-600' : 'bg-gray-200'
-                    )}
-                  >
-                    <span className={clsx(
-                      'w-4 h-4 rounded-full bg-white absolute top-1 transition-transform',
-                      form.twoFA ? 'translate-x-5' : 'translate-x-1'
-                    )} />
-                  </button>
+            <div className="space-y-4">
+              <h3 className="section-title border-b border-gray-100 dark:border-gray-800 pb-3">Authentication & Role Governance</h3>
+              <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-gray-800/60 rounded-xl">
+                <div>
+                  <p className="text-xs font-bold text-gray-900 dark:text-white">Two-Factor Authentication (2FA)</p>
+                  <p className="text-[11px] text-gray-400 mt-0.5">Require OTP confirmation via Google Authenticator or SMS</p>
+                </div>
+                <button
+                  onClick={() => update('twoFA', !form.twoFA)}
+                  className={clsx(
+                    'w-11 h-6 rounded-full transition-colors relative flex-shrink-0',
+                    form.twoFA ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-700'
+                  )}
+                >
+                  <span className={clsx(
+                    'w-4 h-4 rounded-full bg-white absolute top-1 transition-transform',
+                    form.twoFA ? 'translate-x-6' : 'translate-x-1'
+                  )} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div>
+                  <label className="label">Update Security Key</label>
+                  <input className="input font-mono text-xs" type="password" placeholder="••••••••••••" />
                 </div>
                 <div>
-                  <label className="label">Change Password</label>
-                  <input className="input max-w-sm" type="password" placeholder="New password" />
-                </div>
-                <div>
-                  <label className="label">Confirm Password</label>
-                  <input className="input max-w-sm" type="password" placeholder="Confirm new password" />
+                  <label className="label">Confirm Security Key</label>
+                  <input className="input font-mono text-xs" type="password" placeholder="••••••••••••" />
                 </div>
               </div>
-            </>
+            </div>
           )}
 
-          {/* Footer buttons */}
-          <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-            <button onClick={save} className="btn-primary">
-              <Save className="w-4 h-4" />
-              Save Changes
+          {/* Action Buttons */}
+          <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+            <button onClick={reset} className="btn-secondary text-xs">
+              <RotateCcw className="w-3.5 h-3.5" />
+              Reset Defaults
             </button>
-            <button onClick={reset} className="btn-secondary">
-              <RotateCcw className="w-4 h-4" />
-              Reset
+            <button onClick={save} className="btn-primary text-xs">
+              <Save className="w-3.5 h-3.5" />
+              Save Changes
             </button>
           </div>
         </div>
