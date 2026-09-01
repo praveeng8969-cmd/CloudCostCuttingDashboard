@@ -73,14 +73,14 @@ export default function DuplicatesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">Duplicate File Cleaner & Deduplicator</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Detect byte-identical file copies stored across multiple directories and buckets.</p>
+          <h2 className="text-xl font-black text-white tracking-tight">Duplicate File Cleaner & Deduplicator</h2>
+          <p className="text-xs text-slate-300 mt-0.5">Detect byte-identical file copies stored across multiple directories and buckets.</p>
         </div>
         <button
           onClick={resetDemo}
           className="btn-secondary text-xs flex items-center gap-1.5 self-start"
         >
-          <RotateCcw className="w-3.5 h-3.5 text-gray-400" />
+          <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
           Reset Demo Data
         </button>
       </div>
@@ -88,45 +88,45 @@ export default function DuplicatesPage() {
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="card p-4.5 card-glow-amber flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-amber-500/15 text-amber-600 flex items-center justify-center flex-shrink-0">
+          <div className="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center flex-shrink-0 border border-amber-500/30">
             <Copy className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Detected Redundancy</p>
-            <p className="text-2xl font-black text-amber-600 tracking-tight">{fileList.length} Sets</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">1,284 total duplicate objects</p>
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Detected Redundancy</p>
+            <p className="text-2xl font-black text-amber-300 tracking-tight">{fileList.length} Sets</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">1,284 total duplicate objects</p>
           </div>
         </div>
 
         <div className="card p-4.5 card-glow-blue flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-blue-500/15 text-blue-600 flex items-center justify-center flex-shrink-0">
+          <div className="w-11 h-11 rounded-2xl bg-blue-500/20 text-blue-300 flex items-center justify-center flex-shrink-0 border border-blue-500/30">
             <HardDrive className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Recoverable Storage</p>
-            <p className="text-2xl font-black text-blue-600 tracking-tight">284 GB</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">Can be reclaimed with zero data loss</p>
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Recoverable Storage</p>
+            <p className="text-2xl font-black text-blue-400 tracking-tight">284 GB</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Can be reclaimed with zero data loss</p>
           </div>
         </div>
 
         <div className="card p-4.5 card-glow-emerald flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 text-emerald-600 flex items-center justify-center flex-shrink-0">
+          <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
             <DollarSign className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Monthly Recoverable</p>
-            <p className="text-2xl font-black text-emerald-600 tracking-tight">₹{totalRemainingSavings.toLocaleString('en-IN')}</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">₹{(totalRemainingSavings * 12).toLocaleString('en-IN')} annual recovery</p>
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Monthly Recoverable</p>
+            <p className="text-2xl font-black text-emerald-400 tracking-tight">₹{totalRemainingSavings.toLocaleString('en-IN')}</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">₹{(totalRemainingSavings * 12).toLocaleString('en-IN')} annual recovery</p>
           </div>
         </div>
       </div>
 
       {/* Main Table Card */}
       <div className="card overflow-hidden">
-        <div className="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/40 dark:bg-gray-850/40">
+        <div className="p-5 border-b border-slate-800 bg-slate-900/60">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="relative flex-1 min-w-[220px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
                 placeholder="Filter by file name, original path or type..."
@@ -138,8 +138,8 @@ export default function DuplicatesPage() {
 
             <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
               {selected.size > 0 && (
-                <span className="text-xs font-bold text-gray-700 dark:text-gray-200">
-                  {selected.size} selected (<span className="text-emerald-600 font-black">+₹{totalSelectedSavings.toLocaleString('en-IN')}/mo</span>)
+                <span className="text-xs font-bold text-slate-200">
+                  {selected.size} selected (<span className="text-emerald-400 font-black">+₹{totalSelectedSavings.toLocaleString('en-IN')}/mo</span>)
                 </span>
               )}
               <button onClick={selectAll} className="btn-secondary text-xs">
@@ -162,11 +162,11 @@ export default function DuplicatesPage() {
 
         {filtered.length === 0 ? (
           <div className="p-12 text-center">
-            <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
+            <div className="w-14 h-14 bg-emerald-950 text-emerald-400 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto mb-3">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white">All Duplicate Redundancies Cleaned!</h3>
-            <p className="text-xs text-gray-400 mt-1">Zero redundant replicas detected across all connected buckets.</p>
+            <h3 className="text-sm font-bold text-white">All Duplicate Redundancies Cleaned!</h3>
+            <p className="text-xs text-slate-400 mt-1">Zero redundant replicas detected across all connected buckets.</p>
             <button onClick={resetDemo} className="btn-secondary text-xs mt-4">
               Reset Demo Baseline
             </button>
@@ -175,12 +175,12 @@ export default function DuplicatesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-850/50 text-gray-400 font-bold uppercase tracking-wider">
+                <tr className="border-b border-slate-800 bg-slate-900/60 text-slate-400 font-black uppercase tracking-wider">
                   <th className="py-3.5 px-4 w-12 text-center">
-                    <button onClick={selectAll} className="flex items-center justify-center">
+                    <button onClick={selectAll} className="flex items-center justify-center mx-auto">
                       {allSelected
-                        ? <CheckSquare className="w-4 h-4 text-blue-600" />
-                        : <Square className="w-4 h-4 text-gray-300" />}
+                        ? <CheckSquare className="w-4 h-4 text-blue-400" />
+                        : <Square className="w-4 h-4 text-slate-500" />}
                     </button>
                   </th>
                   <th className="text-left py-3.5 px-4">Duplicate File</th>
@@ -192,39 +192,39 @@ export default function DuplicatesPage() {
                   <th className="text-right py-3.5 px-4">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              <tbody className="divide-y divide-slate-800/80">
                 {filtered.map(f => (
                   <tr
                     key={f.id}
                     onClick={() => toggleSelect(f.id)}
                     className={clsx(
                       'cursor-pointer transition-colors group select-none',
-                      selected.has(f.id) ? 'bg-blue-50/60 dark:bg-blue-950/30' : 'hover:bg-gray-50/70 dark:hover:bg-gray-800/40'
+                      selected.has(f.id) ? 'bg-blue-950/40' : 'hover:bg-slate-800/40'
                     )}
                   >
                     <td className="py-3.5 px-4 text-center">
                       {selected.has(f.id)
-                        ? <CheckSquare className="w-4 h-4 text-blue-600 mx-auto" />
-                        : <Square className="w-4 h-4 text-gray-300 mx-auto" />}
+                        ? <CheckSquare className="w-4 h-4 text-blue-400 mx-auto" />
+                        : <Square className="w-4 h-4 text-slate-600 mx-auto" />}
                     </td>
-                    <td className="py-3.5 px-4 font-bold text-gray-900 dark:text-gray-100 max-w-[200px] truncate" title={f.name}>
+                    <td className="py-3.5 px-4 font-bold text-white max-w-[200px] truncate" title={f.name}>
                       {f.name}
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 font-semibold text-gray-600 dark:text-gray-300">
+                      <span className="px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 font-bold text-slate-300">
                         {f.type}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-gray-500 font-mono text-[11px] max-w-[140px] truncate" title={f.original}>
+                    <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px] max-w-[140px] truncate" title={f.original}>
                       {f.original}
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="px-2.5 py-0.5 bg-amber-500/15 text-amber-700 dark:text-amber-400 font-black rounded-full border border-amber-500/20">
+                      <span className="px-2.5 py-0.5 bg-amber-500/20 text-amber-300 font-black rounded-full border border-amber-500/30">
                         {f.copies} copies
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 font-black text-gray-900 dark:text-white">{f.size}</td>
-                    <td className="py-3.5 px-4 font-black text-emerald-600 dark:text-emerald-400 text-xs">
+                    <td className="py-3.5 px-4 font-black text-white">{f.size}</td>
+                    <td className="py-3.5 px-4 font-black text-emerald-400 text-xs">
                       {f.potentialSaving}
                     </td>
                     <td className="py-3.5 px-4 text-right">
@@ -234,7 +234,7 @@ export default function DuplicatesPage() {
                           setSelected(new Set([f.id]))
                           setDeleteModal(true)
                         }}
-                        className="px-2.5 py-1 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 rounded-lg transition-all"
+                        className="px-2.5 py-1 text-xs font-bold text-rose-300 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 rounded-lg transition-all"
                       >
                         Delete
                       </button>
@@ -265,21 +265,21 @@ export default function DuplicatesPage() {
         }
       >
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-amber-800 dark:text-amber-300 text-xs">
-            <AlertTriangle className="w-5 h-5 flex-shrink-0 text-amber-600" />
+          <div className="flex items-center gap-3 p-3 bg-amber-950/40 border border-amber-500/40 rounded-xl text-amber-300 text-xs">
+            <AlertTriangle className="w-5 h-5 flex-shrink-0 text-amber-400" />
             <span>Master copies will remain preserved. Only redundant duplicate replicas will be deleted.</span>
           </div>
 
-          <p className="text-sm text-gray-600 dark:text-gray-300">
+          <p className="text-xs text-slate-300 leading-relaxed">
             You are about to purge <strong>{selected.size} duplicate file set{selected.size > 1 ? 's' : ''}</strong>.
           </p>
 
-          <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs flex justify-between items-center font-bold text-emerald-800 dark:text-emerald-300">
+          <div className="p-3.5 bg-emerald-950/50 border border-emerald-500/40 rounded-xl text-xs flex justify-between items-center font-bold text-emerald-300">
             <span>Estimated Savings Recovered:</span>
-            <span className="text-base text-emerald-600">₹{totalSelectedSavings.toLocaleString('en-IN')} / mo</span>
+            <span className="text-base font-black text-emerald-400">₹{totalSelectedSavings.toLocaleString('en-IN')} / mo</span>
           </div>
 
-          <p className="text-[11px] text-gray-400">
+          <p className="text-[11px] text-slate-400">
             Demo Mode simulation — no destructive cloud API calls will be executed.
           </p>
         </div>

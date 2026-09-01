@@ -44,24 +44,24 @@ export default function StoragePage() {
   function handleFileAction(file: FileRow) {
     if (file.recommendation === 'Delete') {
       setFileList(prev => prev.filter(f => f.id !== file.id))
-      toast.success(`Removed stale file "${file.name}" (freed ${file.size})!`, { icon: '🗑️' })
+      toast.success(`Purged stale file "${file.name}" (freed ${file.size})!`, { icon: '🗑️' })
     } else if (file.recommendation === 'Archive') {
       setFileList(prev => prev.map(f => f.id === file.id ? { ...f, storageClass: 'Archive', recommendation: 'Keep' } : f))
-      toast.success(`Moved "${file.name}" to Deep Glacier Archive! Saved 80% cost.`, { icon: '📦' })
+      toast.success(`Moved "${file.name}" to Deep Glacier Archive (-80% cost)!`, { icon: '📦' })
     } else if (file.recommendation === 'Compress') {
       setFileList(prev => prev.map(f => f.id === file.id ? { ...f, size: '7 GB', recommendation: 'Keep' } : f))
       toast.success(`GZIP compression applied to "${file.name}" (-75% storage)!`, { icon: '🗜️' })
     } else {
-      toast.success(`File "${file.name}" marked verified!`, { icon: '✅' })
+      toast.success(`File "${file.name}" verified!`, { icon: '✅' })
     }
   }
 
   const recColor: Record<string, string> = {
-    Delete: 'bg-rose-500/15 text-rose-700 border-rose-500/30 dark:text-rose-400',
-    Archive: 'bg-indigo-500/15 text-indigo-700 border-indigo-500/30 dark:text-indigo-400',
-    Review: 'bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-400',
-    Compress: 'bg-purple-500/15 text-purple-700 border-purple-500/30 dark:text-purple-400',
-    Keep: 'bg-emerald-500/15 text-emerald-700 border-emerald-500/30 dark:text-emerald-400',
+    Delete: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+    Archive: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
+    Review: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+    Compress: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+    Keep: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
   }
 
   return (
@@ -69,31 +69,31 @@ export default function StoragePage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">Storage Utilization & Waste Inspector</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Inspect object storage buckets, tier distribution, and identify large stale files.</p>
+          <h2 className="text-xl font-black text-white tracking-tight">Storage Utilization & Waste Inspector</h2>
+          <p className="text-xs text-slate-300 mt-0.5">Inspect object storage buckets, tier distribution, and identify large stale files.</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1.5 bg-blue-500/10 text-blue-600 border border-blue-500/20 rounded-xl text-xs font-bold">
+          <span className="px-3 py-1.5 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-xl text-xs font-black">
             Total Monitored: 12.8 TB
           </span>
         </div>
       </div>
 
-      {/* Top Overview Cards with Vibrant Glow */}
+      {/* Top Overview Cards with Colorful Glows */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total Allocated', value: kpiSummary.totalStorage, sub: 'Across 3 Providers', icon: HardDrive, glow: 'card-glow-cyan', color: 'text-cyan-600', bg: 'bg-cyan-500/15' },
-          { label: 'Used Storage', value: kpiSummary.usedStorage, sub: 'Active & Inactive', icon: Database, glow: 'card-glow-purple', color: 'text-purple-600', bg: 'bg-purple-500/15' },
-          { label: 'Available Free', value: kpiSummary.availableStorage, sub: 'Remaining Quota', icon: Archive, glow: 'card-glow-emerald', color: 'text-emerald-600', bg: 'bg-emerald-500/15' },
-          { label: 'Utilization', value: `${kpiSummary.utilizationPercent}%`, sub: 'Above 80% threshold', icon: AlertCircle, glow: 'card-glow-amber', color: 'text-amber-600', bg: 'bg-amber-500/15' },
+          { label: 'Total Allocated', value: kpiSummary.totalStorage, sub: 'Across 3 Providers', icon: HardDrive, glow: 'card-glow-cyan', color: 'text-cyan-400', bg: 'bg-cyan-500/20' },
+          { label: 'Used Storage', value: kpiSummary.usedStorage, sub: 'Active & Inactive', icon: Database, glow: 'card-glow-purple', color: 'text-purple-400', bg: 'bg-purple-500/20' },
+          { label: 'Available Free', value: kpiSummary.availableStorage, sub: 'Remaining Quota', icon: Archive, glow: 'card-glow-emerald', color: 'text-emerald-400', bg: 'bg-emerald-500/20' },
+          { label: 'Utilization', value: `${kpiSummary.utilizationPercent}%`, sub: 'Above 80% threshold', icon: AlertCircle, glow: 'card-glow-amber', color: 'text-amber-400', bg: 'bg-amber-500/20' },
         ].map(c => (
           <div key={c.label} className={clsx('card p-4.5', c.glow)}>
-            <div className={clsx('w-10 h-10 rounded-xl flex items-center justify-center mb-3 shadow-sm', c.bg)}>
+            <div className={clsx('w-10 h-10 rounded-xl flex items-center justify-center mb-3 shadow-sm border border-white/10', c.bg)}>
               <c.icon className={clsx('w-5 h-5', c.color)} />
             </div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">{c.label}</p>
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">{c.label}</p>
             <p className={clsx('text-2xl font-black mt-0.5 tracking-tight', c.color)}>{c.value}</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">{c.sub}</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">{c.sub}</p>
           </div>
         ))}
       </div>
@@ -103,14 +103,14 @@ export default function StoragePage() {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <h3 className="section-title">Storage Utilization Progress</h3>
-            <span className="text-xs font-bold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+            <span className="text-xs font-black text-amber-300 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/30">
               83% Warning
             </span>
           </div>
-          <span className="text-sm font-extrabold text-gray-900 dark:text-white">10.6 TB of 12.8 TB</span>
+          <span className="text-sm font-black text-white">10.6 TB of 12.8 TB</span>
         </div>
         <ProgressBar value={kpiSummary.utilizationPercent} size="lg" color="bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-500" />
-        <div className="flex justify-between mt-2 text-xs font-semibold text-gray-400">
+        <div className="flex justify-between mt-2 text-xs font-bold text-slate-400">
           <span>Used: 10.6 TB (Standard: 6.8 TB, Archive: 2.2 TB, Backups: 1.6 TB)</span>
           <span>Free Headroom: 2.2 TB</span>
         </div>
@@ -122,19 +122,19 @@ export default function StoragePage() {
           <ResponsiveContainer width="100%" height={230}>
             <AreaChart data={storageGrowthData} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
               <defs>
-                <linearGradient id="storageAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4}/>
+                <linearGradient id="storageAreaGrad2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.45}/>
                   <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} opacity={0.6} />
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: '#64748b' }} unit=" TB" axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.07)" vertical={false} />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} unit=" TB" axisLine={false} tickLine={false} />
               <Tooltip
                 formatter={(v: number) => [`${v} TB`, 'Storage']}
-                contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderRadius: '12px', color: '#fff' }}
+                contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', border: '1px solid rgba(139, 92, 246, 0.3)', color: '#fff' }}
               />
-              <Area type="monotone" dataKey="storage" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#storageAreaGrad)" activeDot={{ r: 6 }} />
+              <Area type="monotone" dataKey="storage" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#storageAreaGrad2)" activeDot={{ r: 6 }} />
             </AreaChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -149,7 +149,7 @@ export default function StoragePage() {
                   </Pie>
                   <Tooltip
                     formatter={(v: number) => [`${v} TB`, '']}
-                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderRadius: '12px', color: '#fff' }}
+                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', color: '#fff' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -159,9 +159,9 @@ export default function StoragePage() {
                 <div key={d.name} className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} />
-                    <span className="font-semibold text-gray-700 dark:text-gray-300">{d.name}</span>
+                    <span className="font-semibold text-slate-300">{d.name}</span>
                   </div>
-                  <span className="font-extrabold text-gray-900 dark:text-white">{d.value} TB</span>
+                  <span className="font-black text-white">{d.value} TB</span>
                 </div>
               ))}
             </div>
@@ -171,7 +171,7 @@ export default function StoragePage() {
 
       {/* File Inventory Filterable Table */}
       <div className="card">
-        <div className="p-5 border-b border-gray-100 dark:border-gray-800">
+        <div className="p-5 border-b border-slate-800">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             <div>
               <h3 className="section-title">Object Storage File Inventory</h3>
@@ -185,10 +185,10 @@ export default function StoragePage() {
                   key={t}
                   onClick={() => setFilterType(t)}
                   className={clsx(
-                    'px-3 py-1 rounded-lg text-xs font-bold transition-all',
+                    'px-3 py-1 rounded-xl text-xs font-black transition-all',
                     filterType === t
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
+                      ? 'bg-blue-600 text-white shadow-md border border-blue-400/40'
+                      : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-700/60'
                   )}
                 >
                   {t}
@@ -200,7 +200,7 @@ export default function StoragePage() {
           {/* Search & Dropdown Filters */}
           <div className="flex flex-wrap items-center gap-2.5 mt-4">
             <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search file name, owner or department..."
@@ -213,7 +213,7 @@ export default function StoragePage() {
             <select
               value={filterClass}
               onChange={e => setFilterClass(e.target.value)}
-              className="text-xs font-semibold border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 outline-none"
+              className="text-xs font-bold border border-slate-700 rounded-xl px-3 py-2.5 bg-slate-900 text-slate-200 outline-none"
             >
               <option value="All">All Storage Classes</option>
               {STORAGE_CLASSES.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
@@ -222,7 +222,7 @@ export default function StoragePage() {
             <select
               value={filterRec}
               onChange={e => setFilterRec(e.target.value)}
-              className="text-xs font-semibold border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 outline-none"
+              className="text-xs font-bold border border-slate-700 rounded-xl px-3 py-2.5 bg-slate-900 text-slate-200 outline-none"
             >
               <option value="All">All Recommendations</option>
               {RECOMMENDATIONS.filter(r => r !== 'All').map(r => <option key={r} value={r}>{r}</option>)}
@@ -236,7 +236,7 @@ export default function StoragePage() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-850/50 text-gray-400 font-bold uppercase tracking-wider">
+                <tr className="border-b border-slate-800 bg-slate-900/60 text-slate-400 font-black uppercase tracking-wider">
                   <th className="text-left py-3.5 px-4">File Name</th>
                   <th className="text-left py-3.5 px-4">Type</th>
                   <th className="text-left py-3.5 px-4">Size</th>
@@ -248,28 +248,28 @@ export default function StoragePage() {
                   <th className="text-right py-3.5 px-4">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              <tbody className="divide-y divide-slate-800/80">
                 {filtered.map(f => (
-                  <tr key={f.id} className="hover:bg-blue-50/40 dark:hover:bg-blue-950/20 transition-colors group">
-                    <td className="py-3 px-4 font-bold text-gray-900 dark:text-gray-100 max-w-[220px] truncate" title={f.name}>
+                  <tr key={f.id} className="hover:bg-slate-800/50 transition-colors group">
+                    <td className="py-3 px-4 font-bold text-white max-w-[220px] truncate" title={f.name}>
                       {f.name}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 font-semibold text-gray-600 dark:text-gray-300">
+                      <span className="px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 font-bold text-slate-300">
                         {f.type}
                       </span>
                     </td>
-                    <td className="py-3 px-4 font-black text-gray-900 dark:text-white">{f.size}</td>
-                    <td className="py-3 px-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{f.lastAccessed}</td>
-                    <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{f.owner}</td>
+                    <td className="py-3 px-4 font-black text-white">{f.size}</td>
+                    <td className="py-3 px-4 text-slate-400 whitespace-nowrap">{f.lastAccessed}</td>
+                    <td className="py-3 px-4 text-slate-300">{f.owner}</td>
                     <td className="py-3 px-4">
-                      <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 font-semibold">
+                      <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 font-bold">
                         {f.storageClass}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{f.department}</td>
+                    <td className="py-3 px-4 text-slate-300">{f.department}</td>
                     <td className="py-3 px-4">
-                      <span className={clsx('px-2.5 py-0.5 rounded-full text-[11px] font-extrabold border', recColor[f.recommendation])}>
+                      <span className={clsx('px-2.5 py-0.5 rounded-full text-[11px] font-black border', recColor[f.recommendation])}>
                         {f.recommendation}
                       </span>
                     </td>
@@ -277,12 +277,12 @@ export default function StoragePage() {
                       <button
                         onClick={() => handleFileAction(f)}
                         className={clsx(
-                          'px-2.5 py-1 text-xs font-bold rounded-lg transition-all',
-                          f.recommendation === 'Delete' && 'bg-rose-500 hover:bg-rose-600 text-white shadow-sm',
-                          f.recommendation === 'Archive' && 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm',
-                          f.recommendation === 'Compress' && 'bg-purple-600 hover:bg-purple-700 text-white shadow-sm',
-                          f.recommendation === 'Keep' && 'bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-                          f.recommendation === 'Review' && 'bg-amber-500 hover:bg-amber-600 text-white shadow-sm'
+                          'px-2.5 py-1 text-xs font-black rounded-lg transition-all',
+                          f.recommendation === 'Delete' && 'bg-rose-600 hover:bg-rose-500 text-white shadow-sm',
+                          f.recommendation === 'Archive' && 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm',
+                          f.recommendation === 'Compress' && 'bg-purple-600 hover:bg-purple-500 text-white shadow-sm',
+                          f.recommendation === 'Keep' && 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700',
+                          f.recommendation === 'Review' && 'bg-amber-600 hover:bg-amber-500 text-white shadow-sm'
                         )}
                       >
                         {f.recommendation === 'Delete' ? 'Delete' : f.recommendation === 'Archive' ? 'Archive' : f.recommendation === 'Compress' ? 'Compress' : 'Verify'}
