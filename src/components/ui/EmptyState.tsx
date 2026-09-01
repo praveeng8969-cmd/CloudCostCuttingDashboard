@@ -11,11 +11,11 @@ export default function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-        <Search className="w-5 h-5 text-gray-400" />
+      <div className="w-12 h-12 bg-slate-800/80 border border-slate-700 rounded-full flex items-center justify-center mb-3 shadow-inner">
+        <Search className="w-5 h-5 text-blue-400" />
       </div>
-      <p className="text-sm font-medium text-gray-700">{title}</p>
-      <p className="text-xs text-gray-400 mt-1">{description}</p>
+      <p className="text-sm font-bold text-white">{title}</p>
+      <p className="text-xs text-slate-400 mt-1">{description}</p>
     </div>
   )
 }

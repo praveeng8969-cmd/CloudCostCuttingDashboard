@@ -12,7 +12,7 @@ const TABS = [
   { id: 'account',       label: 'Account Profile',    icon: User },
   { id: 'notifications', label: 'Alert Channels',      icon: Bell },
   { id: 'cloud',         label: 'Cloud Polling',      icon: Cloud },
-  { id: 'budget',        label: 'Budget Thresholds',  icon: DollarSign },
+  { id: 'budget',        label: 'Budget Guardrails',  icon: DollarSign },
   { id: 'appearance',    label: 'Appearance & Themes', icon: Palette },
   { id: 'security',      label: 'Security & 2FA',     icon: Shield },
 ]
@@ -28,7 +28,7 @@ export default function SettingsPage() {
     alertThreshold: '80',
     notifFreq: 'realtime',
     syncInterval: '15',
-    theme: 'light',
+    theme: 'dark',
     twoFA: true,
     emailNotif: true,
     slackNotif: true,
@@ -38,17 +38,6 @@ export default function SettingsPage() {
 
   function update(k: string, v: string | boolean) {
     setForm(prev => ({ ...prev, [k]: v }))
-  }
-
-  function handleThemeChange(newTheme: string) {
-    update('theme', newTheme)
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark')
-      toast('Dark theme activated', { icon: '🌙' })
-    } else {
-      document.documentElement.classList.remove('dark')
-      toast('Light theme activated', { icon: '☀️' })
-    }
   }
 
   function save() {
@@ -68,14 +57,13 @@ export default function SettingsPage() {
       alertThreshold: '80',
       notifFreq: 'daily',
       syncInterval: '15',
-      theme: 'light',
+      theme: 'dark',
       twoFA: false,
       emailNotif: true,
       slackNotif: false,
       budgetAlert: true,
       unusualAlert: true,
     })
-    document.documentElement.classList.remove('dark')
     toast('Settings reset to default baseline.', { icon: '🔄' })
   }
 
@@ -83,8 +71,8 @@ export default function SettingsPage() {
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">System Configuration & Governance</h2>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Customize notification thresholds, multi-cloud polling intervals, and display preferences.</p>
+        <h2 className="text-xl font-black text-white tracking-tight">System Configuration & Governance</h2>
+        <p className="text-xs text-slate-300 mt-0.5">Customize notification thresholds, multi-cloud polling intervals, and display preferences.</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
@@ -97,8 +85,8 @@ export default function SettingsPage() {
               className={clsx(
                 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left',
                 tab === t.id
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25 border border-blue-400/30'
+                  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
               )}
             >
               <t.icon className="w-4 h-4" />
@@ -111,7 +99,7 @@ export default function SettingsPage() {
         <div className="flex-1 card p-6 space-y-6">
           {tab === 'account' && (
             <div className="space-y-4">
-              <h3 className="section-title border-b border-gray-100 dark:border-gray-800 pb-3">User Profile & Organization</h3>
+              <h3 className="section-title border-b border-slate-800 pb-3">User Profile & Organization</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Full Name</label>
@@ -139,7 +127,7 @@ export default function SettingsPage() {
 
           {tab === 'notifications' && (
             <div className="space-y-4">
-              <h3 className="section-title border-b border-gray-100 dark:border-gray-800 pb-3">Alert Delivery Channels</h3>
+              <h3 className="section-title border-b border-slate-800 pb-3">Alert Delivery Channels</h3>
               <div className="space-y-3">
                 {[
                   { key: 'emailNotif', label: 'Email Digest Alerts', desc: 'Daily PDF summaries sent to admin@cloudcut.demo' },
@@ -147,16 +135,16 @@ export default function SettingsPage() {
                   { key: 'budgetAlert', label: 'Budget Threshold Breaches', desc: 'Immediate SMS/Email when spending exceeds 80%' },
                   { key: 'unusualAlert', label: 'Unusual Ingestion Anomaly Detection', desc: 'AI alert when bucket growth exceeds 2 TB/day' },
                 ].map(n => (
-                  <div key={n.key} className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-gray-800/60 rounded-xl">
+                  <div key={n.key} className="flex items-center justify-between p-3.5 bg-slate-900/80 border border-slate-800 rounded-xl">
                     <div>
-                      <p className="text-xs font-bold text-gray-900 dark:text-white">{n.label}</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">{n.desc}</p>
+                      <p className="text-xs font-bold text-white">{n.label}</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{n.desc}</p>
                     </div>
                     <button
                       onClick={() => update(n.key, !(form as Record<string, boolean | string>)[n.key] as boolean)}
                       className={clsx(
                         'w-11 h-6 rounded-full transition-colors relative flex-shrink-0',
-                        (form as Record<string, boolean | string>)[n.key] ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-700'
+                        (form as Record<string, boolean | string>)[n.key] ? 'bg-blue-600' : 'bg-slate-700'
                       )}
                     >
                       <span className={clsx(
@@ -172,7 +160,7 @@ export default function SettingsPage() {
 
           {tab === 'cloud' && (
             <div className="space-y-4">
-              <h3 className="section-title border-b border-gray-100 dark:border-gray-800 pb-3">Telemetry Polling Frequency</h3>
+              <h3 className="section-title border-b border-slate-800 pb-3">Telemetry Polling Frequency</h3>
               <div>
                 <label className="label">Cloud Polling Schedule</label>
                 <select className="input max-w-sm font-semibold" value={form.syncInterval} onChange={e => update('syncInterval', e.target.value)}>
@@ -181,29 +169,29 @@ export default function SettingsPage() {
                   <option value="30">Every 30 Minutes</option>
                   <option value="60">Hourly</option>
                 </select>
-                <p className="text-xs text-gray-400 mt-1.5">How frequently CloudCut calls AWS CloudWatch & Azure Monitor telemetry endpoints.</p>
+                <p className="text-xs text-slate-400 mt-1.5">How frequently CloudCut calls AWS CloudWatch & Azure Monitor telemetry endpoints.</p>
               </div>
 
-              <div className="p-4 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20 rounded-2xl">
-                <p className="text-xs font-bold text-blue-700 dark:text-blue-300">Active Polling Connectors</p>
-                <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">AWS S3 · Google Cloud Storage (Azure Blob standby)</p>
+              <div className="p-4 bg-blue-950/40 border border-blue-500/30 rounded-2xl">
+                <p className="text-xs font-bold text-blue-300">Active Polling Connectors</p>
+                <p className="text-xs text-slate-300 mt-1">AWS S3 · Google Cloud Storage (Azure Blob connected)</p>
               </div>
             </div>
           )}
 
           {tab === 'budget' && (
             <div className="space-y-4">
-              <h3 className="section-title border-b border-gray-100 dark:border-gray-800 pb-3">Budget Guardrails & Thresholds</h3>
+              <h3 className="section-title border-b border-slate-800 pb-3">Budget Guardrails & Thresholds</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Monthly Target Budget (₹)</label>
                   <input className="input font-mono font-bold" type="number" value={form.budget} onChange={e => update('budget', e.target.value)} />
-                  <p className="text-[11px] text-gray-400 mt-1">Current spend: ₹1,24,500 (<span className="text-amber-600 font-bold">83% utilized</span>)</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Current spend: ₹1,24,500 (<span className="text-amber-300 font-bold">83% utilized</span>)</p>
                 </div>
                 <div>
                   <label className="label">Alert Trigger Threshold (%)</label>
                   <input className="input font-mono font-bold" type="number" min="50" max="100" value={form.alertThreshold} onChange={e => update('alertThreshold', e.target.value)} />
-                  <p className="text-[11px] text-gray-400 mt-1">Notifications dispatched when spend &gt; {form.alertThreshold}% of ceiling</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Notifications dispatched when spend &gt; {form.alertThreshold}% of ceiling</p>
                 </div>
               </div>
             </div>
@@ -211,35 +199,15 @@ export default function SettingsPage() {
 
           {tab === 'appearance' && (
             <div className="space-y-4">
-              <h3 className="section-title border-b border-gray-100 dark:border-gray-800 pb-3">Theme & UI Personalization</h3>
+              <h3 className="section-title border-b border-slate-800 pb-3">Theme & UI Personalization</h3>
               <div>
                 <label className="label">Color Palette Theme</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <button
-                    onClick={() => handleThemeChange('light')}
-                    className={clsx(
-                      'p-4 rounded-2xl border text-center transition-all flex flex-col items-center gap-2',
-                      form.theme === 'light'
-                        ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 font-bold shadow-md'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-600 dark:text-gray-300'
-                    )}
-                  >
-                    <Sun className="w-5 h-5 text-amber-500" />
-                    <span className="text-xs font-extrabold">Executive Light</span>
-                  </button>
-
-                  <button
-                    onClick={() => handleThemeChange('dark')}
-                    className={clsx(
-                      'p-4 rounded-2xl border text-center transition-all flex flex-col items-center gap-2',
-                      form.theme === 'dark'
-                        ? 'border-purple-600 bg-purple-50/50 dark:bg-purple-950/40 text-purple-600 font-bold shadow-md'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-600 dark:text-gray-300'
-                    )}
-                  >
-                    <Moon className="w-5 h-5 text-purple-400" />
-                    <span className="text-xs font-extrabold">Enterprise Dark</span>
-                  </button>
+                  <div className="p-4 rounded-2xl border border-blue-500/40 bg-blue-950/40 text-blue-300 text-center flex flex-col items-center gap-2 shadow-lg">
+                    <Moon className="w-5 h-5 text-cyan-300" />
+                    <span className="text-xs font-black text-white">Atmospheric Cloud Dark</span>
+                    <span className="text-[10px] font-bold text-emerald-400">Active System Theme</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -247,17 +215,17 @@ export default function SettingsPage() {
 
           {tab === 'security' && (
             <div className="space-y-4">
-              <h3 className="section-title border-b border-gray-100 dark:border-gray-800 pb-3">Authentication & Role Governance</h3>
-              <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-gray-800/60 rounded-xl">
+              <h3 className="section-title border-b border-slate-800 pb-3">Authentication & Role Governance</h3>
+              <div className="flex items-center justify-between p-3.5 bg-slate-900/80 border border-slate-800 rounded-xl">
                 <div>
-                  <p className="text-xs font-bold text-gray-900 dark:text-white">Two-Factor Authentication (2FA)</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">Require OTP confirmation via Google Authenticator or SMS</p>
+                  <p className="text-xs font-bold text-white">Two-Factor Authentication (2FA)</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Require OTP confirmation via Google Authenticator or SMS</p>
                 </div>
                 <button
                   onClick={() => update('twoFA', !form.twoFA)}
                   className={clsx(
                     'w-11 h-6 rounded-full transition-colors relative flex-shrink-0',
-                    form.twoFA ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-700'
+                    form.twoFA ? 'bg-blue-600' : 'bg-slate-700'
                   )}
                 >
                   <span className={clsx(
@@ -281,7 +249,7 @@ export default function SettingsPage() {
           )}
 
           {/* Action Buttons */}
-          <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+          <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
             <button onClick={reset} className="btn-secondary text-xs">
               <RotateCcw className="w-3.5 h-3.5" />
               Reset Defaults

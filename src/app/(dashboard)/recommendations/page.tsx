@@ -44,13 +44,13 @@ export default function RecommendationsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">Cost Optimization Recommendations</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">High-confidence, automated actions to reduce cloud storage billing without downtime.</p>
+          <h2 className="text-xl font-black text-white tracking-tight">Cost Optimization Recommendations</h2>
+          <p className="text-xs text-slate-300 mt-0.5">High-confidence, automated actions to reduce cloud storage billing without downtime.</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setBatchModal(true)}
-            className="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+            className="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-black rounded-xl shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
           >
             <Sparkles className="w-4 h-4 text-yellow-300" />
             Optimize All ({recs.length})
@@ -68,7 +68,7 @@ export default function RecommendationsPage() {
               <TrendingDown className="w-7 h-7 text-emerald-200" />
             </div>
             <div>
-              <p className="text-emerald-100 text-xs font-bold uppercase tracking-wider">Total Actionable Savings</p>
+              <p className="text-emerald-100 text-xs font-black uppercase tracking-wider">Total Actionable Savings</p>
               <div className="flex items-baseline gap-2 mt-0.5">
                 <span className="text-3xl sm:text-4xl font-black tracking-tight">₹{totalSavingsPerMonth.toLocaleString('en-IN')}</span>
                 <span className="text-sm font-semibold text-emerald-200">/ month</span>
@@ -107,7 +107,7 @@ export default function RecommendationsPage() {
                   style={{ width: `${(r.potentialSavingAmount / totalSavingsPerMonth) * 100}%` }}
                 />
               </div>
-              <span className="text-white font-extrabold w-28 text-right">{r.potentialSaving}</span>
+              <span className="text-white font-black w-28 text-right">{r.potentialSaving}</span>
             </div>
           ))}
         </div>
@@ -145,7 +145,7 @@ export default function RecommendationsPage() {
       >
         {!optimizingAll && !optimizeComplete && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-xs text-slate-300">
               CloudCut will execute all 5 optimization routines concurrently across connected storage buckets:
             </p>
             <div className="space-y-2">
@@ -156,39 +156,39 @@ export default function RecommendationsPage() {
                 { name: '4. GZIP Log Compression', desc: 'Compresses 156 raw server log files', saving: '₹4,100/mo' },
                 { name: '5. Build Cache Purge', desc: 'Cleans 95 GB orphan CI/CD build artifacts', saving: '₹2,000/mo' },
               ].map(item => (
-                <div key={item.name} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl flex items-center justify-between text-xs">
+                <div key={item.name} className="p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between text-xs">
                   <div>
-                    <span className="font-bold text-gray-800 dark:text-gray-200">{item.name}</span>
-                    <p className="text-gray-400 text-[11px]">{item.desc}</p>
+                    <span className="font-bold text-white">{item.name}</span>
+                    <p className="text-slate-400 text-[11px]">{item.desc}</p>
                   </div>
-                  <span className="font-black text-emerald-600 dark:text-emerald-400">{item.saving}</span>
+                  <span className="font-black text-emerald-400">{item.saving}</span>
                 </div>
               ))}
             </div>
-            <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 flex justify-between items-center font-bold">
+            <div className="p-3.5 bg-emerald-950/50 border border-emerald-500/40 rounded-xl text-xs text-emerald-300 flex justify-between items-center font-bold">
               <span>Total Recovered Monthly Spend:</span>
-              <span className="text-base text-emerald-600">₹31,800 / month</span>
+              <span className="text-base font-black text-emerald-400">₹31,800 / month</span>
             </div>
           </div>
         )}
 
         {optimizingAll && (
           <div className="py-8 flex flex-col items-center justify-center gap-4">
-            <LoadingSpinner size={44} className="text-emerald-500" />
+            <LoadingSpinner size={44} className="text-emerald-400" />
             <div className="text-center">
-              <p className="text-sm font-bold text-gray-900 dark:text-white">Deploying Automated Optimization Policies...</p>
-              <p className="text-xs text-gray-400 mt-1">Applying S3 lifecycle rules & deleting byte-identical duplicates</p>
+              <p className="text-sm font-bold text-white">Deploying Automated Optimization Policies...</p>
+              <p className="text-xs text-slate-400 mt-1">Applying S3 lifecycle rules & deleting byte-identical duplicates</p>
             </div>
           </div>
         )}
 
         {optimizeComplete && (
           <div className="py-6 text-center space-y-3">
-            <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center mx-auto text-emerald-600">
+            <div className="w-14 h-14 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/40 flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <h3 className="text-base font-extrabold text-gray-900 dark:text-white">All 5 Policies Successfully Applied!</h3>
-            <p className="text-xs text-gray-500 max-w-sm mx-auto">
+            <h3 className="text-base font-black text-white">All 5 Policies Successfully Applied!</h3>
+            <p className="text-xs text-slate-300 max-w-sm mx-auto">
               Your cloud storage bills will reflect an immediate savings of <strong>₹31,800/mo (₹3,81,600/yr)</strong>.
             </p>
           </div>

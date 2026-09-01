@@ -16,12 +16,12 @@ const iconMap: Record<string, React.ElementType> = {
   BarChart3, FileText, Zap, Copy, TrendingDown, HardDrive
 }
 
-const colorMap: Record<string, { bg: string; icon: string; glow: string }> = {
-  blue:   { bg: 'bg-blue-500/15',   icon: 'text-blue-600',   glow: 'card-glow-blue' },
-  purple: { bg: 'bg-purple-500/15', icon: 'text-purple-600', glow: 'card-glow-purple' },
-  orange: { bg: 'bg-amber-500/15',  icon: 'text-amber-600',  glow: 'card-glow-amber' },
-  red:    { bg: 'bg-rose-500/15',   icon: 'text-rose-600',   glow: 'card-glow-rose' },
-  green:  { bg: 'bg-emerald-500/15', icon: 'text-emerald-600', glow: 'card-glow-emerald' },
+const colorMap: Record<string, { bg: string; icon: string; glow: string; border: string }> = {
+  blue:   { bg: 'bg-blue-500/20',   icon: 'text-blue-400',   glow: 'card-glow-blue', border: 'border-blue-500/30' },
+  purple: { bg: 'bg-purple-500/20', icon: 'text-purple-400', glow: 'card-glow-purple', border: 'border-purple-500/30' },
+  orange: { bg: 'bg-amber-500/20',  icon: 'text-amber-300',  glow: 'card-glow-amber', border: 'border-amber-500/30' },
+  red:    { bg: 'bg-rose-500/20',   icon: 'text-rose-400',   glow: 'card-glow-rose', border: 'border-rose-500/30' },
+  green:  { bg: 'bg-emerald-500/20', icon: 'text-emerald-400', glow: 'card-glow-emerald', border: 'border-emerald-500/30' },
 }
 
 export default function ReportsPage() {
@@ -41,11 +41,14 @@ export default function ReportsPage() {
     setTimeout(() => {
       setGenerating(null)
       setGenDone(true)
-      toast.success(`${report.title} successfully compiled!`)
+      toast.success(`${report.title} successfully compiled!`, {
+        icon: '⚡',
+        style: { background: '#064e3b', color: '#ecfdf5', borderRadius: '12px' }
+      })
     }, 2200)
   }
 
-  // Real client-side CSV download trigger
+  // Client-side CSV download trigger
   function handleDownload(report: Report, format: 'PDF' | 'CSV') {
     if (format === 'CSV') {
       const csvContent = "data:text/csv;charset=utf-8," +
@@ -81,43 +84,43 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">Cloud Audit & Executive Reports</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Export presentation-ready PDF summaries and CSV raw telemetry datasets.</p>
+          <h2 className="text-xl font-black text-white tracking-tight">Cloud Audit & Executive Reports</h2>
+          <p className="text-xs text-slate-300 mt-0.5">Export presentation-ready PDF summaries and CSV raw telemetry datasets.</p>
         </div>
       </div>
 
       {/* Top Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="card p-4.5 card-glow-blue flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-blue-500/15 text-blue-600 flex items-center justify-center flex-shrink-0">
+          <div className="w-11 h-11 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0 border border-blue-500/30">
             <FileText className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Reports Generated</p>
-            <p className="text-2xl font-black text-gray-900 dark:text-white">24 Invoices</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">Updated for FY 2026-27</p>
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Reports Generated</p>
+            <p className="text-2xl font-black text-white">24 Invoices</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Updated for FY 2026-27</p>
           </div>
         </div>
 
         <div className="card p-4.5 card-glow-purple flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-purple-500/15 text-purple-600 flex items-center justify-center flex-shrink-0">
+          <div className="w-11 h-11 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center flex-shrink-0 border border-purple-500/30">
             <Download className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Total Downloads</p>
-            <p className="text-2xl font-black text-gray-900 dark:text-white">68 Exports</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">PDF and CSV format</p>
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Total Downloads</p>
+            <p className="text-2xl font-black text-white">68 Exports</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">PDF and CSV format</p>
           </div>
         </div>
 
         <div className="card p-4.5 card-glow-emerald flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 text-emerald-600 flex items-center justify-center flex-shrink-0">
+          <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
             <Calendar className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Telemetry History</p>
-            <p className="text-2xl font-black text-gray-900 dark:text-white">12 Months</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">Full multi-cloud coverage</p>
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Telemetry History</p>
+            <p className="text-2xl font-black text-white">12 Months</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Full multi-cloud coverage</p>
           </div>
         </div>
       </div>
@@ -134,18 +137,18 @@ export default function ReportsPage() {
             >
               <div>
                 <div className="flex items-start gap-3.5 mb-3.5">
-                  <div className={clsx('w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm', colors.bg)}>
+                  <div className={clsx('w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm border', colors.bg, colors.border)}>
                     <Icon className={clsx('w-5 h-5', colors.icon)} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-extrabold text-gray-900 dark:text-white tracking-tight">{report.title}</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{report.description}</p>
+                    <h3 className="text-sm font-black text-white tracking-tight">{report.title}</h3>
+                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">{report.description}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] font-semibold text-gray-400 bg-gray-50 dark:bg-gray-800/60 p-2.5 rounded-xl mb-4 border border-gray-100 dark:border-gray-800">
-                  <span>Compiled: {report.lastGenerated}</span>
-                  <span className="font-mono text-gray-700 dark:text-gray-300">{report.size}</span>
+                <div className="flex items-center justify-between text-[11px] font-bold text-slate-300 bg-slate-900/80 p-2.5 rounded-xl mb-4 border border-slate-700/80">
+                  <span className="text-slate-400">Compiled: <strong className="text-slate-200">{report.lastGenerated}</strong></span>
+                  <span className="font-mono text-cyan-300 font-black">{report.size}</span>
                 </div>
               </div>
 
@@ -162,14 +165,14 @@ export default function ReportsPage() {
                     onClick={() => handleDownload(report, 'PDF')}
                     className="btn-secondary text-xs py-2"
                   >
-                    <Download className="w-3.5 h-3.5 text-rose-500" />
+                    <Download className="w-3.5 h-3.5 text-rose-400" />
                     PDF Doc
                   </button>
                   <button
                     onClick={() => handleDownload(report, 'CSV')}
                     className="btn-secondary text-xs py-2"
                   >
-                    <Download className="w-3.5 h-3.5 text-emerald-500" />
+                    <Download className="w-3.5 h-3.5 text-emerald-400" />
                     CSV Data
                   </button>
                 </div>
@@ -204,10 +207,10 @@ export default function ReportsPage() {
       >
         {!genDone ? (
           <div className="py-6 flex flex-col items-center gap-4">
-            <LoadingSpinner size={42} className="text-blue-600" />
+            <LoadingSpinner size={42} className="text-blue-400" />
             <div className="text-center">
-              <h4 className="text-sm font-bold text-gray-900 dark:text-white">Compiling {genReport?.title}</h4>
-              <p className="text-xs text-gray-400 mt-1">Aggregating AWS S3, GCP & Azure Blob object metadata</p>
+              <h4 className="text-sm font-bold text-white">Compiling {genReport?.title}</h4>
+              <p className="text-xs text-slate-400 mt-1">Aggregating AWS S3, GCP & Azure Blob object metadata</p>
             </div>
 
             <div className="w-full space-y-2 pt-2">
@@ -216,13 +219,13 @@ export default function ReportsPage() {
                 { step: 2, text: 'Calculating unit cost and pricing curves' },
                 { step: 3, text: 'Rendering charts & formatting tables' },
               ].map(s => (
-                <div key={s.step} className="flex items-center gap-2.5 text-xs text-gray-600 dark:text-gray-300">
+                <div key={s.step} className="flex items-center gap-2.5 text-xs text-slate-300">
                   {reportStep >= s.step ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                   ) : (
-                    <div className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0" />
+                    <div className="w-4 h-4 rounded-full border border-slate-600 flex-shrink-0" />
                   )}
-                  <span className={clsx(reportStep >= s.step ? 'font-bold text-gray-900 dark:text-white' : 'text-gray-400')}>
+                  <span className={clsx(reportStep >= s.step ? 'font-bold text-white' : 'text-slate-500')}>
                     {s.text}
                   </span>
                 </div>
@@ -231,11 +234,11 @@ export default function ReportsPage() {
           </div>
         ) : (
           <div className="py-6 text-center space-y-3">
-            <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center mx-auto">
+            <div className="w-14 h-14 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/40 flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <h4 className="text-base font-extrabold text-gray-900 dark:text-white">{genReport?.title}</h4>
-            <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
+            <h4 className="text-base font-black text-white">{genReport?.title}</h4>
+            <p className="text-xs text-slate-300 max-w-xs mx-auto">
               Your report has been compiled and is ready for immediate download or presentation.
             </p>
           </div>

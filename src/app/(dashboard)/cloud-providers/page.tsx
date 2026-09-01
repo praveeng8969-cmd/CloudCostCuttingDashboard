@@ -14,21 +14,21 @@ import clsx from 'clsx'
 
 function AWSLogo() {
   return (
-    <div className="w-12 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center font-black text-amber-600 text-sm">
+    <div className="w-12 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center font-black text-amber-300 text-sm shadow-sm">
       AWS
     </div>
   )
 }
 function GCPLogo() {
   return (
-    <div className="w-12 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center font-black text-blue-600 text-sm">
+    <div className="w-12 h-10 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center font-black text-blue-300 text-sm shadow-sm">
       GCP
     </div>
   )
 }
 function AzureLogo() {
   return (
-    <div className="w-12 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center font-black text-sky-600 text-sm">
+    <div className="w-12 h-10 rounded-xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center font-black text-sky-300 text-sm shadow-sm">
       Azure
     </div>
   )
@@ -79,8 +79,8 @@ export default function CloudProvidersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">Multi-Cloud Storage Integrations</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Manage read-only telemetry telemetry connectors across Amazon S3, Google Cloud & Azure Blob.</p>
+          <h2 className="text-xl font-black text-white tracking-tight">Multi-Cloud Storage Integrations</h2>
+          <p className="text-xs text-slate-300 mt-0.5">Manage read-only telemetry telemetry connectors across Amazon S3, Google Cloud & Azure Blob.</p>
         </div>
         <button onClick={() => setConnectModal(true)} className="btn-primary self-start">
           <Plus className="w-4 h-4" />
@@ -91,35 +91,35 @@ export default function CloudProvidersPage() {
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="card p-4.5 card-glow-emerald flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 text-emerald-600 flex items-center justify-center flex-shrink-0 font-black">
+          <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 font-black border border-emerald-500/30">
             <CheckCircle2 className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Connection Status</p>
-            <p className="text-2xl font-black text-emerald-600 tracking-tight">{connectedCount} of 3 Live</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">Automated 15-min sync schedule</p>
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Connection Status</p>
+            <p className="text-2xl font-black text-emerald-400 tracking-tight">{connectedCount} of 3 Live</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Automated 15-min sync schedule</p>
           </div>
         </div>
 
         <div className="card p-4.5 card-glow-blue flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-blue-500/15 text-blue-600 flex items-center justify-center flex-shrink-0">
+          <div className="w-11 h-11 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0 border border-blue-500/30">
             <Database className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Total Monitored Footprint</p>
-            <p className="text-2xl font-black text-blue-600 tracking-tight">12.8 TB</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">27 total bucket containers</p>
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Total Monitored Footprint</p>
+            <p className="text-2xl font-black text-blue-400 tracking-tight">12.8 TB</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">27 total bucket containers</p>
           </div>
         </div>
 
         <div className="card p-4.5 card-glow-purple flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-purple-500/15 text-purple-600 flex items-center justify-center flex-shrink-0">
+          <div className="w-11 h-11 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center flex-shrink-0 border border-purple-500/30">
             <Layers className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Total Multi-Cloud Spend</p>
-            <p className="text-2xl font-black text-purple-600 tracking-tight">₹1,24,500</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">Consolidated monthly billing</p>
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Total Multi-Cloud Spend</p>
+            <p className="text-2xl font-black text-purple-400 tracking-tight">₹1,24,500</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Consolidated monthly billing</p>
           </div>
         </div>
       </div>
@@ -143,19 +143,19 @@ export default function CloudProvidersPage() {
                   <Logo />
                   <div>
                     <div className="flex items-center gap-2.5">
-                      <h3 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight">{p.name}</h3>
+                      <h3 className="text-base font-black text-white tracking-tight">{p.name}</h3>
                       <span className={clsx(
-                        'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border',
+                        'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black border',
                         isConnected
-                          ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/20'
-                          : 'bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-800'
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                          : 'bg-slate-800 text-slate-400 border border-slate-700'
                       )}>
                         {isConnected ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
                         {isConnected ? 'Active & Polling' : 'Disconnected'}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">
-                      Bucket Telemetry: <span className="font-semibold text-gray-700 dark:text-gray-300">{p.shortName}</span> · Last synchronized: <strong className="text-blue-600 dark:text-blue-400">{p.lastSync}</strong>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Bucket Telemetry: <span className="font-bold text-slate-200">{p.shortName}</span> · Last synchronized: <strong className="text-blue-400">{p.lastSync}</strong>
                     </p>
                   </div>
                 </div>
@@ -169,9 +169,9 @@ export default function CloudProvidersPage() {
                       { label: 'Regions', value: `${p.regions} Regions` },
                       { label: 'Buckets', value: `${p.buckets} Buckets` },
                     ].map(m => (
-                      <div key={m.label} className="bg-gray-50 dark:bg-gray-800/60 p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 text-center min-w-[100px]">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{m.label}</p>
-                        <p className="text-xs font-black text-gray-900 dark:text-white mt-0.5">{m.value}</p>
+                      <div key={m.label} className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-700/80 text-center min-w-[105px]">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{m.label}</p>
+                        <p className="text-xs font-black text-white mt-0.5">{m.value}</p>
                       </div>
                     ))}
                   </div>
@@ -265,8 +265,8 @@ export default function CloudProvidersPage() {
               <input className="input font-mono text-xs" type="password" defaultValue="demo-access-key-cloudcut-secure" />
             </div>
 
-            <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl text-blue-800 dark:text-blue-300 text-xs flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 flex-shrink-0 text-blue-600" />
+            <div className="p-3 bg-blue-950/40 border border-blue-500/30 rounded-xl text-blue-300 text-xs flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 flex-shrink-0 text-blue-400" />
               <span>Read-only metadata permissions are used. CloudCut never accesses file payloads.</span>
             </div>
           </div>
@@ -274,21 +274,21 @@ export default function CloudProvidersPage() {
 
         {connectStep === 1 && (
           <div className="py-8 flex flex-col items-center gap-4">
-            <LoadingSpinner size={42} className="text-blue-600" />
+            <LoadingSpinner size={42} className="text-blue-400" />
             <div className="text-center">
-              <h4 className="text-sm font-bold text-gray-900 dark:text-white">Connecting to {selectedProviderToConnect}...</h4>
-              <p className="text-xs text-gray-400 mt-1">Validating IAM permissions & discovering container buckets</p>
+              <h4 className="text-sm font-bold text-white">Connecting to {selectedProviderToConnect}...</h4>
+              <p className="text-xs text-slate-400 mt-1">Validating IAM permissions & discovering container buckets</p>
             </div>
           </div>
         )}
 
         {connectStep === 2 && (
           <div className="py-6 text-center space-y-3">
-            <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center mx-auto">
+            <div className="w-14 h-14 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/40 flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <h4 className="text-base font-extrabold text-gray-900 dark:text-white">Successfully Connected!</h4>
-            <p className="text-xs text-gray-500 max-w-sm mx-auto">
+            <h4 className="text-base font-black text-white">Successfully Connected!</h4>
+            <p className="text-xs text-slate-300 max-w-sm mx-auto">
               <strong>{selectedProviderToConnect}</strong> has been integrated. 4 storage containers have been indexed for cost optimization.
             </p>
           </div>
@@ -308,22 +308,22 @@ export default function CloudProvidersPage() {
         }
       >
         <div className="space-y-3">
-          <p className="text-xs text-gray-500">Connected bucket partitions actively indexed by CloudCut:</p>
+          <p className="text-xs text-slate-400">Connected bucket partitions actively indexed by CloudCut:</p>
           {[
             { name: 'prod-media-assets-us-east', size: '4.2 TB', cost: '₹42,000/mo', tier: 'Standard', status: 'Healthy' },
             { name: 'db-backups-archive-eu-west', size: '2.1 TB', cost: '₹18,500/mo', tier: 'Glacier Deep', status: 'Optimized' },
             { name: 'cicd-build-artifacts-temp', size: '900 GB', cost: '₹9,000/mo', tier: 'Standard', status: 'Waste Detected' },
           ].map(b => (
-            <div key={b.name} className="p-3.5 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/60 flex items-center justify-between text-xs">
+            <div key={b.name} className="p-3.5 rounded-xl border border-slate-800 bg-slate-900/80 flex items-center justify-between text-xs">
               <div>
-                <p className="font-bold text-gray-900 dark:text-white font-mono">{b.name}</p>
-                <p className="text-[11px] text-gray-400 mt-0.5">{b.tier} · {b.size}</p>
+                <p className="font-bold text-white font-mono">{b.name}</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">{b.tier} · {b.size}</p>
               </div>
               <div className="text-right">
-                <span className="font-extrabold text-gray-900 dark:text-white">{b.cost}</span>
+                <span className="font-black text-white">{b.cost}</span>
                 <span className={clsx(
                   'block text-[10px] font-bold mt-0.5',
-                  b.status === 'Waste Detected' ? 'text-rose-500' : 'text-emerald-500'
+                  b.status === 'Waste Detected' ? 'text-rose-400' : 'text-emerald-400'
                 )}>
                   {b.status}
                 </span>
