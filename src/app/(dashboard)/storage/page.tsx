@@ -141,17 +141,19 @@ export default function StoragePage() {
 
         <ChartCard title="Storage by Media / Object Category" subtitle="Breakdown by file extension and type">
           <div className="flex flex-col sm:flex-row items-center gap-6">
-            <ResponsiveContainer width={180} height={190}>
-              <PieChart>
-                <Pie data={fileTypeData} cx="50%" cy="50%" innerRadius={50} outerRadius={78} dataKey="value" paddingAngle={3}>
-                  {fileTypeData.map((e, i) => <Cell key={i} fill={e.color} stroke="none" />)}
-                </Pie>
-                <Tooltip
-                  formatter={(v: number) => [`${v} TB`, '']}
-                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderRadius: '12px', color: '#fff' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="w-44 h-44 flex-shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={fileTypeData} cx="50%" cy="50%" innerRadius={48} outerRadius={72} dataKey="value" paddingAngle={3}>
+                    {fileTypeData.map((e, i) => <Cell key={i} fill={e.color} stroke="none" />)}
+                  </Pie>
+                  <Tooltip
+                    formatter={(v: number) => [`${v} TB`, '']}
+                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderRadius: '12px', color: '#fff' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
             <div className="flex-1 w-full space-y-2">
               {fileTypeData.map(d => (
                 <div key={d.name} className="flex items-center justify-between text-xs">

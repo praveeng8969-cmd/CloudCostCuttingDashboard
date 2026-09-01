@@ -282,27 +282,29 @@ export default function DashboardPage() {
         {/* Storage by File Type Donut */}
         <ChartCard title="Storage by File Category" subtitle="12.8 TB distributed by mime-type">
           <div className="flex flex-col sm:flex-row items-center gap-6">
-            <ResponsiveContainer width={200} height={200}>
-              <PieChart>
-                <Pie
-                  data={fileTypeData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={58}
-                  outerRadius={86}
-                  dataKey="value"
-                  paddingAngle={3}
-                >
-                  {fileTypeData.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} stroke="none" />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(v: number) => [`${v} TB`, '']}
-                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderRadius: '12px', color: '#fff' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="w-48 h-48 flex-shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={fileTypeData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={54}
+                    outerRadius={80}
+                    dataKey="value"
+                    paddingAngle={3}
+                  >
+                    {fileTypeData.map((entry, i) => (
+                      <Cell key={i} fill={entry.color} stroke="none" />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(v: number) => [`${v} TB`, '']}
+                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderRadius: '12px', color: '#fff' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
 
             <div className="flex-1 w-full space-y-2.5">
               {fileTypeData.map(d => (

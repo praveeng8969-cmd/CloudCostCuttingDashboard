@@ -202,17 +202,19 @@ export default function CostAnalysisPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <ChartCard title="Cost Share by Storage Class Tier" subtitle="Hot vs Warm vs Archive Tier billing">
           <div className="flex flex-col sm:flex-row items-center gap-6">
-            <ResponsiveContainer width={180} height={200}>
-              <PieChart>
-                <Pie data={costByClassData} cx="50%" cy="50%" innerRadius={52} outerRadius={80} dataKey="cost" paddingAngle={3}>
-                  {costByClassData.map((_, i) => <Cell key={i} fill={CLASS_COLORS[i % CLASS_COLORS.length]} stroke="none" />)}
-                </Pie>
-                <Tooltip
-                  formatter={(v: number) => [`₹${v.toLocaleString('en-IN')}`, '']}
-                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderRadius: '12px', color: '#fff' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="w-44 h-44 flex-shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={costByClassData} cx="50%" cy="50%" innerRadius={48} outerRadius={74} dataKey="cost" paddingAngle={3}>
+                    {costByClassData.map((_, i) => <Cell key={i} fill={CLASS_COLORS[i % CLASS_COLORS.length]} stroke="none" />)}
+                  </Pie>
+                  <Tooltip
+                    formatter={(v: number) => [`₹${v.toLocaleString('en-IN')}`, '']}
+                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderRadius: '12px', color: '#fff' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
             <div className="flex-1 w-full space-y-2">
               {costByClassData.map((d, i) => (
                 <div key={d.class} className="flex items-center justify-between text-xs">
