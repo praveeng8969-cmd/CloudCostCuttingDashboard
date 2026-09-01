@@ -8,8 +8,22 @@ import {
 import { parseCsvFileContent } from '@/lib/services/dataParser'
 import { validateCsvRows } from '@/lib/services/dataValidator'
 import { analyzeStorageDataset } from '@/lib/services/storageAnalyzer'
-import { generateSampleCsvString, SAMPLE_CSV_HEADER } from '@/lib/services/demoDataset'
+import { generateSampleCsvString } from '@/lib/services/demoDataset'
 import toast from 'react-hot-toast'
+
+export type DataSourceType = 'CSV' | 'DEMO' | 'NONE'
+
+const STORAGE_KEY = 'cloudcut_dataset_state_v2'
+
+interface PersistedState {
+  source: 'CSV' | 'DEMO'
+  fileName: string
+  recordCount: number
+  dataset: StorageRecord[]
+  lastAnalyzed: string
+  pricing?: PricingConfig
+  thresholds?: ThresholdConfig
+}
 
 interface StorageDataContextType {
   records: StorageRecord[]
@@ -17,11 +31,13 @@ interface StorageDataContextType {
   analysisResult: StorageAnalysisResult
   pricing: PricingConfig
   thresholds: ThresholdConfig
+  dataSourceType: DataSourceType
   dataSourceName: string
   recordsAnalyzedCount: number
   lastAnalyzedTimestamp: string
   hasData: boolean
   isLoading: boolean
+  isHydrated: boolean
 
   // Actions
   importCsvText: (text: string, sourceName?: string) => { validCount: number; invalidCount: number }
@@ -58,24 +74,74 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
   const [invalidRows, setInvalidRows] = useState<InvalidRow[]>([])
   const [pricing, setPricing] = useState<PricingConfig>(defaultPricing)
   const [thresholds, setThresholds] = useState<ThresholdConfig>(defaultThresholds)
-  const [dataSourceName, setDataSourceName] = useState<string>('Demo Dataset')
-  const [lastAnalyzedTimestamp, setLastAnalyzedTimestamp] = useState<string>('Just now')
+  const [dataSourceType, setDataSourceType] = useState<DataSourceType>('NONE')
+  const [dataSourceName, setDataSourceName] = useState<string>('No Dataset Loaded')
+  const [lastAnalyzedTimestamp, setLastAnalyzedTimestamp] = useState<string>('None')
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isHydrated, setIsHydrated] = useState<boolean>(false)
 
-  // Initialize with realistic demo dataset on initial client load
+  // STEP 1: Check whether a previously uploaded dataset exists in localStorage on startup
   useEffect(() => {
     try {
-      const demoCsv = generateSampleCsvString()
-      const rawRows = parseCsvFileContent(demoCsv)
-      const { validRecords, invalidRows } = validateCsvRows(rawRows, defaultThresholds)
-      setRecords(validRecords)
-      setInvalidRows(invalidRows)
-      setDataSourceName('Demo Cloud Storage Dataset (Built-in)')
-      setLastAnalyzedTimestamp(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+      if (typeof window !== 'undefined') {
+        const raw = localStorage.getItem(STORAGE_KEY)
+        if (raw) {
+          const parsed: PersistedState = JSON.parse(raw)
+          if (parsed && Array.isArray(parsed.dataset) && parsed.dataset.length > 0) {
+            setRecords(parsed.dataset)
+            setDataSourceType(parsed.source || 'CSV')
+            setDataSourceName(parsed.fileName || 'Uploaded Dataset.csv')
+            setLastAnalyzedTimestamp(parsed.lastAnalyzed || 'Restored from local storage')
+            if (parsed.pricing) setPricing(parsed.pricing)
+            if (parsed.thresholds) setThresholds(parsed.thresholds)
+            setIsHydrated(true)
+            return
+          }
+        }
+      }
     } catch (e) {
-      console.error('Failed to load initial demo dataset', e)
+      console.error('Failed to parse persisted dataset from localStorage:', e)
+      try {
+        localStorage.removeItem(STORAGE_KEY)
+      } catch {}
+      toast.error('Saved dataset could not be restored. Please upload the CSV again.')
     }
+    // If no dataset exists or parsing fails: keep empty state
+    setRecords([])
+    setDataSourceType('NONE')
+    setDataSourceName('No Dataset Loaded')
+    setLastAnalyzedTimestamp('None')
+    setIsHydrated(true)
   }, [])
+
+  // Auto-persist dataset whenever records, source, pricing, or thresholds change
+  useEffect(() => {
+    if (!isHydrated) return
+
+    try {
+      if (typeof window !== 'undefined') {
+        if (records.length > 0 && dataSourceType !== 'NONE') {
+          const stateToSave: PersistedState = {
+            source: dataSourceType,
+            fileName: dataSourceName,
+            recordCount: records.length,
+            dataset: records,
+            lastAnalyzed: lastAnalyzedTimestamp,
+            pricing,
+            thresholds
+          }
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave))
+        } else {
+          localStorage.removeItem(STORAGE_KEY)
+        }
+      }
+    } catch (e: any) {
+      console.error('Failed to save dataset to localStorage:', e)
+      if (e?.name === 'QuotaExceededError' || e?.code === 22) {
+        toast.error('Dataset is too large to persist in browser storage. Please upload it again after refresh.')
+      }
+    }
+  }, [records, dataSourceType, dataSourceName, lastAnalyzedTimestamp, pricing, thresholds, isHydrated])
 
   // Single source of truth calculation engine
   const analysisResult = useMemo(() => {
@@ -88,16 +154,18 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
     const rawRows = parseCsvFileContent(text)
     const { validRecords, invalidRows: errors } = validateCsvRows(rawRows, thresholds)
 
+    const timestamp = new Date().toISOString()
     setRecords(validRecords)
     setInvalidRows(errors)
+    setDataSourceType('CSV')
     setDataSourceName(sourceName)
-    setLastAnalyzedTimestamp(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+    setLastAnalyzedTimestamp(timestamp)
     setIsLoading(false)
 
     return { validCount: validRecords.length, invalidCount: errors.length }
   }, [thresholds])
 
-  // Multi-CSV files import (combining and deduplicating rows)
+  // Multi-CSV files import (replaces old dataset, combines and deduplicates new rows)
   const importMultipleCsvFiles = useCallback((files: { name: string; content: string }[]) => {
     setIsLoading(true)
     let allRawRows: Record<string, string>[] = []
@@ -108,15 +176,16 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
     })
 
     const { validRecords, invalidRows: errors } = validateCsvRows(allRawRows, thresholds)
-    setRecords(validRecords)
-    setInvalidRows(errors)
-    
+    const timestamp = new Date().toISOString()
     const label = files.length === 1
       ? files[0].name
       : `${files.length} Combined Datasets (${files.map(f => f.name).join(', ')})`
-      
+
+    setRecords(validRecords)
+    setInvalidRows(errors)
+    setDataSourceType('CSV')
     setDataSourceName(label)
-    setLastAnalyzedTimestamp(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+    setLastAnalyzedTimestamp(timestamp)
     setIsLoading(false)
 
     return { validCount: validRecords.length, invalidCount: errors.length }
@@ -129,11 +198,15 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
       const demoCsv = generateSampleCsvString()
       const rawRows = parseCsvFileContent(demoCsv)
       const { validRecords, invalidRows: errors } = validateCsvRows(rawRows, thresholds)
+      const timestamp = new Date().toISOString()
+
       setRecords(validRecords)
       setInvalidRows(errors)
-      setDataSourceName('Demo Cloud Storage Dataset (Built-in)')
-      setLastAnalyzedTimestamp(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+      setDataSourceType('DEMO')
+      setDataSourceName('Built-in Demo Dataset')
+      setLastAnalyzedTimestamp(timestamp)
       setIsLoading(false)
+
       toast.success('Loaded sample cloud storage dataset! 41 objects analyzed.', {
         icon: '📊',
         style: { background: '#064e3b', color: '#ecfdf5', borderRadius: '12px' }
@@ -141,12 +214,20 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
     }, 400)
   }, [thresholds])
 
-  // Reset to empty state
+  // Reset to empty state (explicitly cleans localStorage)
   const resetDataset = useCallback(() => {
     setRecords([])
     setInvalidRows([])
+    setDataSourceType('NONE')
     setDataSourceName('No Dataset Loaded')
     setLastAnalyzedTimestamp('None')
+
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(STORAGE_KEY)
+      }
+    } catch {}
+
     toast('Dataset removed. Dashboard reset to empty state.', { icon: '🧹' })
   }, [])
 
@@ -213,11 +294,13 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
         analysisResult,
         pricing,
         thresholds,
+        dataSourceType,
         dataSourceName,
         recordsAnalyzedCount: records.length,
         lastAnalyzedTimestamp,
-        hasData: records.length > 0,
+        hasData: records.length > 0 && dataSourceType !== 'NONE',
         isLoading,
+        isHydrated,
         importCsvText,
         importMultipleCsvFiles,
         loadDemoData,

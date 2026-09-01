@@ -4,7 +4,8 @@ import React, { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   UploadCloud, FileText, Download, CheckCircle2, AlertTriangle,
-  Trash2, ArrowRight, Sparkles, Layers, RefreshCw, X, FileSpreadsheet
+  Trash2, ArrowRight, Sparkles, Layers, RefreshCw, X, FileSpreadsheet,
+  FolderOpen
 } from 'lucide-react'
 import PageHeader from '@/components/layout/PageHeader'
 import { useStorageData } from '@/context/StorageDataContext'
@@ -28,6 +29,7 @@ export default function ImportPage() {
     downloadInvalidRowsCsv,
     invalidRows,
     recordsAnalyzedCount,
+    dataSourceName,
     hasData
   } = useStorageData()
 
@@ -38,7 +40,6 @@ export default function ImportPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   function handleFileSelection(selectedFiles: FileList | File[]) {
-    const newItems: UploadedFileItem[] = []
     const fileArray = Array.from(selectedFiles)
 
     fileArray.forEach(f => {
@@ -91,15 +92,22 @@ export default function ImportPage() {
       setImportStats({ valid: validCount, invalid: invalidCount })
 
       if (validCount > 0) {
-        toast.success(`Processed ${validCount.toLocaleString()} storage records!`, {
+        toast.success(`Processed ${validCount.toLocaleString()} storage records! Saved locally.`, {
           icon: '✨',
-          duration: 5000,
+          duration: 4000,
           style: { background: '#064e3b', color: '#ecfdf5', borderRadius: '12px' }
         })
+        // Immediately navigate to dynamic dashboard
+        router.push('/dashboard')
       } else {
         toast.error('No valid records found in the provided CSV file(s). Check required columns.')
       }
-    }, 800)
+    }, 600)
+  }
+
+  function handleLoadDemo() {
+    loadDemoData()
+    router.push('/dashboard')
   }
 
   return (
@@ -107,8 +115,8 @@ export default function ImportPage() {
       {/* Page Header */}
       <PageHeader
         title="Import Cloud Storage Data"
-        subtitle="Upload one or multiple CSV files containing object metadata to dynamically calculate waste and savings."
-        badge="CSV Importer"
+        subtitle="Upload a CSV containing your cloud storage usage data."
+        badge={hasData ? `${recordsAnalyzedCount} Active Records` : 'No Dataset Loaded'}
         actions={
           <div className="flex items-center gap-2 flex-wrap">
             <button
@@ -119,18 +127,42 @@ export default function ImportPage() {
               Download Sample CSV
             </button>
             <button
-              onClick={() => {
-                loadDemoData()
-                router.push('/dashboard')
-              }}
+              onClick={handleLoadDemo}
               className="btn-yellow text-xs flex items-center gap-1.5 font-black"
             >
               <Sparkles className="w-3.5 h-3.5 text-gray-950" />
-              Load Built-in Demo Dataset
+              Load Demo Dataset
             </button>
           </div>
         }
       />
+
+      {/* Dataset Status Banner if Not Loaded */}
+      {!hasData && (
+        <div className="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-300">
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0" />
+            <div>
+              <p className="font-bold text-white">No Dataset Loaded</p>
+              <p className="text-[11px] text-amber-200/80">Upload a CSV dataset to calculate your cloud storage metrics and savings.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors"
+            >
+              Browse Files
+            </button>
+            <button
+              onClick={handleLoadDemo}
+              className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-gray-950 rounded-xl font-black transition-colors"
+            >
+              Load Demo Dataset
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Drag-and-Drop Card */}
       <div className="card p-6 md:p-8 w-full min-w-0 card-glow-blue">
@@ -164,12 +196,13 @@ export default function ImportPage() {
               Drag & Drop your Cloud Storage CSV file(s) here
             </h3>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-md mx-auto">
-              Supports single or multi-file uploads. We merge all rows, normalize column headers, and deduplicate identical records automatically.
+              Supports single or multi-file uploads. Merges rows, normalizes column headers, and saves locally to your browser.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="px-3.5 py-1.5 bg-blue-600 text-white rounded-xl text-xs font-black shadow-md hover:bg-blue-500 transition-colors">
+            <span className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-black shadow-md hover:bg-blue-500 transition-colors flex items-center gap-2">
+              <FolderOpen className="w-4 h-4" />
               Browse Files from Computer
             </span>
           </div>
@@ -225,12 +258,12 @@ export default function ImportPage() {
               >
                 {processing ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <RefreshCw className="w-4 h-4 animate-spin mr-1.5" />
                     Parsing & Analyzing Storage...
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4" />
+                    <Sparkles className="w-4 h-4 mr-1.5" />
                     Process & Analyze Dataset ({files.length} {files.length === 1 ? 'file' : 'files'})
                   </>
                 )}
@@ -316,8 +349,8 @@ export default function ImportPage() {
             </thead>
             <tbody className="divide-y divide-slate-800 text-slate-300 font-mono">
               <tr>
-                <td className="py-2.5 px-3 text-white">backup_2024.zip</td>
-                <td className="py-2.5 px-3 text-cyan-300">50.0</td>
+                <td className="py-2.5 px-3 text-white">backup_2023.zip</td>
+                <td className="py-2.5 px-3 text-cyan-300">50</td>
                 <td className="py-2.5 px-3">2025-07-01</td>
                 <td className="py-2.5 px-3">STANDARD</td>
                 <td className="py-2.5 px-3">Backup</td>
@@ -325,19 +358,19 @@ export default function ImportPage() {
               </tr>
               <tr>
                 <td className="py-2.5 px-3 text-white">report_final.pdf</td>
-                <td className="py-2.5 px-3 text-cyan-300">2.4</td>
+                <td className="py-2.5 px-3 text-cyan-300">2</td>
                 <td className="py-2.5 px-3">2026-08-20</td>
                 <td className="py-2.5 px-3">STANDARD</td>
                 <td className="py-2.5 px-3">Document</td>
-                <td className="py-2.5 px-3">reports-vault</td>
+                <td className="py-2.5 px-3">reports</td>
               </tr>
               <tr>
-                <td className="py-2.5 px-3 text-white">old_server_logs.tar</td>
-                <td className="py-2.5 px-3 text-cyan-300">35.0</td>
+                <td className="py-2.5 px-3 text-white">old_logs.zip</td>
+                <td className="py-2.5 px-3 text-cyan-300">30</td>
                 <td className="py-2.5 px-3">2025-01-10</td>
-                <td className="py-2.5 px-3">STANDARD_IA</td>
+                <td className="py-2.5 px-3">STANDARD</td>
                 <td className="py-2.5 px-3">Logs</td>
-                <td className="py-2.5 px-3">cluster-logs</td>
+                <td className="py-2.5 px-3">logs-bucket</td>
               </tr>
             </tbody>
           </table>
