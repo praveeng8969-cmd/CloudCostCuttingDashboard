@@ -5,6 +5,7 @@ import { Search, Trash2, CheckSquare, Square, Copy, HardDrive, DollarSign, Check
 import toast from 'react-hot-toast'
 import Modal from '@/components/ui/Modal'
 import EmptyState from '@/components/ui/EmptyState'
+import PageHeader from '@/components/layout/PageHeader'
 import { duplicateFilesData } from '@/lib/mockData'
 import type { DuplicateFile } from '@/types'
 import clsx from 'clsx'
@@ -69,63 +70,64 @@ export default function DuplicatesPage() {
   const allSelected = filtered.length > 0 && selected.size === filtered.length
 
   return (
-    <div className="space-y-6 max-w-[1250px] mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-black text-white tracking-tight">Duplicate File Cleaner & Deduplicator</h2>
-          <p className="text-xs text-slate-300 mt-0.5">Detect byte-identical file copies stored across multiple directories and buckets.</p>
-        </div>
-        <button
-          onClick={resetDemo}
-          className="btn-secondary text-xs flex items-center gap-1.5 self-start"
-        >
-          <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
-          Reset Demo Data
-        </button>
-      </div>
+    <div className="space-y-6 w-full min-w-0">
+      {/* Standardized Page Header */}
+      <PageHeader
+        title="Duplicate File Cleaner & Deduplicator"
+        subtitle="Detect byte-identical file copies stored across multiple directories and buckets."
+        badge={`${fileList.length} Duplicate Sets`}
+        actions={
+          <button
+            onClick={resetDemo}
+            className="btn-secondary text-xs flex items-center gap-1.5 flex-shrink-0"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
+            Reset Demo Data
+          </button>
+        }
+      />
 
       {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="card p-4.5 card-glow-amber flex items-center gap-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full min-w-0">
+        <div className="card p-5 card-glow-amber flex items-center gap-3.5 min-w-0">
           <div className="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center flex-shrink-0 border border-amber-500/30">
             <Copy className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Detected Redundancy</p>
-            <p className="text-2xl font-black text-amber-300 tracking-tight">{fileList.length} Sets</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">1,284 total duplicate objects</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Detected Redundancy</p>
+            <p className="text-2xl font-black text-amber-300 tracking-tight truncate">{fileList.length} Sets</p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">1,284 total duplicate objects</p>
           </div>
         </div>
 
-        <div className="card p-4.5 card-glow-blue flex items-center gap-3.5">
+        <div className="card p-5 card-glow-blue flex items-center gap-3.5 min-w-0">
           <div className="w-11 h-11 rounded-2xl bg-blue-500/20 text-blue-300 flex items-center justify-center flex-shrink-0 border border-blue-500/30">
             <HardDrive className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Recoverable Storage</p>
-            <p className="text-2xl font-black text-blue-400 tracking-tight">284 GB</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Can be reclaimed with zero data loss</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Recoverable Storage</p>
+            <p className="text-2xl font-black text-blue-400 tracking-tight truncate">284 GB</p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">Can be reclaimed with zero data loss</p>
           </div>
         </div>
 
-        <div className="card p-4.5 card-glow-emerald flex items-center gap-3.5">
+        <div className="card p-5 card-glow-emerald flex items-center gap-3.5 min-w-0">
           <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
             <DollarSign className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Monthly Recoverable</p>
-            <p className="text-2xl font-black text-emerald-400 tracking-tight">₹{totalRemainingSavings.toLocaleString('en-IN')}</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">₹{(totalRemainingSavings * 12).toLocaleString('en-IN')} annual recovery</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Monthly Recoverable</p>
+            <p className="text-2xl font-black text-emerald-400 tracking-tight truncate">₹{totalRemainingSavings.toLocaleString('en-IN')}</p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">₹{(totalRemainingSavings * 12).toLocaleString('en-IN')} annual recovery</p>
           </div>
         </div>
       </div>
 
       {/* Main Table Card */}
-      <div className="card overflow-hidden">
+      <div className="card overflow-hidden w-full min-w-0">
         <div className="p-5 border-b border-slate-800 bg-slate-900/60">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="relative flex-1 min-w-[220px]">
+            <div className="relative flex-1 min-w-[220px] w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
@@ -136,20 +138,20 @@ export default function DuplicatesPage() {
               />
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end flex-shrink-0">
               {selected.size > 0 && (
-                <span className="text-xs font-bold text-slate-200">
+                <span className="text-xs font-bold text-slate-200 truncate">
                   {selected.size} selected (<span className="text-emerald-400 font-black">+₹{totalSelectedSavings.toLocaleString('en-IN')}/mo</span>)
                 </span>
               )}
-              <button onClick={selectAll} className="btn-secondary text-xs">
+              <button onClick={selectAll} className="btn-secondary text-xs flex-shrink-0">
                 {allSelected ? 'Deselect All' : 'Select All'}
               </button>
               <button
                 onClick={() => selected.size > 0 && setDeleteModal(true)}
                 disabled={selected.size === 0}
                 className={clsx(
-                  'btn-danger text-xs',
+                  'btn-danger text-xs flex-shrink-0',
                   selected.size === 0 && 'opacity-40 cursor-not-allowed hover:scale-100'
                 )}
               >
@@ -172,8 +174,8 @@ export default function DuplicatesPage() {
             </button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full text-xs min-w-[700px]">
               <thead>
                 <tr className="border-b border-slate-800 bg-slate-900/60 text-slate-400 font-black uppercase tracking-wider">
                   <th className="py-3.5 px-4 w-12 text-center">

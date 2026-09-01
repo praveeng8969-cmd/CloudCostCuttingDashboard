@@ -8,6 +8,7 @@ import {
 import toast from 'react-hot-toast'
 import Modal from '@/components/ui/Modal'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import PageHeader from '@/components/layout/PageHeader'
 import { reportsData } from '@/lib/mockData'
 import type { Report } from '@/types'
 import clsx from 'clsx'
@@ -80,60 +81,59 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-[1200px] mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-black text-white tracking-tight">Cloud Audit & Executive Reports</h2>
-          <p className="text-xs text-slate-300 mt-0.5">Export presentation-ready PDF summaries and CSV raw telemetry datasets.</p>
-        </div>
-      </div>
+    <div className="space-y-6 w-full min-w-0">
+      {/* Standardized Page Header */}
+      <PageHeader
+        title="Cloud Audit & Executive Reports"
+        subtitle="Export presentation-ready PDF summaries and CSV raw telemetry datasets."
+        badge="24 Invoices Ready"
+      />
 
       {/* Top Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="card p-4.5 card-glow-blue flex items-center gap-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full min-w-0">
+        <div className="card p-5 card-glow-blue flex items-center gap-3.5 min-w-0">
           <div className="w-11 h-11 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0 border border-blue-500/30">
             <FileText className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Reports Generated</p>
-            <p className="text-2xl font-black text-white">24 Invoices</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Updated for FY 2026-27</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Reports Generated</p>
+            <p className="text-2xl font-black text-white truncate">24 Invoices</p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">Updated for FY 2026-27</p>
           </div>
         </div>
 
-        <div className="card p-4.5 card-glow-purple flex items-center gap-3.5">
+        <div className="card p-5 card-glow-purple flex items-center gap-3.5 min-w-0">
           <div className="w-11 h-11 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center flex-shrink-0 border border-purple-500/30">
             <Download className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Total Downloads</p>
-            <p className="text-2xl font-black text-white">68 Exports</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">PDF and CSV format</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Total Downloads</p>
+            <p className="text-2xl font-black text-white truncate">68 Exports</p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">PDF and CSV format</p>
           </div>
         </div>
 
-        <div className="card p-4.5 card-glow-emerald flex items-center gap-3.5">
+        <div className="card p-5 card-glow-emerald flex items-center gap-3.5 min-w-0">
           <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
             <Calendar className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Telemetry History</p>
-            <p className="text-2xl font-black text-white">12 Months</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Full multi-cloud coverage</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 truncate">Telemetry History</p>
+            <p className="text-2xl font-black text-white truncate">12 Months</p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">Full multi-cloud coverage</p>
           </div>
         </div>
       </div>
 
       {/* Reports Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full min-w-0">
         {reportsData.map(report => {
           const Icon = iconMap[report.icon] ?? FileText
           const colors = colorMap[report.color] ?? colorMap.blue
           return (
             <div
               key={report.id}
-              className={clsx('card p-5.5 flex flex-col justify-between hover:scale-[1.02] transition-all', colors.glow)}
+              className={clsx('card p-6 flex flex-col justify-between hover:scale-[1.02] transition-all min-w-0', colors.glow)}
             >
               <div>
                 <div className="flex items-start gap-3.5 mb-3.5">
@@ -141,14 +141,14 @@ export default function ReportsPage() {
                     <Icon className={clsx('w-5 h-5', colors.icon)} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-black text-white tracking-tight">{report.title}</h3>
+                    <h3 className="text-sm font-black text-white tracking-tight truncate">{report.title}</h3>
                     <p className="text-xs text-slate-300 mt-1 leading-relaxed">{report.description}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between text-[11px] font-bold text-slate-300 bg-slate-900/80 p-2.5 rounded-xl mb-4 border border-slate-700/80">
-                  <span className="text-slate-400">Compiled: <strong className="text-slate-200">{report.lastGenerated}</strong></span>
-                  <span className="font-mono text-cyan-300 font-black">{report.size}</span>
+                  <span className="text-slate-400 truncate">Compiled: <strong className="text-slate-200">{report.lastGenerated}</strong></span>
+                  <span className="font-mono text-cyan-300 font-black flex-shrink-0 ml-2">{report.size}</span>
                 </div>
               </div>
 

@@ -6,6 +6,7 @@ import {
   RotateCcw, Check, Sparkles, AlertCircle, Moon, Sun, Lock
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import PageHeader from '@/components/layout/PageHeader'
 import clsx from 'clsx'
 
 const TABS = [
@@ -68,15 +69,22 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-xl font-black text-white tracking-tight">System Configuration & Governance</h2>
-        <p className="text-xs text-slate-300 mt-0.5">Customize notification thresholds, multi-cloud polling intervals, and display preferences.</p>
-      </div>
+    <div className="space-y-6 w-full min-w-0">
+      {/* Standardized Page Header */}
+      <PageHeader
+        title="System Configuration & Governance"
+        subtitle="Customize notification thresholds, multi-cloud polling intervals, and display preferences."
+        badge="Enterprise Active"
+        actions={
+          <button onClick={save} className="btn-primary flex-shrink-0">
+            <Save className="w-3.5 h-3.5" />
+            Save Changes
+          </button>
+        }
+      />
 
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Navigation Sidebar */}
+      <div className="flex flex-col md:flex-row gap-6 w-full min-w-0">
+        {/* Navigation Sidebar Tabs */}
         <div className="w-full md:w-56 flex-shrink-0 space-y-1">
           {TABS.map(t => (
             <button
@@ -95,8 +103,8 @@ export default function SettingsPage() {
           ))}
         </div>
 
-        {/* Form Container */}
-        <div className="flex-1 card p-6 space-y-6">
+        {/* Form Container Card */}
+        <div className="flex-1 card p-6 space-y-6 min-w-0">
           {tab === 'account' && (
             <div className="space-y-4">
               <h3 className="section-title border-b border-slate-800 pb-3">User Profile & Organization</h3>
@@ -135,10 +143,10 @@ export default function SettingsPage() {
                   { key: 'budgetAlert', label: 'Budget Threshold Breaches', desc: 'Immediate SMS/Email when spending exceeds 80%' },
                   { key: 'unusualAlert', label: 'Unusual Ingestion Anomaly Detection', desc: 'AI alert when bucket growth exceeds 2 TB/day' },
                 ].map(n => (
-                  <div key={n.key} className="flex items-center justify-between p-3.5 bg-slate-900/80 border border-slate-800 rounded-xl">
-                    <div>
-                      <p className="text-xs font-bold text-white">{n.label}</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">{n.desc}</p>
+                  <div key={n.key} className="flex items-center justify-between p-3.5 bg-slate-900/80 border border-slate-800 rounded-xl min-w-0 gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-white truncate">{n.label}</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5 truncate">{n.desc}</p>
                     </div>
                     <button
                       onClick={() => update(n.key, !(form as Record<string, boolean | string>)[n.key] as boolean)}
@@ -202,7 +210,7 @@ export default function SettingsPage() {
               <h3 className="section-title border-b border-slate-800 pb-3">Theme & UI Personalization</h3>
               <div>
                 <label className="label">Color Palette Theme</label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="p-4 rounded-2xl border border-blue-500/40 bg-blue-950/40 text-blue-300 text-center flex flex-col items-center gap-2 shadow-lg">
                     <Moon className="w-5 h-5 text-cyan-300" />
                     <span className="text-xs font-black text-white">Atmospheric Cloud Dark</span>
@@ -216,10 +224,10 @@ export default function SettingsPage() {
           {tab === 'security' && (
             <div className="space-y-4">
               <h3 className="section-title border-b border-slate-800 pb-3">Authentication & Role Governance</h3>
-              <div className="flex items-center justify-between p-3.5 bg-slate-900/80 border border-slate-800 rounded-xl">
-                <div>
-                  <p className="text-xs font-bold text-white">Two-Factor Authentication (2FA)</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Require OTP confirmation via Google Authenticator or SMS</p>
+              <div className="flex items-center justify-between p-3.5 bg-slate-900/80 border border-slate-800 rounded-xl min-w-0 gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-white truncate">Two-Factor Authentication (2FA)</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5 truncate">Require OTP confirmation via Google Authenticator or SMS</p>
                 </div>
                 <button
                   onClick={() => update('twoFA', !form.twoFA)}
@@ -249,7 +257,7 @@ export default function SettingsPage() {
           )}
 
           {/* Action Buttons */}
-          <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
+          <div className="pt-4 border-t border-slate-800 flex items-center justify-between flex-wrap gap-2">
             <button onClick={reset} className="btn-secondary text-xs">
               <RotateCcw className="w-3.5 h-3.5" />
               Reset Defaults

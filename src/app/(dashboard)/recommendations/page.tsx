@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Zap, TrendingDown, Sparkles, CheckCircle2, ShieldCheck, ArrowRight, RefreshCw } from 'lucide-react'
 import RecommendationCard from '@/components/features/RecommendationCard'
+import PageHeader from '@/components/layout/PageHeader'
 import Modal from '@/components/ui/Modal'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { recommendationsData } from '@/lib/mockData'
@@ -40,31 +41,30 @@ export default function RecommendationsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-[1100px] mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-black text-white tracking-tight">Cost Optimization Recommendations</h2>
-          <p className="text-xs text-slate-300 mt-0.5">High-confidence, automated actions to reduce cloud storage billing without downtime.</p>
-        </div>
-        <div className="flex items-center gap-2">
+    <div className="space-y-6 w-full min-w-0">
+      {/* Standardized Page Header */}
+      <PageHeader
+        title="Cost Optimization Recommendations"
+        subtitle="High-confidence, automated actions to reduce cloud storage billing without downtime or data risk."
+        badge="5 Actionable"
+        actions={
           <button
             onClick={() => setBatchModal(true)}
-            className="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-black rounded-xl shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+            className="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-black rounded-xl shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 flex-shrink-0"
           >
             <Sparkles className="w-4 h-4 text-yellow-300" />
             Optimize All ({recs.length})
           </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Hero Savings Summary Banner */}
-      <div className="card p-6 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 text-white shadow-xl shadow-emerald-500/10 relative overflow-hidden">
+      <div className="card p-6 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 text-white shadow-xl shadow-emerald-500/10 relative overflow-hidden w-full min-w-0">
         <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-inner">
+            <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-inner flex-shrink-0">
               <TrendingDown className="w-7 h-7 text-emerald-200" />
             </div>
             <div>
@@ -99,22 +99,22 @@ export default function RecommendationsPage() {
         <div className="mt-6 pt-5 border-t border-white/15 space-y-2.5">
           <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-100">Savings Contribution per Policy</p>
           {recs.map(r => (
-            <div key={r.id} className="flex items-center gap-3 text-xs">
-              <span className="text-emerald-100 font-semibold w-48 truncate">{r.title}</span>
+            <div key={r.id} className="flex items-center gap-3 text-xs min-w-0">
+              <span className="text-emerald-100 font-semibold w-40 sm:w-48 truncate flex-shrink-0">{r.title}</span>
               <div className="flex-1 bg-white/20 rounded-full h-2 overflow-hidden shadow-inner">
                 <div
                   className="h-full bg-gradient-to-r from-emerald-300 to-white rounded-full transition-all duration-700"
                   style={{ width: `${(r.potentialSavingAmount / totalSavingsPerMonth) * 100}%` }}
                 />
               </div>
-              <span className="text-white font-black w-28 text-right">{r.potentialSaving}</span>
+              <span className="text-white font-black w-24 sm:w-28 text-right flex-shrink-0">{r.potentialSaving}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Recommendation Cards List */}
-      <div className="space-y-4">
+      <div className="space-y-4 w-full min-w-0">
         {recs.map(rec => (
           <RecommendationCard key={rec.id} rec={rec} />
         ))}
@@ -156,12 +156,12 @@ export default function RecommendationsPage() {
                 { name: '4. GZIP Log Compression', desc: 'Compresses 156 raw server log files', saving: '₹4,100/mo' },
                 { name: '5. Build Cache Purge', desc: 'Cleans 95 GB orphan CI/CD build artifacts', saving: '₹2,000/mo' },
               ].map(item => (
-                <div key={item.name} className="p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between text-xs">
-                  <div>
-                    <span className="font-bold text-white">{item.name}</span>
-                    <p className="text-slate-400 text-[11px]">{item.desc}</p>
+                <div key={item.name} className="p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between text-xs min-w-0">
+                  <div className="min-w-0 flex-1 pr-2">
+                    <span className="font-bold text-white truncate block">{item.name}</span>
+                    <p className="text-slate-400 text-[11px] truncate">{item.desc}</p>
                   </div>
-                  <span className="font-black text-emerald-400">{item.saving}</span>
+                  <span className="font-black text-emerald-400 flex-shrink-0">{item.saving}</span>
                 </div>
               ))}
             </div>
