@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import {
   Cloud, Eye, EyeOff, ArrowRight, Shield, User, Lock, AlertCircle, Check
 } from 'lucide-react'
@@ -106,15 +107,19 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen w-full bg-cloud-login flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 relative">
       <div className="w-full max-w-md space-y-6">
-        {/* Brand Header */}
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-blue-600 text-white shadow-sm mb-3">
-            <Cloud className="w-5 h-5" />
+        {/* Brand Header with Official CloudCut Logo */}
+        <div className="text-center flex flex-col items-center">
+          <div className="w-[240px] sm:w-[270px] mb-1">
+            <Image
+              src="/images/cloudcut-logo-transparent.png"
+              alt="CloudCut - Cut Cloud Costs. Not Performance."
+              width={905}
+              height={207}
+              className="w-full h-auto object-contain"
+              priority
+            />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-            Sign in to {APP_NAME}
-          </h1>
-          <p className="text-sm text-slate-600 mt-1 font-medium">
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 font-medium">
             Cloud storage cost optimization for growing businesses
           </p>
         </div>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Users, FileText, Settings, LogOut,
@@ -70,28 +71,38 @@ export default function AdminSidebar({ mobileOpen, onMobileClose }: AdminSidebar
       'flex flex-col h-full bg-white border-r border-slate-200 transition-all duration-200 select-none overflow-hidden',
       collapsed ? 'w-16' : 'w-64'
     )}>
-      {/* Brand Header */}
+      {/* Brand Header with Official CloudCut Logo */}
       <div className="flex items-center justify-between px-4 h-14 border-b border-slate-200 flex-shrink-0">
         <Link
           href="/admin/dashboard"
-          className={clsx('flex items-center gap-2.5 overflow-hidden', collapsed && 'justify-center w-full')}
+          className={clsx('flex items-center overflow-hidden transition-all', collapsed ? 'justify-center w-full' : 'gap-2')}
         >
-          <div className="w-8 h-8 rounded-md bg-slate-900 flex items-center justify-center flex-shrink-0 text-white shadow-sm">
-            <Shield className="w-4 h-4" />
-          </div>
-          {!collapsed && (
-            <div className="overflow-hidden">
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-bold text-slate-900 tracking-tight leading-tight block">
-                  {APP_NAME}
-                </span>
-                <span className="text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 border border-slate-200">
-                  Admin
-                </span>
+          {!collapsed ? (
+            <div className="flex flex-col py-0.5">
+              <div className="w-[136px]">
+                <Image
+                  src="/images/cloudcut-logo-transparent.png"
+                  alt="CloudCut"
+                  width={905}
+                  height={207}
+                  className="w-full h-auto object-contain"
+                  priority
+                />
               </div>
-              <span className="text-[11px] font-medium text-slate-500 leading-tight block">
-                Platform Control
+              <span className="text-[9px] font-bold tracking-wider uppercase text-slate-500 pl-0.5 mt-0.5">
+                ADMINISTRATION
               </span>
+            </div>
+          ) : (
+            <div className="w-8 h-8 flex items-center justify-center">
+              <Image
+                src="/images/cloudcut-icon.png"
+                alt="CloudCut"
+                width={284}
+                height={284}
+                className="w-full h-auto object-contain"
+                priority
+              />
             </div>
           )}
         </Link>

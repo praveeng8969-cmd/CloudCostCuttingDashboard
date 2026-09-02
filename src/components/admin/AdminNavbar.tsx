@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import Image from 'next/image'
 import {
   Bell, Search, Menu, RefreshCw, ChevronDown,
   Shield, Users, LogOut, CheckCircle2
@@ -60,6 +61,16 @@ export default function AdminNavbar({ onMenuClick }: AdminNavbarProps) {
         >
           <Menu className="w-5 h-5" />
         </button>
+
+        <div className="lg:hidden w-6 h-6 flex-shrink-0 flex items-center justify-center">
+          <Image
+            src="/images/cloudcut-icon.png"
+            alt="CloudCut"
+            width={284}
+            height={284}
+            className="w-full h-auto object-contain"
+          />
+        </div>
 
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-sm font-semibold text-slate-900 truncate">
