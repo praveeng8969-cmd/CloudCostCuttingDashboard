@@ -9,29 +9,29 @@ interface ProgressBarProps {
   animated?: boolean
 }
 
-const sizeMap = { sm: 'h-1.5', md: 'h-2.5', lg: 'h-3.5' }
+const sizeMap = { sm: 'h-1.5', md: 'h-2', lg: 'h-2.5' }
 
 export default function ProgressBar({
   value,
-  color = 'bg-blue-500',
+  color = 'bg-blue-600',
   size = 'md',
   showLabel = false,
   label,
-  animated = true,
+  animated = false,
 }: ProgressBarProps) {
   const clamped = Math.min(100, Math.max(0, value))
 
   return (
     <div className="w-full">
       {(showLabel || label) && (
-        <div className="flex justify-between mb-1">
-          {label && <span className="text-xs text-gray-600">{label}</span>}
-          {showLabel && <span className="text-xs font-semibold text-gray-700">{clamped}%</span>}
+        <div className="flex justify-between items-center mb-1.5 text-xs">
+          {label && <span className="font-medium text-slate-600">{label}</span>}
+          {showLabel && <span className="font-semibold text-slate-900">{clamped}%</span>}
         </div>
       )}
-      <div className={clsx('w-full bg-gray-100 rounded-full overflow-hidden', sizeMap[size])}>
+      <div className={clsx('w-full bg-slate-100 rounded-full overflow-hidden', sizeMap[size])}>
         <div
-          className={clsx(color, sizeMap[size], 'rounded-full', animated && 'transition-all duration-700 ease-out')}
+          className={clsx(color, sizeMap[size], 'rounded-full', animated && 'transition-all duration-500 ease-out')}
           style={{ width: `${clamped}%` }}
         />
       </div>

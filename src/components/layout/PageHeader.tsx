@@ -9,20 +9,20 @@ interface PageHeaderProps {
 
 export default function PageHeader({ title, subtitle, badge, actions }: PageHeaderProps) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 w-full min-w-0">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 w-full min-w-0 pb-2 border-b border-slate-200/80">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2.5 flex-wrap">
-          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight break-words">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             {title}
           </h1>
           {badge && (
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-500/20 text-blue-300 border border-blue-500/30 flex-shrink-0">
+            <span className="px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 flex-shrink-0">
               {badge}
             </span>
           )}
         </div>
         {subtitle && (
-          <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed max-w-3xl">
+          <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed max-w-3xl">
             {subtitle}
           </p>
         )}

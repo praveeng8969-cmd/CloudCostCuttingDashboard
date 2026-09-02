@@ -2,64 +2,95 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, Users, HardDrive, DollarSign, FileText,
-  Settings, LogOut, Shield, ChevronLeft, ChevronRight,
-  TrendingDown, Sparkles, Building2, Layers
+  LayoutDashboard, Users, FileText, Settings, LogOut,
+  Shield, ChevronLeft, ChevronRight, HardDrive, DollarSign
 } from 'lucide-react'
 import clsx from 'clsx'
 import { APP_NAME } from '@/lib/constants'
 import { useAuth } from '@/context/AuthContext'
 import { useStorageData } from '@/context/StorageDataContext'
-import toast from 'react-hot-toast'
 
 interface AdminSidebarProps {
   mobileOpen: boolean
   onMobileClose: () => void
 }
 
+interface AdminNavItemDef {
+  label: string
+  href: string
+  icon: any
+  badge?: string | null
+}
+
+interface AdminNavGroupDef {
+  group: string
+  items: AdminNavItemDef[]
+}
+
 export default function AdminSidebar({ mobileOpen, onMobileClose }: AdminSidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
   const pathname = usePathname()
-  const router = useRouter()
   const { user, logout } = useAuth()
   const { getAllCustomerSummaries } = useStorageData()
 
   const customerSummaries = getAllCustomerSummaries()
   const totalCustomers = customerSummaries.length
 
-  const adminNavItems = [
-    { label: 'Platform Overview',  href: '/admin/dashboard', icon: LayoutDashboard, badge: 'Live', badgeColor: 'bg-purple-600 text-white', color: 'text-purple-400' },
-    { label: 'All Customers',      href: '/admin/users',     icon: Users,           badge: `${totalCustomers}`, badgeColor: 'bg-blue-600 text-white', color: 'text-blue-400' },
-    { label: 'Customer Reports',   href: '/admin/reports',   icon: FileText,        badge: null, color: 'text-indigo-400' },
-    { label: 'Platform Settings',  href: '/admin/settings',  icon: Settings,        badge: null, color: 'text-slate-400' },
+  const adminNavGroups: AdminNavGroupDef[] = [
+    {
+      group: 'Overview',
+      items: [
+        { label: 'Platform Overview', href: '/admin/dashboard', icon: LayoutDashboard },
+      ]
+    },
+    {
+      group: 'Customers',
+      items: [
+        { label: 'All Customers', href: '/admin/users', icon: Users, badge: `${totalCustomers}` },
+      ]
+    },
+    {
+      group: 'Reports',
+      items: [
+        { label: 'Customer Reports', href: '/admin/reports', icon: FileText },
+      ]
+    },
+    {
+      group: 'System',
+      items: [
+        { label: 'Platform Settings', href: '/admin/settings', icon: Settings },
+      ]
+    }
   ]
 
   const SidebarContent = (
     <div className={clsx(
-      'flex flex-col h-full bg-slate-950/80 backdrop-blur-xl border-r border-purple-900/30 sidebar-transition overflow-hidden select-none',
-      collapsed ? 'w-20' : 'w-64'
+      'flex flex-col h-full bg-white border-r border-slate-200 transition-all duration-200 select-none overflow-hidden',
+      collapsed ? 'w-16' : 'w-64'
     )}>
-      {/* Admin Brand Header */}
-      <div className="flex items-center justify-between px-4 py-4.5 border-b border-purple-900/30 flex-shrink-0">
+      {/* Brand Header */}
+      <div className="flex items-center justify-between px-4 h-14 border-b border-slate-200 flex-shrink-0">
         <Link
           href="/admin/dashboard"
-          className={clsx('flex items-center gap-3 overflow-hidden group', collapsed && 'justify-center w-full')}
+          className={clsx('flex items-center gap-2.5 overflow-hidden', collapsed && 'justify-center w-full')}
         >
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/30 group-hover:scale-105 transition-transform border border-white/20">
-            <Shield className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-md bg-slate-900 flex items-center justify-center flex-shrink-0 text-white shadow-sm">
+            <Shield className="w-4 h-4" />
           </div>
           {!collapsed && (
             <div className="overflow-hidden">
               <div className="flex items-center gap-1.5">
-                <span className="text-base font-black text-white tracking-tight leading-tight">
+                <span className="text-sm font-bold text-slate-900 tracking-tight leading-tight block">
                   {APP_NAME}
                 </span>
-                <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+                <span className="text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                  Admin
+                </span>
               </div>
-              <span className="text-[10px] font-bold text-purple-300 leading-tight block uppercase tracking-wider">
-                Admin Control Center
+              <span className="text-[11px] font-medium text-slate-500 leading-tight block">
+                Platform Control
               </span>
             </div>
           )}
@@ -67,87 +98,75 @@ export default function AdminSidebar({ mobileOpen, onMobileClose }: AdminSidebar
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {!collapsed && (
-          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-3 pb-1">
-            Platform Administration
-          </p>
-        )}
-        {adminNavItems.map(({ label, href, icon: Icon, badge, badgeColor, color }) => {
-          const active = pathname === href || (href !== '/admin/dashboard' && pathname.startsWith(href + '/'))
-          return (
-            <Link
-              key={href}
-              href={href}
-              onClick={onMobileClose}
-              title={collapsed ? label : undefined}
-              className={clsx(
-                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 group relative',
-                active
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/30 border border-purple-400/40'
-                  : 'text-slate-300 hover:bg-slate-900 hover:text-white',
-                collapsed && 'justify-center px-2'
-              )}
-            >
-              <Icon className={clsx(
-                'w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110',
-                active ? 'text-white' : color
-              )} />
-              {!collapsed && <span className="truncate">{label}</span>}
-              {!collapsed && badge && (
-                <span className={clsx(
-                  'ml-auto text-[10px] font-black px-2 py-0.5 rounded-full',
-                  active ? 'bg-white/25 text-white' : (badgeColor ?? 'bg-slate-800 text-slate-300')
-                )}>
-                  {badge}
-                </span>
-              )}
-            </Link>
-          )
-        })}
+      <nav className="flex-1 px-3 py-3 space-y-4 overflow-y-auto">
+        {adminNavGroups.map((group, gIdx) => (
+          <div key={gIdx} className="space-y-1">
+            {!collapsed && (
+              <p className="text-[11px] font-medium text-slate-400 px-3 py-1 uppercase tracking-wider">
+                {group.group}
+              </p>
+            )}
+            {group.items.map(({ label, href, icon: Icon, badge }) => {
+              const active = pathname === href || (href !== '/admin/dashboard' && pathname.startsWith(href + '/'))
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={onMobileClose}
+                  title={collapsed ? label : undefined}
+                  className={clsx(
+                    'flex items-center gap-3 px-3 py-2 rounded-md text-xs sm:text-sm transition-colors duration-150',
+                    active
+                      ? 'bg-blue-50 text-blue-700 font-semibold'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium',
+                    collapsed && 'justify-center px-2'
+                  )}
+                >
+                  <Icon className={clsx(
+                    'w-4 h-4 flex-shrink-0',
+                    active ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'
+                  )} />
+                  {!collapsed && <span className="truncate">{label}</span>}
+                  {!collapsed && badge && (
+                    <span className="ml-auto text-[11px] font-medium px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">
+                      {badge}
+                    </span>
+                  )}
+                </Link>
+              )
+            })}
+          </div>
+        ))}
       </nav>
 
-      {/* Admin Notice Widget */}
-      {!collapsed && (
-        <div className="mx-3 mb-3 p-3.5 bg-gradient-to-br from-purple-950/50 via-slate-900 to-slate-950 border border-purple-500/30 rounded-2xl">
-          <div className="flex items-center gap-2 mb-1">
-            <Shield className="w-3.5 h-3.5 text-purple-400" />
-            <span className="text-[11px] font-extrabold text-purple-300">Admin Privileges Active</span>
-          </div>
-          <p className="text-[11px] text-slate-400 leading-snug">
-            Managing {totalCustomers} client workspaces with live aggregated FinOps telemetry.
-          </p>
-          <Link
-            href="/admin/users"
-            className="mt-2.5 block text-center py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-[11px] font-bold rounded-lg shadow transition-colors"
-          >
-            Manage Accounts →
-          </Link>
-        </div>
-      )}
-
-      {/* Admin Footer Profile */}
-      <div className="border-t border-purple-900/30 px-3 py-3 space-y-1 flex-shrink-0">
+      {/* Footer Profile & Logout */}
+      <div className="border-t border-slate-200 p-3 flex-shrink-0 bg-slate-50/50">
         <div className={clsx(
-          'flex items-center gap-3 px-3 py-2 rounded-xl bg-slate-900/70 border border-slate-800',
-          collapsed && 'justify-center px-2'
+          'flex items-center gap-2.5',
+          collapsed && 'justify-center'
         )}>
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-xs shadow-sm">
-            {user?.name ? user.name.charAt(0) : 'A'}
+          <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center flex-shrink-0 font-semibold text-xs">
+            {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
           </div>
+
           {!collapsed && (
-            <div className="overflow-hidden flex-1">
-              <p className="text-xs font-bold text-white truncate">{user?.name || 'Sarah Chen'}</p>
-              <p className="text-[10px] font-semibold text-purple-400 truncate">Platform Administrator</p>
+            <div className="overflow-hidden flex-1 min-w-0">
+              <p className="text-xs font-semibold text-slate-900 truncate leading-tight">
+                {user?.name || 'Administrator'}
+              </p>
+              <p className="text-[11px] text-slate-500 truncate leading-tight">
+                Platform Administrator
+              </p>
             </div>
           )}
+
           {!collapsed && (
             <button
               onClick={() => logout()}
-              title="Logout"
-              className="p-1 hover:bg-rose-950/40 rounded-lg group transition-colors"
+              title="Sign out"
+              className="p-1.5 hover:bg-slate-200 rounded text-slate-400 hover:text-slate-700 transition-colors"
             >
-              <LogOut className="w-3.5 h-3.5 text-slate-400 group-hover:text-rose-400" />
+              <LogOut className="w-4 h-4" />
             </button>
           )}
         </div>
@@ -156,7 +175,7 @@ export default function AdminSidebar({ mobileOpen, onMobileClose }: AdminSidebar
       {/* Collapse Toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="hidden lg:flex items-center justify-center w-full py-2 border-t border-purple-900/30 hover:bg-slate-900 transition-colors text-slate-400 hover:text-white"
+        className="hidden lg:flex items-center justify-center w-full py-2 border-t border-slate-200 hover:bg-slate-50 transition-colors text-slate-400 hover:text-slate-600"
         title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -172,8 +191,8 @@ export default function AdminSidebar({ mobileOpen, onMobileClose }: AdminSidebar
 
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onMobileClose} />
-          <div className="relative flex-shrink-0 animate-fade-in">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onMobileClose} />
+          <div className="relative flex-shrink-0">
             {SidebarContent}
           </div>
         </div>

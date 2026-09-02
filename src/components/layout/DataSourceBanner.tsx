@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Database, UploadCloud, RefreshCw, Trash2, CheckCircle2, AlertTriangle, FileSpreadsheet, Sparkles } from 'lucide-react'
+import { Database, UploadCloud, RefreshCw, Trash2, CheckCircle2, AlertCircle } from 'lucide-react'
 import { useStorageData } from '@/context/StorageDataContext'
 import Modal from '@/components/ui/Modal'
 
@@ -32,7 +32,6 @@ export default function DataSourceBanner() {
     router.push('/dashboard')
   }
 
-  // Format date display
   const formattedTimestamp = lastAnalyzedTimestamp !== 'None'
     ? lastAnalyzedTimestamp.includes('T')
       ? new Date(lastAnalyzedTimestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })
@@ -41,57 +40,48 @@ export default function DataSourceBanner() {
 
   return (
     <>
-      <div className="mb-6 p-4 rounded-2xl bg-slate-900/85 border border-slate-700/80 shadow-lg backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full min-w-0">
-        {/* Left Status & Source Indicator */}
-        <div className="flex items-center gap-3.5 min-w-0 flex-1">
-          <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center justify-center flex-shrink-0">
-            <Database className="w-5 h-5" />
+      <div className="card p-3.5 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        {/* Left Status & Source Info */}
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="w-8 h-8 rounded-md bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center flex-shrink-0">
+            <Database className="w-4 h-4" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                DATA SOURCE:
+              <span className="text-xs font-semibold text-slate-900 truncate">
+                {hasData ? dataSourceName : 'No Dataset Loaded'}
               </span>
-              <span className="px-2 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider bg-blue-500/20 text-cyan-300 border border-blue-500/30">
-                {dataSourceType === 'CSV' ? 'CSV' : dataSourceType === 'DEMO' ? 'DEMO DATA' : 'NONE'}
+
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                {dataSourceType === 'CSV' ? 'CSV Upload' : dataSourceType === 'DEMO' ? 'Demo Dataset' : 'Inactive'}
               </span>
 
               {hasData ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex-shrink-0">
-                  <CheckCircle2 className="w-3 h-3" /> Live Dataset
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <CheckCircle2 className="w-3 h-3" /> Ready
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex-shrink-0">
-                  <AlertTriangle className="w-3 h-3" /> No Dataset Loaded
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                  <AlertCircle className="w-3 h-3" /> Awaiting Upload
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-3 text-[11px] text-slate-300 mt-1 flex-wrap">
-              <span className="truncate max-w-[280px] sm:max-w-md">
-                Dataset: <strong className="text-white">{dataSourceName}</strong>
-              </span>
-              {hasData && (
-                <>
-                  <span className="text-slate-600">·</span>
-                  <span>
-                    Records: <strong className="text-cyan-300 font-mono font-bold">{recordsAnalyzedCount.toLocaleString()}</strong>
-                  </span>
-                  <span className="text-slate-600">·</span>
-                  <span className="text-slate-400 text-[10px]">
-                    Analyzed: {formattedTimestamp}
-                  </span>
-                </>
-              )}
-            </div>
+            {hasData && (
+              <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5 flex-wrap">
+                <span><strong>{recordsAnalyzedCount.toLocaleString()}</strong> objects analyzed</span>
+                <span className="text-slate-300">•</span>
+                <span>Analyzed: {formattedTimestamp}</span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Right Actions */}
-        <div className="flex items-center gap-2 flex-wrap flex-shrink-0 w-full md:w-auto justify-end">
+        {/* Right Action Buttons */}
+        <div className="flex items-center gap-2 flex-wrap flex-shrink-0 self-start md:self-center">
           <Link
             href="/import"
-            className="btn-primary text-xs py-2 px-3.5 flex items-center gap-1.5"
+            className="btn-primary"
           >
             <UploadCloud className="w-3.5 h-3.5" />
             Import Storage Data
@@ -100,15 +90,14 @@ export default function DataSourceBanner() {
           {!hasData ? (
             <button
               onClick={handleLoadDemo}
-              className="btn-yellow text-xs py-2 px-3 flex items-center gap-1.5 font-black"
+              className="btn-secondary"
             >
-              <Sparkles className="w-3.5 h-3.5 text-gray-950" />
               Load Demo Dataset
             </button>
           ) : (
             <button
               onClick={() => setResetModal(true)}
-              className="btn-ghost text-xs py-1.5 px-2.5 text-rose-400 hover:bg-rose-950/40 border border-rose-500/30 rounded-xl flex items-center gap-1"
+              className="btn-ghost text-red-600 hover:text-red-700 hover:bg-red-50"
               title="Remove current dataset"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -135,12 +124,12 @@ export default function DataSourceBanner() {
           </>
         }
       >
-        <div className="space-y-3 text-xs text-slate-300 leading-relaxed">
+        <div className="space-y-3 text-xs text-slate-600 leading-relaxed">
           <p>
-            Are you sure you want to remove the current dataset?
+            Are you sure you want to remove the current storage dataset?
           </p>
-          <div className="p-3 bg-rose-950/40 border border-rose-500/40 rounded-xl text-rose-300">
-            This will permanently remove the stored dataset from your browser storage and reset the dashboard. You will be redirected to the Import page.
+          <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-xs">
+            This will clear your local dataset cache and return the dashboard to its initial empty state.
           </div>
         </div>
       </Modal>

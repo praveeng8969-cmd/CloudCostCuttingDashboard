@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   Bell, Search, Menu, RefreshCw, ChevronDown,
-  X, Check, Shield, Users, ArrowRight, DollarSign, HardDrive, LogOut
+  Shield, Users, LogOut, CheckCircle2
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
@@ -15,10 +15,9 @@ interface AdminNavbarProps {
 }
 
 const adminNotifications = [
-  { id: 1, text: 'High-cost customer detected: ByteWorks Systems (₹2,840/mo)', time: '1h ago', dot: 'bg-rose-500', route: '/admin/users' },
-  { id: 2, text: 'New storage dataset ingested for StartFlow Cloud', time: '3h ago', dot: 'bg-blue-500', route: '/admin/users' },
-  { id: 3, text: 'Platform storage threshold passed 7.5 TB total pool', time: '1d ago', dot: 'bg-purple-500', route: '/admin/dashboard' },
-  { id: 4, text: 'Customer NovaTech generated executive cost report', time: '2d ago', dot: 'bg-emerald-500', route: '/admin/reports' },
+  { id: 1, text: 'High-cost customer detected: ByteWorks Systems', time: '1h ago' },
+  { id: 2, text: 'New storage dataset ingested for StartFlow Cloud', time: '3h ago' },
+  { id: 3, text: 'Customer NovaTech compiled executive cost report', time: '1d ago' },
 ]
 
 export default function AdminNavbar({ onMenuClick }: AdminNavbarProps) {
@@ -27,158 +26,129 @@ export default function AdminNavbar({ onMenuClick }: AdminNavbarProps) {
   const { user, logout } = useAuth()
 
   const [showNotifications, setShowNotifications] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
-  const [notifications, setNotifications] = useState(adminNotifications)
 
   function handleRefresh() {
     setRefreshing(true)
     setTimeout(() => {
       setRefreshing(false)
-      toast.success('All customer telemetry & platform aggregations refreshed!', {
-        icon: '⚡',
-        style: { background: '#1e293b', color: '#fff', borderRadius: '12px' }
-      })
-    }, 800)
-  }
-
-  function clearAll() {
-    setNotifications([])
-    setShowNotifications(false)
-    toast('Notifications cleared', { icon: '🧹' })
+      toast.success('Platform metrics refreshed!')
+    }, 600)
   }
 
   const pageTitle = pathname === '/admin/dashboard'
     ? 'Platform Overview'
     : pathname === '/admin/users'
-    ? 'Customer Management'
+    ? 'Customer Directory'
     : pathname.startsWith('/admin/users/')
-    ? 'Customer Deep Dive'
+    ? 'Customer Analysis'
     : pathname === '/admin/reports'
-    ? 'Platform & Customer Reports'
+    ? 'Customer & Platform Reports'
     : pathname === '/admin/settings'
     ? 'Platform Settings'
-    : 'CloudCut Administration'
+    : 'Admin Control'
 
   return (
-    <header className="h-16 bg-slate-950/80 backdrop-blur-xl border-b border-purple-900/30 flex items-center px-4 md:px-6 gap-3 sticky top-0 z-40">
-      {/* Hamburger for mobile */}
-      <button
-        onClick={onMenuClick}
-        className="lg:hidden p-2 hover:bg-slate-900 rounded-xl transition-colors"
-        aria-label="Open menu"
-      >
-        <Menu className="w-5 h-5 text-slate-300" />
-      </button>
-
-      {/* Page Title & Admin Pill */}
-      <div className="flex-1 min-w-0 flex items-center gap-3">
-        <h1 className="text-base font-black text-white tracking-tight truncate">
-          {pageTitle}
-        </h1>
-        <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/30">
-          Admin Console
-        </span>
-      </div>
-
-      {/* Refresh */}
-      <button
-        onClick={handleRefresh}
-        title="Refresh customer telemetry"
-        className="p-2.5 hover:bg-slate-900 rounded-xl transition-colors text-slate-300"
-      >
-        <RefreshCw className={clsx('w-4 h-4', refreshing && 'animate-spin text-purple-400')} />
-      </button>
-
-      {/* Admin Notifications */}
-      <div className="relative">
+    <header className="sticky top-0 z-20 h-14 bg-white border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between gap-4">
+      {/* Left: Mobile Menu Trigger + Page Title */}
+      <div className="flex items-center gap-3 min-w-0">
         <button
-          onClick={() => setShowNotifications(!showNotifications)}
-          className="relative p-2.5 hover:bg-slate-900 rounded-xl transition-colors text-slate-300"
-          aria-label="Admin Notifications"
+          onClick={onMenuClick}
+          className="lg:hidden p-1.5 hover:bg-slate-100 rounded text-slate-600 transition-colors"
+          aria-label="Open sidebar"
         >
-          <Bell className="w-4 h-4" />
-          {notifications.length > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-slate-950 animate-pulse" />
-          )}
+          <Menu className="w-5 h-5" />
         </button>
 
-        {showNotifications && (
-          <>
-            <div className="fixed inset-0 z-10" onClick={() => setShowNotifications(false)} />
-            <div className="absolute right-0 top-12 z-20 bg-slate-900/95 border border-purple-900/40 rounded-2xl shadow-2xl w-84 sm:w-96 overflow-hidden backdrop-blur-xl animate-fade-in">
-              <div className="flex items-center justify-between px-4 py-3.5 bg-gradient-to-r from-purple-700 to-indigo-700 text-white">
-                <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4" />
-                  <span className="text-sm font-bold">Platform Alerts</span>
-                  <span className="px-1.5 py-0.2 bg-white/20 text-white text-[10px] font-black rounded-full">
-                    {notifications.length}
-                  </span>
-                </div>
-                <button onClick={() => setShowNotifications(false)} className="p-1 hover:bg-white/10 rounded-lg">
-                  <X className="w-4 h-4" />
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-sm font-semibold text-slate-900 truncate">
+            {pageTitle}
+          </span>
+          <span className="hidden sm:inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+            Admin Console
+          </span>
+        </div>
+      </div>
+
+      {/* Right Controls */}
+      <div className="flex items-center gap-2.5 flex-shrink-0">
+        <button
+          onClick={handleRefresh}
+          className="p-1.5 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-700 transition-colors"
+          title="Refresh platform telemetry"
+        >
+          <RefreshCw className={clsx('w-4 h-4', refreshing && 'animate-spin text-blue-600')} />
+        </button>
+
+        {/* Notifications */}
+        <div className="relative">
+          <button
+            onClick={() => { setShowNotifications(!showNotifications); setProfileOpen(false); }}
+            className="p-2 hover:bg-slate-100 rounded-md transition-colors text-slate-500 hover:text-slate-700 relative"
+            aria-label="Admin notifications"
+          >
+            <Bell className="w-4 h-4" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white" />
+          </button>
+
+          {showNotifications && (
+            <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-lg shadow-lg z-50 p-0 overflow-hidden animate-fade-in">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+                <span className="text-xs font-semibold text-slate-900">Platform Notifications</span>
+                <span className="text-[11px] text-slate-500">{adminNotifications.length} alerts</span>
+              </div>
+              <div className="divide-y divide-slate-100 max-h-72 overflow-y-auto">
+                {adminNotifications.map(n => (
+                  <div key={n.id} className="p-3 hover:bg-slate-50 transition-colors text-left">
+                    <p className="text-xs font-medium text-slate-800">{n.text}</p>
+                    <p className="text-[10px] text-slate-400 mt-1">{n.time}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Admin Profile */}
+        <div className="relative">
+          <button
+            onClick={() => { setProfileOpen(!profileOpen); setShowNotifications(false); }}
+            className="flex items-center gap-2 p-1 pl-2 hover:bg-slate-100 rounded-md transition-colors text-slate-700"
+          >
+            <div className="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-semibold">
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+            </div>
+            <div className="hidden sm:block text-left text-xs">
+              <p className="font-semibold text-slate-800 leading-tight">
+                {user?.name || 'Administrator'}
+              </p>
+              <p className="text-[10px] text-slate-500 leading-tight">
+                Platform Admin
+              </p>
+            </div>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+          </button>
+
+          {profileOpen && (
+            <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-50 p-1.5 overflow-hidden animate-fade-in">
+              <div className="px-3 py-2 border-b border-slate-100 mb-1">
+                <p className="text-xs font-semibold text-slate-900 truncate">{user?.name}</p>
+                <p className="text-[11px] text-slate-500 truncate">{user?.email}</p>
+              </div>
+
+              <div className="text-xs">
+                <button
+                  onClick={() => logout()}
+                  className="w-full flex items-center gap-2 px-3 py-1.5 rounded hover:bg-slate-100 text-red-600 transition-colors text-left"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  Sign Out
                 </button>
               </div>
-
-              <div className="max-h-80 overflow-y-auto divide-y divide-slate-800">
-                {notifications.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-slate-400">No active alerts</div>
-                ) : (
-                  notifications.map(n => (
-                    <div
-                      key={n.id}
-                      onClick={() => {
-                        setShowNotifications(false)
-                        router.push(n.route)
-                      }}
-                      className="flex items-start gap-3 px-4 py-3 hover:bg-slate-800/80 transition-colors cursor-pointer group"
-                    >
-                      <span className={clsx('w-2 h-2 rounded-full mt-1.5 flex-shrink-0', n.dot)} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-slate-200 group-hover:text-purple-300 transition-colors">
-                          {n.text}
-                        </p>
-                        <p className="text-[10px] text-slate-400 mt-1">{n.time}</p>
-                      </div>
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-purple-400 opacity-0 group-hover:opacity-100 transition-all" />
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {notifications.length > 0 && (
-                <div className="p-2.5 bg-slate-900 border-t border-slate-800 flex justify-between items-center px-4">
-                  <button onClick={clearAll} className="text-[11px] font-bold text-rose-400 hover:underline">
-                    Clear all
-                  </button>
-                  <button
-                    onClick={() => { setShowNotifications(false); router.push('/admin/users') }}
-                    className="text-[11px] font-bold text-purple-400 hover:underline"
-                  >
-                    View All Customers →
-                  </button>
-                </div>
-              )}
             </div>
-          </>
-        )}
-      </div>
-
-      {/* Admin Identity Badge */}
-      <div className="flex items-center gap-2.5 px-3 py-1.5 bg-purple-950/50 border border-purple-500/30 rounded-2xl">
-        <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center text-white text-xs font-black shadow">
-          {user?.name ? user.name.charAt(0) : 'A'}
+          )}
         </div>
-        <div className="hidden sm:block text-left leading-tight">
-          <p className="text-xs font-bold text-white leading-none">{user?.name || 'Sarah Chen'}</p>
-          <p className="text-[10px] font-medium text-purple-300 leading-tight">Platform Administrator</p>
-        </div>
-        <button
-          onClick={() => logout()}
-          title="Logout"
-          className="ml-1 p-1 hover:bg-rose-950/40 rounded-lg group transition-colors"
-        >
-          <LogOut className="w-3.5 h-3.5 text-slate-400 group-hover:text-rose-400" />
-        </button>
       </div>
     </header>
   )

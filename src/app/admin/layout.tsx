@@ -30,11 +30,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (isLoading || !isAuthenticated || role !== 'admin') {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-950">
-        <div className="flex flex-col items-center gap-3 text-center p-6">
-          <LoadingSpinner size={40} className="text-purple-400" />
-          <p className="text-xs font-bold text-purple-200">
-            Verifying Platform Administrator Credentials...
+      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-2 text-center p-6">
+          <LoadingSpinner size={32} className="text-slate-900" />
+          <p className="text-xs font-medium text-slate-600">
+            Verifying admin credentials...
           </p>
         </div>
       </div>
@@ -42,15 +42,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-slate-950">
+    <div className="flex h-screen w-full overflow-hidden bg-slate-50">
       {/* Sticky Admin Sidebar */}
       <AdminSidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
 
       {/* Main Admin Area */}
-      <div className="flex flex-col flex-1 min-w-0 w-full overflow-hidden bg-transparent">
+      <div className="flex flex-col flex-1 min-w-0 w-full overflow-hidden bg-slate-50">
         <AdminNavbar onMenuClick={() => setMobileOpen(true)} />
 
-        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-slate-50">
           <div className="page-container page-enter">
             {children}
           </div>

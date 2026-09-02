@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react'
 import {
-  TrendingDown, Sparkles, CheckCircle2, ShieldCheck,
-  ArrowRight, RefreshCw, AlertTriangle, Zap, Copy, Archive, Trash2, FileArchive
+  TrendingDown, CheckCircle2, ArrowRight, AlertTriangle,
+  Zap, Copy, Archive, Trash2, FileArchive, Check
 } from 'lucide-react'
 import PageHeader from '@/components/layout/PageHeader'
 import Modal from '@/components/ui/Modal'
@@ -29,10 +29,6 @@ export default function RecommendationsPage() {
   const totalMonthlySavings = analysisResult.potentialMonthlySavings
   const totalAnnualSavings = analysisResult.potentialAnnualSavings
 
-  const highCount = recs.filter(r => r.priority === 'HIGH').length
-  const medCount = recs.filter(r => r.priority === 'MEDIUM').length
-  const lowCount = recs.filter(r => r.priority === 'LOW').length
-
   const filteredRecs = recs.filter(r => {
     if (selectedFilter === 'ALL') return true
     return r.priority === selectedFilter
@@ -43,12 +39,8 @@ export default function RecommendationsPage() {
     setTimeout(() => {
       setDeploying(false)
       setDeployModal(null)
-      toast.success(`Policy "${rec.title}" simulated successfully! Saving ₹${rec.estimatedMonthlySavings.toLocaleString('en-IN')}/mo.`, {
-        icon: '🎉',
-        duration: 5000,
-        style: { background: '#064e3b', color: '#ecfdf5', borderRadius: '12px' }
-      })
-    }, 1200)
+      toast.success(`Policy "${rec.title}" simulated successfully! Saving ₹${rec.estimatedMonthlySavings.toLocaleString('en-IN')}/mo.`)
+    }, 800)
   }
 
   function handleDeployAll() {
@@ -56,235 +48,194 @@ export default function RecommendationsPage() {
     setTimeout(() => {
       setBatchDeploying(false)
       setBatchModal(false)
-      toast.success(`All ${recs.length} Optimization Policies Simulated! Saving ₹${totalMonthlySavings.toLocaleString('en-IN')}/mo.`, {
-        icon: '🚀',
-        duration: 5000,
-        style: { background: '#064e3b', color: '#ecfdf5', borderRadius: '12px' }
-      })
-    }, 1800)
+      toast.success(`All ${recs.length} optimization policies simulated! Saving ₹${totalMonthlySavings.toLocaleString('en-IN')}/mo.`)
+    }, 1000)
   }
 
   return (
-    <div className="space-y-6 w-full min-w-0">
-      {/* Standardized Page Header */}
+    <div className="space-y-6 w-full min-w-0 pb-12">
       <PageHeader
-        title="Cost Optimization Recommendations"
-        subtitle="Rule-based, high-impact recommendations derived dynamically from your storage dataset."
-        badge={`${recs.length} Actionable Recommendations`}
+        title="Optimization Recommendations"
+        subtitle="Actionable storage lifecycle transitions and deduplication policies to reduce cloud spend."
+        badge={`${recs.length} Action Items`}
         actions={
           <button
             onClick={() => setBatchModal(true)}
             disabled={recs.length === 0}
-            className="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-black rounded-xl shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 flex-shrink-0"
+            className="btn-primary text-xs"
           >
-            <Sparkles className="w-4 h-4 text-yellow-300" />
-            Apply All ({recs.length})
+            <Check className="w-3.5 h-3.5" />
+            Apply All Recommendations
           </button>
         }
       />
 
-      {/* Hero Savings Summary Banner */}
-      <div className="card p-6 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 text-white shadow-xl shadow-emerald-500/10 relative overflow-hidden w-full min-w-0">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-inner flex-shrink-0">
-              <TrendingDown className="w-7 h-7 text-emerald-200" />
-            </div>
-            <div>
-              <p className="text-emerald-100 text-xs font-black uppercase tracking-wider">Total Actionable Savings</p>
-              <div className="flex items-baseline gap-2 mt-0.5">
-                <span className="text-3xl sm:text-4xl font-black tracking-tight">₹{totalMonthlySavings.toLocaleString('en-IN')}</span>
-                <span className="text-sm font-semibold text-emerald-200">/ month</span>
-              </div>
-              <p className="text-emerald-100 text-xs mt-1">
-                Projected to recover <strong className="text-white font-black">₹{totalAnnualSavings.toLocaleString('en-IN')}</strong> in annual cloud storage overhead.
-              </p>
-            </div>
+      {/* Summary Opportunity Banner */}
+      <div className="card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50 border-slate-200">
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+            <TrendingDown className="w-5 h-5" />
           </div>
-
-          <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 w-full md:w-auto">
-            <p className="text-xs font-bold text-emerald-100 mb-2">Priority Distribution</p>
-            <div className="flex gap-2 flex-wrap">
-              <button
-                onClick={() => setSelectedFilter('HIGH')}
-                className={clsx('px-2.5 py-1 rounded-lg text-xs font-black transition-all border', selectedFilter === 'HIGH' ? 'bg-rose-500 text-white border-white' : 'bg-rose-500/30 text-white border-rose-300/40')}
-              >
-                {highCount} High Priority
-              </button>
-              <button
-                onClick={() => setSelectedFilter('MEDIUM')}
-                className={clsx('px-2.5 py-1 rounded-lg text-xs font-black transition-all border', selectedFilter === 'MEDIUM' ? 'bg-amber-500 text-white border-white' : 'bg-amber-400/30 text-white border-amber-300/40')}
-              >
-                {medCount} Medium
-              </button>
-              <button
-                onClick={() => setSelectedFilter('LOW')}
-                className={clsx('px-2.5 py-1 rounded-lg text-xs font-black transition-all border', selectedFilter === 'LOW' ? 'bg-emerald-500 text-white border-white' : 'bg-emerald-400/30 text-white border-emerald-300/40')}
-              >
-                {lowCount} Low
-              </button>
-              {selectedFilter !== 'ALL' && (
-                <button
-                  onClick={() => setSelectedFilter('ALL')}
-                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white/20 text-white hover:bg-white/30"
-                >
-                  Show All ({recs.length})
-                </button>
-              )}
-            </div>
+          <div>
+            <h3 className="text-sm font-semibold text-slate-900">
+              Total Identified Monthly Savings
+            </h3>
+            <p className="text-xs text-slate-500">
+              Implementing all recommended transitions recovers ₹{totalAnnualSavings.toLocaleString('en-IN')} annually.
+            </p>
           </div>
+        </div>
+
+        <div className="text-right">
+          <p className="text-2xl font-bold text-emerald-700">
+            ₹{totalMonthlySavings.toLocaleString('en-IN')}<span className="text-xs font-normal text-slate-500">/month</span>
+          </p>
         </div>
       </div>
 
-      {/* Recommendation Cards List */}
-      {filteredRecs.length === 0 ? (
-        <div className="card p-12 text-center">
-          <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-white">No Recommendations in this Category</h3>
-          <p className="text-xs text-slate-400 mt-1">Select &ldquo;Show All&rdquo; to view recommendations across all priority tiers.</p>
-        </div>
-      ) : (
-        <div className="space-y-4 w-full min-w-0">
-          {filteredRecs.map(rec => {
+      {/* Priority Filter Tabs */}
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-3 text-xs">
+        {(['ALL', 'HIGH', 'MEDIUM', 'LOW'] as const).map(p => (
+          <button
+            key={p}
+            onClick={() => setSelectedFilter(p)}
+            className={clsx(
+              'px-3 py-1.5 rounded-md font-medium transition-colors',
+              selectedFilter === p
+                ? 'bg-blue-50 text-blue-700'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+            )}
+          >
+            {p === 'ALL' ? `All (${recs.length})` : `${p} Priority (${recs.filter(r => r.priority === p).length})`}
+          </button>
+        ))}
+      </div>
+
+      {/* Recommendations List */}
+      <div className="space-y-3">
+        {filteredRecs.length === 0 ? (
+          <div className="card p-8 text-center text-slate-500 text-xs">
+            No recommendations match this priority filter.
+          </div>
+        ) : (
+          filteredRecs.map((rec) => {
             const Icon = iconMap[rec.icon] || Zap
             return (
-              <div
-                key={rec.id}
-                className={clsx(
-                  'card p-6 transition-all hover:scale-[1.01]',
-                  rec.priority === 'HIGH' && 'border-l-4 border-l-rose-500 card-glow-rose',
-                  rec.priority === 'MEDIUM' && 'border-l-4 border-l-amber-500 card-glow-amber',
-                  rec.priority === 'LOW' && 'border-l-4 border-l-emerald-500 card-glow-emerald'
-                )}
-              >
-                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-                  {/* Left: Problem & Description */}
-                  <div className="flex items-start gap-4 min-w-0 flex-1">
-                    <div className={clsx(
-                      'w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 border',
-                      rec.priority === 'HIGH' && 'bg-rose-500/20 text-rose-400 border-rose-500/30',
-                      rec.priority === 'MEDIUM' && 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-                      rec.priority === 'LOW' && 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                    )}>
-                      <Icon className="w-6 h-6" />
+              <div key={rec.id} className="card p-5 hover:border-slate-300 transition-colors">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                  <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                    <div className="w-9 h-9 rounded-md bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Icon className="w-4 h-4" />
                     </div>
 
-                    <div className="space-y-1.5 min-w-0 flex-1">
-                      <div className="flex items-center gap-2.5 flex-wrap">
-                        <h3 className="text-base font-black text-white tracking-tight">{rec.title}</h3>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="text-sm font-semibold text-slate-900">{rec.title}</h4>
                         <span className={clsx(
-                          'px-2.5 py-0.5 rounded-full text-[10px] font-black border uppercase tracking-wider',
-                          rec.priority === 'HIGH' && 'bg-rose-500/20 text-rose-300 border-rose-500/40',
-                          rec.priority === 'MEDIUM' && 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-                          rec.priority === 'LOW' && 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                          'px-1.5 py-0.2 rounded text-[10px] font-medium border',
+                          rec.priority === 'HIGH'
+                            ? 'bg-red-50 text-red-700 border-red-200'
+                            : rec.priority === 'MEDIUM'
+                            ? 'bg-amber-50 text-amber-700 border-amber-200'
+                            : 'bg-slate-100 text-slate-700 border-slate-200'
                         )}>
                           {rec.priority} Priority
                         </span>
+                        <span className="text-[11px] text-slate-500">
+                          {rec.affectedFilesCount} affected objects
+                        </span>
                       </div>
 
-                      <p className="text-xs text-slate-300 font-semibold leading-relaxed">{rec.description}</p>
+                      <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                        {rec.description}
+                      </p>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
-                        <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
-                          <span className="text-[10px] uppercase font-bold text-slate-400 block">Identified Problem:</span>
-                          <span className="text-white font-bold">{rec.problem}</span>
-                        </div>
-                        <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
-                          <span className="text-[10px] uppercase font-bold text-slate-400 block">Recommended Action:</span>
-                          <span className="text-cyan-300 font-bold">{rec.recommendedAction}</span>
-                        </div>
+                      <div className="mt-2.5 p-2 rounded bg-slate-50 border border-slate-200 text-[11px] text-slate-600">
+                        <strong className="text-slate-800">Action: </strong>{rec.recommendedAction}
                       </div>
                     </div>
                   </div>
 
-                  {/* Right: Savings & Deploy Action */}
-                  <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between w-full lg:w-auto gap-4 flex-shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-800">
-                    <div className="text-left lg:text-right">
-                      <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Estimated Savings</p>
-                      <p className="text-2xl font-black text-emerald-400 tracking-tight">
-                        ₹{rec.estimatedMonthlySavings.toLocaleString('en-IN')}
-                        <span className="text-xs font-semibold text-slate-400">/mo</span>
+                  <div className="flex flex-col sm:items-end justify-between gap-3 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                    <div className="sm:text-right">
+                      <span className="text-xs text-slate-500 block">Potential Recovery</span>
+                      <p className="text-base font-bold text-emerald-700">
+                        +₹{rec.estimatedMonthlySavings.toLocaleString('en-IN')}/mo
                       </p>
-                      <p className="text-[11px] text-slate-400">₹{(rec.estimatedMonthlySavings * 12).toLocaleString('en-IN')}/year</p>
                     </div>
 
                     <button
                       onClick={() => setDeployModal(rec)}
-                      className="btn-primary text-xs py-2 px-4 font-black flex items-center gap-1.5"
+                      className="btn-primary text-xs self-start sm:self-auto"
                     >
-                      <Sparkles className="w-3.5 h-3.5" />
-                      Simulate Policy
+                      Review Policy
                     </button>
                   </div>
                 </div>
               </div>
             )
-          })}
-        </div>
-      )}
+          })
+        )}
+      </div>
 
-      {/* Single Policy Simulation Modal */}
+      {/* Review & Apply Single Modal */}
       <Modal
-        open={!!deployModal}
+        open={Boolean(deployModal)}
         onClose={() => setDeployModal(null)}
-        title={`Deploy Optimization — ${deployModal?.title}`}
+        title={deployModal?.title || 'Review Recommendation'}
         size="md"
         footer={
-          deployModal ? (
-            <div className="flex items-center justify-between w-full">
-              <button onClick={() => setDeployModal(null)} className="btn-secondary">
-                Cancel
-              </button>
-              <button onClick={() => handleDeploySingle(deployModal)} disabled={deploying} className="btn-emerald">
-                {deploying ? 'Applying Simulation...' : 'Confirm Simulation'}
-              </button>
-            </div>
-          ) : undefined
+          <>
+            <button onClick={() => setDeployModal(null)} className="btn-secondary text-xs">
+              Cancel
+            </button>
+            <button
+              onClick={() => deployModal && handleDeploySingle(deployModal)}
+              disabled={deploying}
+              className="btn-primary text-xs"
+            >
+              {deploying ? 'Simulating Policy...' : 'Simulate Policy'}
+            </button>
+          </>
         }
       >
-        {deployModal && (
-          <div className="space-y-4 text-xs text-slate-300">
-            <p>{deployModal.description}</p>
-            <div className="space-y-2">
-              {deployModal.details.map((d, idx) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>{d}</span>
-                </div>
-              ))}
-            </div>
-            <div className="p-3.5 bg-emerald-950/50 border border-emerald-500/40 rounded-xl flex justify-between items-center font-bold text-emerald-300">
-              <span>Monthly Recurring Recovery:</span>
-              <span className="text-base font-black text-emerald-400">₹{deployModal.estimatedMonthlySavings.toLocaleString('en-IN')}/mo</span>
-            </div>
+        <div className="space-y-4 text-xs text-slate-600">
+          <p>{deployModal?.description}</p>
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-md space-y-1.5">
+            <p><strong>Action:</strong> {deployModal?.recommendedAction}</p>
+            <p><strong>Affected Objects:</strong> {deployModal?.affectedFilesCount}</p>
+            <p><strong>Estimated Monthly Savings:</strong> <span className="text-emerald-700 font-semibold">₹{deployModal?.estimatedMonthlySavings}/mo</span></p>
           </div>
-        )}
+        </div>
       </Modal>
 
-      {/* Batch Optimization Modal */}
+      {/* Batch Deploy Modal */}
       <Modal
         open={batchModal}
         onClose={() => setBatchModal(false)}
-        title="Deploy All Dataset Optimizations"
+        title="Simulate All Recommendations"
         size="md"
         footer={
-          <div className="flex items-center justify-between w-full">
-            <button onClick={() => setBatchModal(false)} className="btn-secondary">
+          <>
+            <button onClick={() => setBatchModal(false)} className="btn-secondary text-xs">
               Cancel
             </button>
-            <button onClick={handleDeployAll} disabled={batchDeploying} className="btn-emerald">
-              {batchDeploying ? 'Applying All Policies...' : 'Confirm All Simulations'}
+            <button
+              onClick={handleDeployAll}
+              disabled={batchDeploying}
+              className="btn-primary text-xs"
+            >
+              {batchDeploying ? 'Applying Policies...' : 'Confirm Simulation'}
             </button>
-          </div>
+          </>
         }
       >
-        <div className="space-y-4 text-xs text-slate-300">
-          <p>This will simulate applying lifecycle transition rules, deduplication, and log expirations across all {recs.length} recommended policies.</p>
-          <div className="p-3.5 bg-emerald-950/50 border border-emerald-500/40 rounded-xl flex justify-between items-center font-bold text-emerald-300">
-            <span>Total Estimated Monthly Savings:</span>
-            <span className="text-base font-black text-emerald-400">₹{totalMonthlySavings.toLocaleString('en-IN')} / mo</span>
+        <div className="space-y-3 text-xs text-slate-600">
+          <p>
+            This action will simulate the adoption of all {recs.length} lifecycle transitions and deduplication policies.
+          </p>
+          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-md text-emerald-800">
+            Total forecasted reduction: <strong>₹{totalMonthlySavings.toLocaleString('en-IN')}/mo</strong> (₹{totalAnnualSavings.toLocaleString('en-IN')} annually).
           </div>
         </div>
       </Modal>

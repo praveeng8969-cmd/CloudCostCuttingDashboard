@@ -2,16 +2,15 @@
 
 import React, { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import {
   Users, UserPlus, Search, Filter, ArrowUpDown,
-  MoreVertical, Edit2, Trash2, UserX, UserCheck, Eye,
-  Shield, CheckCircle2, AlertTriangle, Building2, Mail, Lock,
-  Clock, DollarSign, HardDrive
+  Edit2, Trash2, UserX, UserCheck, Eye,
+  Shield, CheckCircle2, AlertTriangle, Building2, Mail, Lock
 } from 'lucide-react'
 import { useStorageData, CustomerSummaryItem } from '@/context/StorageDataContext'
 import {
-  createUser, updateUser, toggleUserStatus, deleteUser,
-  getAllUsers
+  createUser, updateUser, toggleUserStatus, deleteUser
 } from '@/lib/services/authService'
 import Modal from '@/components/ui/Modal'
 import PageHeader from '@/components/layout/PageHeader'
@@ -76,40 +75,41 @@ export default function AdminUsersPage() {
     setCreateModalOpen(true)
   }
 
+  function handleOpenEdit(user: CustomerSummaryItem) {
+    setTargetUser(user)
+    setFormName(user.name)
+    setFormCompany(user.companyName)
+    setFormEmail(user.email)
+    setFormPassword('')
+    setFormStatus(user.status)
+    setFormError('')
+    setEditModalOpen(true)
+  }
+
+  function handleOpenDelete(user: CustomerSummaryItem) {
+    setTargetUser(user)
+    setDeleteModalOpen(true)
+  }
+
   function handleCreateSubmit(e: React.FormEvent) {
     e.preventDefault()
     setFormError('')
-
-    if (!formName || !formCompany || !formEmail) {
-      setFormError('Please fill in all required customer fields.')
-      return
-    }
 
     const res = createUser({
       name: formName,
       companyName: formCompany,
       email: formEmail,
-      password: formPassword || 'Cloud@123',
+      password: formPassword,
       status: formStatus
     })
 
-    if (res.success && res.user) {
-      toast.success(`Customer ${res.user.companyName} created successfully!`)
+    if (res.success) {
+      toast.success(`Created tenant for ${formCompany}`)
       setCreateModalOpen(false)
       setRefreshTick(t => t + 1)
     } else {
       setFormError(res.error || 'Failed to create customer.')
     }
-  }
-
-  function handleOpenEdit(cust: CustomerSummaryItem) {
-    setTargetUser(cust)
-    setFormName(cust.name)
-    setFormCompany(cust.companyName)
-    setFormEmail(cust.email)
-    setFormStatus(cust.status)
-    setFormError('')
-    setEditModalOpen(true)
   }
 
   function handleEditSubmit(e: React.FormEvent) {
@@ -120,12 +120,12 @@ export default function AdminUsersPage() {
     const res = updateUser(targetUser.id, {
       name: formName,
       companyName: formCompany,
-      email: formEmail,
-      status: formStatus
+      status: formStatus,
+      ...(formPassword.trim() ? { password: formPassword } : {})
     })
 
     if (res.success) {
-      toast.success('Customer details updated successfully!')
+      toast.success(`Updated tenant profile for ${formCompany}`)
       setEditModalOpen(false)
       setRefreshTick(t => t + 1)
     } else {
@@ -133,216 +133,169 @@ export default function AdminUsersPage() {
     }
   }
 
-  function handleToggleStatus(cust: CustomerSummaryItem) {
-    const res = toggleUserStatus(cust.id)
-    if (res.success) {
-      toast.success(`Customer status updated to ${res.user?.status.toUpperCase()}`)
+  function handleToggleStatus(user: CustomerSummaryItem) {
+    const updated = toggleUserStatus(user.id)
+    if (updated.success && updated.user) {
+      toast.success(`${user.companyName} is now ${updated.user.status}.`)
       setRefreshTick(t => t + 1)
-    } else {
-      toast.error(res.error || 'Status change failed')
     }
-  }
-
-  function handleOpenDelete(cust: CustomerSummaryItem) {
-    setTargetUser(cust)
-    setDeleteModalOpen(true)
   }
 
   function handleDeleteConfirm() {
     if (!targetUser) return
     const res = deleteUser(targetUser.id)
     if (res.success) {
-      toast.success(`Customer ${targetUser.companyName} removed. Isolated dataset cleared.`)
+      toast.success(`Tenant ${targetUser.companyName} deleted.`)
       setDeleteModalOpen(false)
       setRefreshTick(t => t + 1)
     } else {
-      toast.error(res.error || 'Failed to delete customer')
+      toast.error(res.error || 'Failed to delete customer.')
     }
   }
 
   return (
-    <div className="space-y-6 w-full min-w-0">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <PageHeader
-          title="Customer Account Management"
-          subtitle="Provision new customer tenants, manage access status, inspect isolated data, and monitor monthly spend."
-          badge={`${summaries.length} Registered Tenants`}
-        />
-
-        <button
-          onClick={handleOpenCreate}
-          className="btn-primary py-2.5 px-4 text-xs font-black flex items-center gap-2 self-start sm:self-auto shadow-lg shadow-purple-600/30"
-        >
-          <UserPlus className="w-4 h-4" />
-          Provision Customer Account
-        </button>
-      </div>
+    <div className="space-y-6 w-full min-w-0 pb-12">
+      <PageHeader
+        title="Customer Directory"
+        subtitle="Manage customer tenancies, access states, and inspect individual storage telemetry."
+        badge={`${summaries.length} Total Customers`}
+        actions={
+          <button
+            onClick={handleOpenCreate}
+            className="btn-primary text-xs"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            Provision New Customer
+          </button>
+        }
+      />
 
       {/* Filter and Search Bar */}
-      <div className="card p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search by customer name, company, or email..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="input pl-10 text-xs w-full"
-          />
-        </div>
-
-        {/* Filter Controls */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-slate-400 font-bold">Status:</span>
-            {(['all', 'active', 'disabled'] as const).map(st => (
-              <button
-                key={st}
-                onClick={() => setStatusFilter(st)}
-                className={clsx(
-                  'px-2.5 py-1 rounded-lg font-bold capitalize transition-colors',
-                  statusFilter === st
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-slate-900 text-slate-400 hover:text-white'
-                )}
-              >
-                {st}
-              </button>
-            ))}
+      <div className="card p-4 space-y-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="relative flex-1">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search by company, contact, or email..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="input pl-8 text-xs py-1.5 w-full"
+            />
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-slate-400 font-bold">Sort:</span>
+          <div className="flex items-center gap-2">
+            <select
+              value={statusFilter}
+              onChange={e => setStatusFilter(e.target.value as any)}
+              className="input text-xs py-1.5 w-auto"
+            >
+              <option value="all">All Statuses</option>
+              <option value="active">Active Only</option>
+              <option value="disabled">Disabled Only</option>
+            </select>
+
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value as any)}
-              className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-slate-200 text-xs font-bold outline-none cursor-pointer"
+              className="input text-xs py-1.5 w-auto"
             >
-              <option value="cost">Highest Cost</option>
-              <option value="savings">Highest Savings</option>
-              <option value="storage">Largest Storage</option>
-              <option value="newest">Newest</option>
+              <option value="cost">Sort: Spend (High → Low)</option>
+              <option value="savings">Sort: Savings (High → Low)</option>
+              <option value="storage">Sort: Storage Size</option>
+              <option value="newest">Sort: Newest First</option>
             </select>
           </div>
         </div>
+
+        <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+          <span>Showing <strong>{filteredCustomers.length}</strong> customers</span>
+        </div>
       </div>
 
-      {/* Customer Accounts Table */}
+      {/* Customer Directory Table */}
       <div className="card p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-950/60 text-slate-400 text-[11px] font-black uppercase tracking-wider">
-                <th className="py-3.5 px-4">Customer & Company</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4">Total Storage</th>
-                <th className="py-3.5 px-4">Estimated Cost</th>
-                <th className="py-3.5 px-4">Potential Savings</th>
-                <th className="py-3.5 px-4">Last Activity</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+              <tr className="border-b border-slate-200 bg-slate-50/75 text-slate-600 font-medium">
+                <th className="py-3 px-4">Company</th>
+                <th className="py-3 px-4">Contact</th>
+                <th className="py-3 px-4">Email</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-right">Storage</th>
+                <th className="py-3 px-4 text-right">Monthly Spend</th>
+                <th className="py-3 px-4 text-right">Potential Savings</th>
+                <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/80">
-              {filteredCustomers.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400">
-                    No customers found matching the search criteria.
+            <tbody className="divide-y divide-slate-100">
+              {filteredCustomers.map(c => (
+                <tr key={c.id} className="hover:bg-slate-50/75 transition-colors">
+                  <td className="py-3 px-4 font-semibold text-slate-900">
+                    {c.companyName}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600">
+                    {c.name}
+                  </td>
+                  <td className="py-3 px-4 text-slate-500 font-mono text-[11px]">
+                    {c.email}
+                  </td>
+                  <td className="py-3 px-4">
+                    <span className={clsx(
+                      'inline-flex items-center px-1.5 py-0.2 rounded text-[11px] font-medium border',
+                      c.status === 'active'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : 'bg-slate-100 text-slate-600 border-slate-200'
+                    )}>
+                      {c.status}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-right font-medium text-slate-900">
+                    {c.totalStorageGB >= 1000 ? `${(c.totalStorageGB / 1000).toFixed(2)} TB` : `${c.totalStorageGB} GB`}
+                  </td>
+                  <td className="py-3 px-4 text-right font-medium text-slate-900">
+                    ₹{c.currentMonthlyCost.toLocaleString('en-IN')}/mo
+                  </td>
+                  <td className="py-3 px-4 text-right font-semibold text-emerald-700">
+                    ₹{c.potentialMonthlySavings.toLocaleString('en-IN')}/mo
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Link
+                        href={`/admin/users/${c.id}`}
+                        className="btn-secondary py-1 px-2 text-xs"
+                      >
+                        Inspect
+                      </Link>
+                      <button
+                        onClick={() => handleOpenEdit(c)}
+                        className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-700"
+                        title="Edit Customer"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleToggleStatus(c)}
+                        className={clsx(
+                          'p-1 hover:bg-slate-100 rounded',
+                          c.status === 'active' ? 'text-amber-600' : 'text-emerald-600'
+                        )}
+                        title={c.status === 'active' ? 'Disable Account' : 'Enable Account'}
+                      >
+                        {c.status === 'active' ? <UserX className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
+                      </button>
+                      <button
+                        onClick={() => handleOpenDelete(c)}
+                        className="p-1 hover:bg-red-50 rounded text-slate-400 hover:text-red-600"
+                        title="Delete Tenant"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
-              ) : (
-                filteredCustomers.map(cust => (
-                  <tr key={cust.id} className="hover:bg-slate-900/40 transition-colors group">
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-purple-600/20 text-purple-300 font-black flex items-center justify-center flex-shrink-0 border border-purple-500/30">
-                          {cust.name.charAt(0)}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-bold text-white group-hover:text-purple-300 transition-colors">
-                            {cust.companyName}
-                          </p>
-                          <p className="text-[11px] text-slate-400">
-                            {cust.name} • <span className="font-mono">{cust.email}</span>
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="py-4 px-4">
-                      <span className={clsx(
-                        'px-2 py-0.5 rounded-full text-[10px] font-black uppercase border',
-                        cust.status === 'active'
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                          : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
-                      )}>
-                        {cust.status}
-                      </span>
-                    </td>
-
-                    <td className="py-4 px-4">
-                      <span className="font-bold text-cyan-300">
-                        {cust.totalStorageGB >= 1000
-                          ? `${(cust.totalStorageGB / 1000).toFixed(2)} TB`
-                          : `${cust.totalStorageGB} GB`}
-                      </span>
-                      <p className="text-[10px] text-slate-400">{cust.totalObjects} objects</p>
-                    </td>
-
-                    <td className="py-4 px-4 font-black text-white">
-                      ₹{cust.currentMonthlyCost.toLocaleString('en-IN')}
-                      <span className="text-[10px] text-slate-400 font-normal"> /mo</span>
-                    </td>
-
-                    <td className="py-4 px-4 font-black text-emerald-400">
-                      ₹{cust.potentialMonthlySavings.toLocaleString('en-IN')}
-                      <span className="text-[10px] text-slate-400 font-normal"> /mo</span>
-                    </td>
-
-                    <td className="py-4 px-4 text-slate-400 text-[11px]">
-                      {new Date(cust.lastActivity).toLocaleDateString('en-GB')}
-                    </td>
-
-                    <td className="py-4 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          onClick={() => router.push(`/admin/users/${cust.id}`)}
-                          title="Inspect Workspace"
-                          className="p-1.5 bg-slate-800 hover:bg-purple-600 text-slate-300 hover:text-white rounded-lg transition-colors"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleOpenEdit(cust)}
-                          title="Edit Customer"
-                          className="p-1.5 bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white rounded-lg transition-colors"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleToggleStatus(cust)}
-                          title={cust.status === 'active' ? 'Disable Account' : 'Enable Account'}
-                          className={clsx(
-                            'p-1.5 rounded-lg transition-colors',
-                            cust.status === 'active'
-                              ? 'bg-slate-800 hover:bg-amber-600 text-slate-300 hover:text-white'
-                              : 'bg-emerald-950/60 text-emerald-400 hover:bg-emerald-600 hover:text-white'
-                          )}
-                        >
-                          {cust.status === 'active' ? <UserX className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
-                        </button>
-                        <button
-                          onClick={() => handleOpenDelete(cust)}
-                          title="Delete Customer"
-                          className="p-1.5 bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white rounded-lg transition-colors"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
+              ))}
             </tbody>
           </table>
         </div>
@@ -355,46 +308,46 @@ export default function AdminUsersPage() {
         title="Provision New Customer Tenant"
         size="md"
       >
-        <form onSubmit={handleCreateSubmit} className="space-y-4 py-2 text-xs">
+        <form onSubmit={handleCreateSubmit} className="space-y-4 text-xs">
           {formError && (
-            <div className="p-3 bg-red-950/60 border border-red-500/40 rounded-xl text-red-300 font-bold">
+            <div className="p-2.5 bg-red-50 border border-red-200 text-red-700 rounded-md">
               {formError}
             </div>
           )}
 
           <div>
-            <label className="label">Contact Name *</label>
+            <label className="label">Company Name</label>
             <input
               type="text"
-              className="input"
-              placeholder="e.g. Jordan Miller"
-              value={formName}
-              onChange={e => setFormName(e.target.value)}
               required
-            />
-          </div>
-
-          <div>
-            <label className="label">Company Name *</label>
-            <input
-              type="text"
-              className="input"
-              placeholder="e.g. Apex Dataworks Inc."
+              placeholder="e.g. Apex Software"
               value={formCompany}
               onChange={e => setFormCompany(e.target.value)}
-              required
+              className="input"
             />
           </div>
 
           <div>
-            <label className="label">Login Email *</label>
+            <label className="label">Primary Contact Name</label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Jane Doe"
+              value={formName}
+              onChange={e => setFormName(e.target.value)}
+              className="input"
+            />
+          </div>
+
+          <div>
+            <label className="label">Email Address</label>
             <input
               type="email"
-              className="input"
-              placeholder="jordan@apexdata.com"
+              required
+              placeholder="jane@apex.com"
               value={formEmail}
               onChange={e => setFormEmail(e.target.value)}
-              required
+              className="input"
             />
           </div>
 
@@ -402,10 +355,11 @@ export default function AdminUsersPage() {
             <label className="label">Initial Password</label>
             <input
               type="password"
-              className="input"
-              placeholder="Leave blank for default: Cloud@123"
+              required
+              placeholder="••••••••"
               value={formPassword}
               onChange={e => setFormPassword(e.target.value)}
+              className="input"
             />
           </div>
 
@@ -414,25 +368,22 @@ export default function AdminUsersPage() {
             <select
               value={formStatus}
               onChange={e => setFormStatus(e.target.value as any)}
-              className="input cursor-pointer"
+              className="input"
             >
-              <option value="active">Active (Permits Immediate Login)</option>
-              <option value="disabled">Disabled (Blocks Login Access)</option>
+              <option value="active">Active</option>
+              <option value="disabled">Disabled</option>
             </select>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-800">
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
             <button
               type="button"
               onClick={() => setCreateModalOpen(false)}
-              className="btn-secondary"
+              className="btn-secondary text-xs"
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="btn-primary"
-            >
+            <button type="submit" className="btn-primary text-xs">
               Provision Customer
             </button>
           </div>
@@ -443,46 +394,46 @@ export default function AdminUsersPage() {
       <Modal
         open={editModalOpen}
         onClose={() => setEditModalOpen(false)}
-        title={`Edit Customer: ${targetUser?.companyName}`}
+        title={`Edit Tenant: ${targetUser?.companyName}`}
         size="md"
       >
-        <form onSubmit={handleEditSubmit} className="space-y-4 py-2 text-xs">
+        <form onSubmit={handleEditSubmit} className="space-y-4 text-xs">
           {formError && (
-            <div className="p-3 bg-red-950/60 border border-red-500/40 rounded-xl text-red-300 font-bold">
+            <div className="p-2.5 bg-red-50 border border-red-200 text-red-700 rounded-md">
               {formError}
             </div>
           )}
 
           <div>
-            <label className="label">Contact Name *</label>
+            <label className="label">Company Name</label>
             <input
               type="text"
-              className="input"
-              value={formName}
-              onChange={e => setFormName(e.target.value)}
               required
-            />
-          </div>
-
-          <div>
-            <label className="label">Company Name *</label>
-            <input
-              type="text"
-              className="input"
               value={formCompany}
               onChange={e => setFormCompany(e.target.value)}
-              required
+              className="input"
             />
           </div>
 
           <div>
-            <label className="label">Login Email *</label>
+            <label className="label">Contact Name</label>
             <input
-              type="email"
-              className="input"
-              value={formEmail}
-              onChange={e => setFormEmail(e.target.value)}
+              type="text"
               required
+              value={formName}
+              onChange={e => setFormName(e.target.value)}
+              className="input"
+            />
+          </div>
+
+          <div>
+            <label className="label">Reset Password (leave empty to keep current)</label>
+            <input
+              type="password"
+              placeholder="New password (optional)"
+              value={formPassword}
+              onChange={e => setFormPassword(e.target.value)}
+              className="input"
             />
           </div>
 
@@ -491,25 +442,22 @@ export default function AdminUsersPage() {
             <select
               value={formStatus}
               onChange={e => setFormStatus(e.target.value as any)}
-              className="input cursor-pointer"
+              className="input"
             >
               <option value="active">Active</option>
               <option value="disabled">Disabled</option>
             </select>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-800">
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
             <button
               type="button"
               onClick={() => setEditModalOpen(false)}
-              className="btn-secondary"
+              className="btn-secondary text-xs"
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="btn-primary"
-            >
+            <button type="submit" className="btn-primary text-xs">
               Save Changes
             </button>
           </div>
@@ -520,30 +468,25 @@ export default function AdminUsersPage() {
       <Modal
         open={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
-        title="Confirm Customer Tenant Deletion"
+        title="Confirm Tenant Deletion"
         size="sm"
-      >
-        <div className="py-3 text-center space-y-3">
-          <div className="w-12 h-12 rounded-full bg-rose-950 text-rose-400 border border-rose-500/30 flex items-center justify-center mx-auto">
-            <AlertTriangle className="w-6 h-6" />
-          </div>
-          <h4 className="text-base font-bold text-white">Delete {targetUser?.companyName}?</h4>
-          <p className="text-xs text-slate-300 leading-relaxed">
-            Are you sure you want to delete this customer account? Their isolated storage dataset, telemetry, and reports will be permanently purged.
-          </p>
-          <div className="flex gap-2 pt-3">
-            <button
-              onClick={() => setDeleteModalOpen(false)}
-              className="btn-secondary flex-1 text-xs"
-            >
+        footer={
+          <>
+            <button onClick={() => setDeleteModalOpen(false)} className="btn-secondary text-xs">
               Cancel
             </button>
-            <button
-              onClick={handleDeleteConfirm}
-              className="btn-danger flex-1 text-xs font-bold"
-            >
-              Yes, Delete Tenant
+            <button onClick={handleDeleteConfirm} className="btn-danger text-xs">
+              Delete Tenant
             </button>
+          </>
+        }
+      >
+        <div className="space-y-3 text-xs text-slate-600">
+          <p>
+            Are you sure you want to permanently delete the tenant account for <strong>{targetUser?.companyName}</strong>?
+          </p>
+          <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md">
+            This will remove all associated user records and credentials from the platform.
           </div>
         </div>
       </Modal>
