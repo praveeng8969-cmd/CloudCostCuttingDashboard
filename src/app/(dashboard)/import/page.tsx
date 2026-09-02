@@ -114,8 +114,8 @@ export default function ImportPage() {
         }
       />
 
-      {/* Cloud-Themed Upload Section */}
-      <div className="card p-6 bg-cloud-import border border-slate-200/90 rounded-xl shadow-sm relative overflow-hidden">
+      {/* Upload Section */}
+      <div className="card p-6 bg-white/90 backdrop-blur-sm border border-slate-200/90 rounded-xl shadow-sm relative overflow-hidden">
         <div
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={() => setIsDragging(false)}

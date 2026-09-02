@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import { AppProviders } from '@/components/providers/AppProviders'
+import CloudCutBackground from '@/components/layout/CloudCutBackground'
 
 export const metadata: Metadata = {
   title: 'CloudCut — Cloud Storage Cost Cutting Dashboard',
@@ -21,7 +22,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className="relative min-h-screen text-slate-900 antialiased">
+        <CloudCutBackground />
         <AppProviders>
           {children}
         </AppProviders>

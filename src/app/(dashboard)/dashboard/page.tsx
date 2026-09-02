@@ -45,8 +45,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Empty Dashboard State with Cloud Background */}
-        <div className="min-h-[460px] w-full rounded-xl bg-cloud-empty border border-slate-200/90 flex flex-col items-center justify-center p-8 text-center shadow-sm relative overflow-hidden">
+        {/* Empty Dashboard State */}
+        <div className="min-h-[460px] w-full rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200/90 flex flex-col items-center justify-center p-8 text-center shadow-sm relative overflow-hidden">
           <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 text-blue-600 flex items-center justify-center mb-4 shadow-sm">
             <UploadCloud className="w-7 h-7" />
           </div>
