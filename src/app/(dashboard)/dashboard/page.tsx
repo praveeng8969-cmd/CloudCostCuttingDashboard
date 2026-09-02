@@ -6,7 +6,8 @@ import Link from 'next/link'
 import {
   HardDrive, DollarSign, TrendingDown, Gauge, Copy, Clock,
   Sparkles, ArrowRight, RefreshCw, Zap, ShieldCheck, CheckCircle2,
-  SlidersHorizontal, Download, Layers, Flame, Database, UploadCloud
+  SlidersHorizontal, Download, Layers, Flame, Database, UploadCloud,
+  FileSpreadsheet, AlertTriangle, Archive, ArrowUpRight
 } from 'lucide-react'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -19,6 +20,7 @@ import CloudArchitectureDiagram from '@/components/features/CloudArchitectureDia
 import ProgressBar from '@/components/ui/ProgressBar'
 import { useDateRange } from '@/app/(dashboard)/layout'
 import { useStorageData } from '@/context/StorageDataContext'
+import { useAuth } from '@/context/AuthContext'
 import toast from 'react-hot-toast'
 
 // Score Ring with Glowing Radial Meter
@@ -63,7 +65,8 @@ const fmtRupee = (v: number) => `₹${v >= 1000 ? (v / 1000).toFixed(0) + 'K' : 
 export default function DashboardPage() {
   const router = useRouter()
   const dateRange = useDateRange()
-  const { analysisResult, records, hasData, loadDemoData } = useStorageData()
+  const { analysisResult, records, hasData, dataSourceName, dataSourceType, loadDemoData } = useStorageData()
+  const { user } = useAuth()
 
   const now = new Date()
   const hour = now.getHours()
@@ -86,6 +89,15 @@ export default function DashboardPage() {
     { month: 'Sep (Sim)', current: Math.round(currentCost * 1.05), projected: optimizedCost },
   ]
 
+  // Sorted most used categories
+  const mostUsedCategories = [...analysisResult.byFileType].sort((a, b) => b.storageGB - a.storageGB)
+
+  // Low activity & optimization candidate metrics
+  const highlyInactiveCount = records.filter(r => r.isHighlyInactive).length
+  const highlyInactiveGB = Math.round(records.filter(r => r.isHighlyInactive).reduce((acc, r) => acc + r.sizeGB, 0))
+  const archiveCandidatesCount = records.filter(r => r.storageClass === 'STANDARD' && (r.isInactive || r.isHighlyInactive)).length
+  const archiveCandidatesGB = Math.round(records.filter(r => r.storageClass === 'STANDARD' && (r.isInactive || r.isHighlyInactive)).reduce((acc, r) => acc + r.sizeGB, 0))
+
   // If no dataset loaded, display the empty state prompt
   if (!hasData) {
     return (
@@ -94,15 +106,15 @@ export default function DashboardPage() {
           <UploadCloud className="w-8 h-8" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-xl font-black text-white">No Cloud Storage Data Loaded</h2>
+          <h2 className="text-xl font-black text-white">No Dataset Loaded for {user?.companyName || 'Your Account'}</h2>
           <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
-            Upload your cloud storage usage CSV or load the built-in demo dataset to inspect real calculated costs and savings.
+            Upload your cloud storage usage CSV metadata or load the built-in demo dataset to analyze costs, waste, and optimization opportunities.
           </p>
         </div>
         <div className="flex items-center justify-center gap-3 pt-2">
           <Link href="/import" className="btn-primary text-xs py-2.5 px-5 font-black">
             <UploadCloud className="w-4 h-4 mr-1.5" />
-            Import CSV Dataset
+            Upload Storage CSV
           </Link>
           <button onClick={loadDemoData} className="btn-yellow text-xs py-2.5 px-5 font-black">
             <Sparkles className="w-4 h-4 mr-1.5 text-gray-950" />
@@ -115,56 +127,67 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 w-full min-w-0">
-      {/* Hero Header Banner */}
+      {/* Hero Header Banner with Company Identity */}
       <div className="p-6 sm:p-8 bg-gradient-to-r from-blue-900/90 via-indigo-900/90 to-purple-900/90 rounded-3xl text-white shadow-2xl border border-blue-500/30 backdrop-blur-xl relative overflow-hidden w-full min-w-0">
         <div className="absolute -top-10 -right-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-10 left-1/4 w-72 h-72 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 min-w-0">
           <div className="min-w-0 flex-1">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-yellow-400/20 border border-yellow-400/30 backdrop-blur-md rounded-full text-xs font-black text-yellow-300 mb-2.5">
-              <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
-              Dataset Analysis Engine Active
+            <div className="flex flex-wrap items-center gap-2 mb-2.5">
+              <span className="px-3 py-1 bg-yellow-400/20 border border-yellow-400/30 backdrop-blur-md rounded-full text-xs font-black text-yellow-300 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+                Active Storage Audit
+              </span>
+              <span className="px-3 py-1 bg-blue-500/20 border border-blue-400/30 rounded-full text-xs font-bold text-cyan-300">
+                Company: <strong className="text-white">{user?.companyName || 'NovaTech Solutions'}</strong>
+              </span>
+              <span className="px-3 py-1 bg-slate-800/80 border border-slate-700 rounded-full text-xs font-medium text-slate-300">
+                Source: {dataSourceName}
+              </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight">{greeting}, Admin 👋</h2>
+
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
+              {greeting}, {user?.name?.split(' ')[0] || 'Customer'} 👋
+            </h2>
             <p className="text-slate-200 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
-              Calculated <strong className="text-emerald-400 font-extrabold underline underline-offset-4 decoration-emerald-500">₹{analysisResult.potentialMonthlySavings.toLocaleString('en-IN')}/mo</strong> in recoverable storage spend across {analysisResult.totalObjects} analyzed objects.
+              Identified <strong className="text-emerald-400 font-extrabold underline underline-offset-4 decoration-emerald-500">₹{analysisResult.potentialMonthlySavings.toLocaleString('en-IN')}/mo</strong> in recoverable storage spend across {analysisResult.totalObjects} analyzed objects.
             </p>
           </div>
 
           <div className="flex items-center gap-3 flex-wrap flex-shrink-0">
             <button
               onClick={() => router.push('/recommendations')}
-              className="btn-yellow text-xs font-black"
+              className="btn-yellow text-xs font-black shadow-lg"
             >
               <Zap className="w-4 h-4 text-gray-950" />
               Review {analysisResult.recommendations.length} Actionable Fixes
             </button>
             <button
-              onClick={() => router.push('/cost-analysis')}
-              className="btn-emerald text-xs font-extrabold"
+              onClick={() => router.push('/reports')}
+              className="btn-secondary text-xs font-bold flex items-center gap-1.5"
             >
-              <TrendingDown className="w-4 h-4" />
-              Cost Explorer
+              <FileSpreadsheet className="w-4 h-4 text-blue-400" />
+              Generate Report
             </button>
           </div>
         </div>
       </div>
 
-      {/* KPI Cards — 6 Colorful Metric Cards dynamically derived from dataset */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 w-full min-w-0">
+      {/* KPI Cards — User-Specific Storage & Cost Metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 w-full min-w-0">
         {/* 1. Total Storage */}
         <MetricCard
           title="Total Storage"
           value={totalStorageDisplay}
-          subtitle={`${analysisResult.totalObjects.toLocaleString()} objects`}
+          subtitle={`${analysisResult.totalObjects.toLocaleString()} objects indexed`}
           icon={<HardDrive className="w-5 h-5 text-cyan-400" />}
           iconBg="bg-cyan-500/20 text-cyan-300"
           glowColor="cyan"
           onClick={() => router.push('/storage')}
         />
 
-        {/* 2. Monthly Cost */}
+        {/* 2. Estimated Monthly Cost */}
         <MetricCard
           title="Estimated Monthly Cost"
           value={`₹${analysisResult.currentMonthlyCost.toLocaleString('en-IN')}`}
@@ -175,20 +198,31 @@ export default function DashboardPage() {
           onClick={() => router.push('/cost-analysis')}
         />
 
-        {/* 3. Potential Savings */}
+        {/* 3. Estimated Optimized Cost */}
         <MetricCard
-          title="Potential Savings"
+          title="Estimated Optimized Cost"
+          value={`₹${analysisResult.potentialMonthlyCost.toLocaleString('en-IN')}`}
+          subtitle={`After recommended tiering`}
+          icon={<TrendingDown className="w-5 h-5 text-blue-400" />}
+          iconBg="bg-blue-500/20 text-blue-300"
+          glowColor="blue"
+          onClick={() => router.push('/cost-analysis')}
+        />
+
+        {/* 4. Potential Monthly Savings */}
+        <MetricCard
+          title="Potential Monthly Savings"
           value={`₹${analysisResult.potentialMonthlySavings.toLocaleString('en-IN')}`}
           change={`${analysisResult.savingsPercentage}%`}
           changeType="positive"
           changeLabel="recoverable"
-          icon={<TrendingDown className="w-5 h-5 text-emerald-400" />}
+          icon={<Zap className="w-5 h-5 text-emerald-400" />}
           iconBg="bg-emerald-500/20 text-emerald-300"
           glowColor="emerald"
           onClick={() => router.push('/recommendations')}
         />
 
-        {/* 4. Optimization Score */}
+        {/* 5. Optimization Score */}
         <div
           onClick={() => router.push('/recommendations')}
           className="card p-5 card-glow-yellow hover:shadow-yellow-500/20 cursor-pointer hover:scale-[1.03] transition-transform select-none min-w-0"
@@ -206,37 +240,158 @@ export default function DashboardPage() {
             </span>
           </div>
         </div>
-
-        {/* 5. Duplicate Waste */}
-        <MetricCard
-          title="Duplicate Waste"
-          value={`${analysisResult.duplicateRecoverableStorageGB} GB`}
-          subtitle={`${analysisResult.duplicateCandidatesCount} redundant copies`}
-          icon={<Copy className="w-5 h-5 text-orange-400" />}
-          iconBg="bg-orange-500/20 text-orange-300"
-          glowColor="orange"
-          onClick={() => router.push('/duplicates')}
-        />
-
-        {/* 6. Inactive Storage */}
-        <MetricCard
-          title="Inactive Storage"
-          value={`${analysisResult.inactiveStorageGB} GB`}
-          subtitle={`${analysisResult.inactiveObjectsCount} stale objects (>180d)`}
-          icon={<Clock className="w-5 h-5 text-red-400" />}
-          iconBg="bg-red-500/20 text-red-300"
-          glowColor="red"
-          onClick={() => router.push('/storage')}
-        />
       </div>
 
-      {/* Main Analytics Charts */}
+      {/* SECTION 7 & 8: MOST USED STORAGE VS LEAST USED STORAGE */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full min-w-0">
+        {/* Most Used Storage */}
+        <div className="card p-6 card-glow-blue flex flex-col justify-between min-w-0">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                  <Database className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white">Most Used Storage</h3>
+                  <p className="text-xs text-slate-400">Categories consuming the largest share of capacity</p>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-slate-400">{mostUsedCategories.length} Categories</span>
+            </div>
+
+            <div className="divide-y divide-slate-800/80 mt-4">
+              {mostUsedCategories.slice(0, 5).map((cat, idx) => (
+                <div key={cat.name} className="py-3 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <span className="text-xs font-bold text-slate-500 w-4">#{idx + 1}</span>
+                    <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
+                    <div className="min-w-0 truncate">
+                      <p className="text-xs font-bold text-white truncate">{cat.name}</p>
+                      <p className="text-[10px] text-slate-400">{cat.fileCount} files indexed</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 flex-shrink-0 text-right">
+                    <div>
+                      <p className="text-xs font-black text-white">{cat.storageGB} GB</p>
+                      <p className="text-[10px] text-slate-400 font-semibold">{cat.percentage}% of pool</p>
+                    </div>
+                    <div className="min-w-[80px]">
+                      <span className="text-xs font-black text-purple-300">₹{cat.cost.toLocaleString('en-IN')}</span>
+                      <p className="text-[10px] text-slate-500">/month</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
+            <span className="text-slate-400">Total Monitored Category Pool</span>
+            <Link href="/storage" className="text-blue-400 hover:underline font-bold flex items-center gap-1">
+              Deep Category Audit <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Least Used / Low Activity Storage */}
+        <div className="card p-6 card-glow-emerald flex flex-col justify-between min-w-0">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white">Least Used / Low Activity Storage</h3>
+                  <p className="text-xs text-slate-400">Identified optimization candidates and idle assets</p>
+                </div>
+              </div>
+              <span className="px-2 py-0.5 text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full">
+                Savings Target
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+              {/* Inactive Storage */}
+              <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-700/80">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">Inactive Storage</span>
+                  <Clock className="w-3.5 h-3.5 text-amber-400" />
+                </div>
+                <p className="text-lg font-black text-white">{analysisResult.inactiveStorageGB} GB</p>
+                <p className="text-[10px] text-slate-300 mt-0.5">
+                  {analysisResult.inactiveObjectsCount} objects unaccessed &gt; 180 days
+                </p>
+                <div className="mt-2 text-[10px] font-bold text-amber-400 flex items-center gap-1">
+                  <span>Optimization Candidate</span>
+                </div>
+              </div>
+
+              {/* Duplicate Candidates */}
+              <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-700/80">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">Duplicate Candidates</span>
+                  <Copy className="w-3.5 h-3.5 text-orange-400" />
+                </div>
+                <p className="text-lg font-black text-orange-300">{analysisResult.duplicateRecoverableStorageGB} GB</p>
+                <p className="text-[10px] text-slate-300 mt-0.5">
+                  {analysisResult.duplicateCandidatesCount} redundant file copies
+                </p>
+                <div className="mt-2 text-[10px] font-bold text-orange-400 flex items-center gap-1">
+                  <span>₹{analysisResult.duplicateEstimatedSavings}/mo recoverable</span>
+                </div>
+              </div>
+
+              {/* Archive Candidates */}
+              <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-700/80">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">Archive Candidates</span>
+                  <Archive className="w-3.5 h-3.5 text-cyan-400" />
+                </div>
+                <p className="text-lg font-black text-white">{archiveCandidatesGB} GB</p>
+                <p className="text-[10px] text-slate-300 mt-0.5">
+                  {archiveCandidatesCount} Standard tier files ready for Glacier
+                </p>
+                <div className="mt-2 text-[10px] font-bold text-cyan-400 flex items-center gap-1">
+                  <span>Move to Cold Tier</span>
+                </div>
+              </div>
+
+              {/* Highly Inactive (>365d) */}
+              <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-700/80">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">Highly Inactive Storage</span>
+                  <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+                </div>
+                <p className="text-lg font-black text-rose-300">{highlyInactiveGB} GB</p>
+                <p className="text-[10px] text-slate-300 mt-0.5">
+                  {highlyInactiveCount} objects unaccessed &gt; 1 year
+                </p>
+                <div className="mt-2 text-[10px] font-bold text-rose-400 flex items-center gap-1">
+                  <span>Deep Archive Candidate</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
+            <span className="text-slate-400">Actionable Opportunities</span>
+            <Link href="/recommendations" className="text-emerald-400 hover:underline font-bold flex items-center gap-1">
+              Apply Recommended Tiering <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Analytics Charts: Cost Trajectory & Age Distribution */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 w-full min-w-0">
         {/* Cost Trajectory */}
         <div className="xl:col-span-2 min-w-0">
           <ChartCard
-            title="Cloud Storage Cost Trajectory (₹)"
-            subtitle="Current spending vs simulated post-optimization curve (Demo Pricing)"
+            title="Estimated Cloud Storage Cost Trajectory (₹)"
+            subtitle="Current spending vs simulated post-optimization curve (Demo Pricing Model)"
             action={
               <button
                 onClick={() => router.push('/cost-analysis')}
@@ -314,75 +469,15 @@ export default function DashboardPage() {
       {/* Cloud Architecture Flow Diagram */}
       <CloudArchitectureDiagram />
 
-      {/* Dynamic Breakdowns by File Type and Bucket */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full min-w-0">
-        {/* Storage by File Category Donut */}
-        <ChartCard title="Storage by File Category" subtitle={`${totalStorageDisplay} distributed across file types`}>
-          <div className="flex flex-col sm:flex-row items-center gap-6 w-full min-w-0">
-            <div className="w-48 h-48 flex-shrink-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={analysisResult.byFileType}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={54}
-                    outerRadius={80}
-                    dataKey="storageGB"
-                    paddingAngle={3}
-                  >
-                    {analysisResult.byFileType.map((entry, i) => (
-                      <Cell key={i} fill={entry.color} stroke="none" />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(v: number) => [`${v} GB`, '']}
-                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', color: '#fff' }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="flex-1 w-full space-y-2.5 min-w-0">
-              {analysisResult.byFileType.map(d => (
-                <div key={d.name} className="flex items-center justify-between text-xs min-w-0">
-                  <div className="flex items-center gap-2 truncate">
-                    <span className="w-3 h-3 rounded-md shadow-sm flex-shrink-0" style={{ backgroundColor: d.color }} />
-                    <span className="font-semibold text-slate-300 truncate">{d.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                    <span className="font-black text-white">{d.storageGB} GB</span>
-                    <span className="text-slate-400 text-[10px]">({d.percentage}%)</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </ChartCard>
-
-        {/* Bucket Storage Allocation */}
-        <ChartCard title="Bucket Storage Allocation" subtitle="GB usage per bucket container">
-          <div className="w-full h-[220px] min-w-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analysisResult.byBucket} layout="vertical" margin={{ top: 0, right: 30, bottom: 0, left: 100 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.07)" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => `${v} GB`} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#f8fafc', fontWeight: 700 }} axisLine={false} tickLine={false} width={100} />
-                <Tooltip
-                  formatter={(v: number) => [`${v} GB`, 'Storage']}
-                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', color: '#fff' }}
-                />
-                <Bar dataKey="storageGB" fill="#3b82f6" radius={[0, 8, 8, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartCard>
-      </div>
-
-      {/* Storage Class Breakdown Cards */}
+      {/* Storage Class Allocation */}
       <div className="card p-6 w-full min-w-0">
-        <h3 className="section-title mb-1">Storage Class Allocation & Invoiced Estimates</h3>
-        <p className="section-sub mb-4">Direct cost allocation calculated across active storage classes</p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="section-title mb-1">Storage Class Allocation & Invoiced Estimates</h3>
+            <p className="section-sub">Direct cost allocation calculated across active storage classes (Demo Pricing)</p>
+          </div>
+          <span className="text-xs font-bold text-slate-400">Total: {totalStorageDisplay}</span>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {analysisResult.byStorageClass.map(item => (

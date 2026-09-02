@@ -10,10 +10,12 @@ import toast from 'react-hot-toast'
 import clsx from 'clsx'
 import { DATE_RANGES } from '@/lib/constants'
 import type { DateRange } from '@/types'
+import { useAuth } from '@/context/AuthContext'
 
 const pageLabels: Record<string, string> = {
   '/dashboard':       'Enterprise Dashboard',
   '/storage':         'Storage Analysis',
+  '/storage-analysis':'Storage Analysis',
   '/cost-analysis':   'Cost & Billing Analytics',
   '/recommendations': 'Cost Optimization Recommendations',
   '/duplicates':      'Duplicate File Manager',
@@ -38,6 +40,7 @@ const initialNotifications = [
 export default function Navbar({ onMenuClick, dateRange, onDateRangeChange }: NavbarProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const { user } = useAuth()
   const [showNotifications, setShowNotifications] = useState(false)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showSearchModal, setShowSearchModal] = useState(false)
@@ -255,10 +258,26 @@ export default function Navbar({ onMenuClick, dateRange, onDateRangeChange }: Na
           )}
         </div>
 
-        {/* Demo Mode Badge */}
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/40 rounded-full">
-          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-          <span className="text-xs font-black text-amber-300">Demo Active</span>
+        {/* Customer Identity Badge */}
+        {user && (
+          <div className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 bg-slate-900/90 border border-slate-700/80 rounded-2xl shadow-sm">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-[11px] font-black shadow">
+              {user.name.charAt(0)}
+            </div>
+            <div className="text-left leading-tight">
+              <p className="text-xs font-bold text-white leading-none">{user.name}</p>
+              <p className="text-[10px] font-semibold text-cyan-400 leading-tight">{user.companyName}</p>
+            </div>
+            <span className="text-[9px] font-black px-1.5 py-0.5 bg-blue-500/20 text-blue-300 rounded border border-blue-500/30 uppercase">
+              Customer
+            </span>
+          </div>
+        )}
+
+        {/* Demo Mode / Active Status */}
+        <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/40 rounded-full">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[11px] font-black text-emerald-300">Live Workspace</span>
         </div>
       </header>
 

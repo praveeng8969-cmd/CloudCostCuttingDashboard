@@ -1,7 +1,8 @@
-// Realistic built-in sample CSV dataset with diverse dates, sizes, buckets, and duplicate candidates
+// Realistic built-in sample CSV datasets tailored for multi-customer SaaS demonstration
 
 export const SAMPLE_CSV_HEADER = "file_name,size_gb,last_accessed,storage_class,file_type,bucket\n"
 
+// Standard / NovaTech Balanced Dataset (~1.2 TB)
 export function generateSampleCsvString(): string {
   const rows = [
     // Duplicate Set 1: Production DB Snapshots
@@ -68,4 +69,91 @@ export function generateSampleCsvString(): string {
   ]
 
   return SAMPLE_CSV_HEADER + rows.join('\n')
+}
+
+// ByteWorks Dataset — Heavy on Duplicate Files & Redundancy (~850 GB)
+export function generateByteWorksDataset(): string {
+  const rows = [
+    // Duplicate Cluster 1: Monolithic DB Exports (3 redundant copies)
+    "postgres_monolith_prod_full_jul26.dump,120,2026-07-20,STANDARD,Backup,bw-database-backups",
+    "postgres_monolith_prod_full_jul26_copy.dump,120,2026-07-20,STANDARD,Backup,bw-database-backups",
+    "postgres_monolith_prod_full_jul26_staging_test.dump,120,2026-07-21,STANDARD,Backup,bw-dev-staging-vault",
+
+    // Duplicate Cluster 2: CI/CD Build Docker Artifacts
+    "docker_image_backend_build_v3.4.1.tar,45,2026-08-10,STANDARD,Other,bw-ci-build-cache",
+    "docker_image_backend_build_v3.4.1_copy.tar,45,2026-08-10,STANDARD,Other,bw-ci-build-cache",
+    "docker_image_backend_build_v3.4.1_release_mirror.tar,45,2026-08-11,STANDARD,Other,bw-docker-registry",
+
+    // Duplicate Cluster 3: Raw Product Video B-Roll
+    "byteworks_enterprise_intro_raw_4k.mov,75,2026-05-15,STANDARD,Video,bw-marketing-assets",
+    "byteworks_enterprise_intro_raw_4k_backup.mov,75,2026-05-15,STANDARD,Video,bw-marketing-assets",
+
+    // Duplicate Cluster 4: Analytics Clickstream Exports
+    "clickstream_events_2026_q2_raw.json.gz,35,2026-06-30,STANDARD,Logs,bw-analytics-lake",
+    "clickstream_events_2026_q2_raw_copy.json.gz,35,2026-06-30,STANDARD,Logs,bw-backup-lake",
+
+    // Regular active storage
+    "active_app_assets_bundle.zip,12,2026-08-28,STANDARD,Document,bw-static-cdn",
+    "daily_incremental_db_diff.sql,8.5,2026-08-30,STANDARD,Backup,bw-database-backups",
+    "customer_contracts_pdf_vault.zip,22,2026-08-15,STANDARD,Document,bw-legal-vault",
+    "ml_inference_logs_current.log,18,2026-08-25,STANDARD,Logs,bw-analytics-lake",
+    "archived_audit_records_2024.tar.gz,150,2024-03-01,GLACIER,Archive,bw-cold-archive"
+  ]
+  return SAMPLE_CSV_HEADER + rows.join('\n')
+}
+
+// StartFlow Dataset — Heavy on Inactive & Old Archives in Standard Class (~2.4 TB)
+export function generateStartFlowDataset(): string {
+  const rows = [
+    // Stale STANDARD files that should be Glacier / Deep Archive (>365 days)
+    "startflow_core_legacy_db_2023.tar,420,2023-11-10,STANDARD,Backup,sf-legacy-backups",
+    "user_activity_archive_2023_full.csv,380,2024-01-05,STANDARD,Archive,sf-datalake-archive",
+    "historical_financial_audits_2022_2023.zip,260,2023-12-15,STANDARD,Document,sf-compliance-records",
+    "cold_server_image_snapshots_centos7.vmdk,310,2024-02-18,STANDARD,Other,sf-server-images",
+    "application_debug_logs_complete_2024_h1.log,290,2024-06-25,STANDARD,Logs,sf-telemetry-dumps",
+    
+    // Inactive files (180–365 days)
+    "clickhouse_migration_snapshot_2025q3.sql,220,2025-09-14,STANDARD,Backup,sf-database-backups",
+    "sales_demo_screen_recordings_pack.mp4,140,2025-10-20,STANDARD,Video,sf-marketing-media",
+    "old_mobile_releases_archive.zip,75,2025-11-02,STANDARD,Other,sf-release-vault",
+
+    // Normal active files
+    "active_production_mongodb_live.tar.gz,110,2026-08-29,STANDARD,Backup,sf-live-production",
+    "static_frontend_assets_v8.js,15,2026-08-31,STANDARD,Document,sf-cdn-assets",
+    "compliance_monthly_pack_aug2026.pdf,6.5,2026-08-28,STANDARD,Document,sf-compliance-records",
+    "glacier_enterprise_vault_2021.tar.gpg,480,2023-01-10,DEEP_ARCHIVE,Archive,sf-deep-vault"
+  ]
+  return SAMPLE_CSV_HEADER + rows.join('\n')
+}
+
+// PixelLabs Dataset — Heavy on Media & Uncompressed Videos (~3.1 TB)
+export function generatePixelLabsDataset(): string {
+  const rows = [
+    // Huge video & raw media files
+    "brand_commercial_superbowl_raw_prores.mov,480,2026-03-20,STANDARD,Video,px-raw-footage",
+    "brand_commercial_superbowl_raw_prores_copy.mov,480,2026-03-20,STANDARD,Video,px-creative-staging",
+    "fashion_show_multi_cam_4k_master.mp4,320,2026-04-12,STANDARD,Video,px-raw-footage",
+    "podcast_season_4_multitrack_flac.tar,190,2026-05-18,STANDARD,Other,px-audio-vault",
+    "cgi_rendering_blender_assets_pack.tar.gz,240,2026-06-05,STANDARD,Other,px-3d-renders",
+    "uncompressed_telemetry_streaming_raw.csv,210,2026-02-14,STANDARD,Logs,px-media-analytics",
+    
+    // Inactive media
+    "product_demos_archive_2024.zip,350,2024-07-22,STANDARD,Archive,px-cold-vault",
+    "stock_video_b_roll_licensed_pack.mp4,280,2024-09-30,STANDARD_IA,Video,px-b-roll-stock",
+    "audio_sound_effects_library.tar,140,2025-01-15,STANDARD_IA,Other,px-audio-vault",
+
+    // Active production assets
+    "client_social_reels_final_export_aug.mp4,65,2026-08-30,STANDARD,Video,px-active-campaigns",
+    "high_res_photo_gallery_august.zip,45,2026-08-28,STANDARD,Image,px-active-campaigns",
+    "website_optimized_webp_assets.tar,18,2026-08-31,STANDARD,Image,px-static-cdn",
+    "legal_media_rights_releases_2026.pdf,4.2,2026-08-27,STANDARD,Document,px-contracts"
+  ]
+  return SAMPLE_CSV_HEADER + rows.join('\n')
+}
+
+export function getDemoDatasetForUser(userId: string): string {
+  if (userId === 'user_byteworks') return generateByteWorksDataset()
+  if (userId === 'user_startflow') return generateStartFlowDataset()
+  if (userId === 'user_pixellabs') return generatePixelLabsDataset()
+  return generateSampleCsvString()
 }

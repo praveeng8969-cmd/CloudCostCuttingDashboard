@@ -11,6 +11,7 @@ import {
 import clsx from 'clsx'
 import { APP_NAME } from '@/lib/constants'
 import { useStorageData } from '@/context/StorageDataContext'
+import { useAuth } from '@/context/AuthContext'
 import toast from 'react-hot-toast'
 
 interface SidebarProps {
@@ -23,10 +24,10 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { analysisResult, hasData } = useStorageData()
+  const { user, logout } = useAuth()
 
   function handleLogout() {
-    toast.success('Logged out successfully')
-    router.push('/login')
+    logout()
   }
 
   function handleSupport() {
@@ -156,13 +157,13 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
           'flex items-center gap-3 px-3 py-2 rounded-xl bg-slate-900/70 border border-slate-800/80',
           collapsed && 'justify-center px-2'
         )}>
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-xs shadow-sm">
-            A
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-xs shadow-sm">
+            {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
           </div>
           {!collapsed && (
             <div className="overflow-hidden flex-1">
-              <p className="text-xs font-bold text-white truncate">Administrator</p>
-              <p className="text-[10px] font-medium text-slate-400 truncate">admin@cloudcut.demo</p>
+              <p className="text-xs font-bold text-white truncate">{user?.name || 'Customer User'}</p>
+              <p className="text-[10px] font-medium text-cyan-400 truncate">{user?.companyName || 'CloudCut Workspace'}</p>
             </div>
           )}
           {!collapsed && (

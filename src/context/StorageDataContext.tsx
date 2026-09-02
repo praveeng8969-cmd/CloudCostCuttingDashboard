@@ -8,14 +8,15 @@ import {
 import { parseCsvFileContent } from '@/lib/services/dataParser'
 import { validateCsvRows } from '@/lib/services/dataValidator'
 import { analyzeStorageDataset } from '@/lib/services/storageAnalyzer'
-import { generateSampleCsvString } from '@/lib/services/demoDataset'
+import { getDemoDatasetForUser, generateSampleCsvString } from '@/lib/services/demoDataset'
+import { useAuth } from '@/context/AuthContext'
+import { getAllUsers } from '@/lib/services/authService'
 import toast from 'react-hot-toast'
 
 export type DataSourceType = 'CSV' | 'DEMO' | 'NONE'
 
-const STORAGE_KEY = 'cloudcut_dataset_state_v2'
-
 interface PersistedState {
+  userId: string
   source: 'CSV' | 'DEMO'
   fileName: string
   recordCount: number
@@ -23,6 +24,20 @@ interface PersistedState {
   lastAnalyzed: string
   pricing?: PricingConfig
   thresholds?: ThresholdConfig
+}
+
+export interface CustomerSummaryItem {
+  id: string
+  name: string
+  companyName: string
+  email: string
+  status: 'active' | 'disabled'
+  totalStorageGB: number
+  totalObjects: number
+  currentMonthlyCost: number
+  potentialMonthlySavings: number
+  optimizationScore: number
+  lastActivity: string
 }
 
 interface StorageDataContextType {
@@ -50,6 +65,15 @@ interface StorageDataContextType {
   updateRecord: (id: string, updates: Partial<StorageRecord>) => void
   downloadSampleCsv: () => void
   downloadInvalidRowsCsv: () => void
+
+  // Admin Multi-user Helpers
+  getCustomerDatasetSnapshot: (userId: string) => {
+    records: StorageRecord[]
+    analysis: StorageAnalysisResult
+    sourceName: string
+    sourceType: DataSourceType
+  }
+  getAllCustomerSummaries: () => CustomerSummaryItem[]
 }
 
 const defaultPricing: PricingConfig = {
@@ -70,6 +94,9 @@ const defaultThresholds: ThresholdConfig = {
 const StorageDataContext = createContext<StorageDataContextType | undefined>(undefined)
 
 export function StorageDataProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth()
+  const activeUserId = user?.id || 'guest_user'
+
   const [records, setRecords] = useState<StorageRecord[]>([])
   const [invalidRows, setInvalidRows] = useState<InvalidRow[]>([])
   const [pricing, setPricing] = useState<PricingConfig>(defaultPricing)
@@ -80,48 +107,80 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isHydrated, setIsHydrated] = useState<boolean>(false)
 
-  // STEP 1: Check whether a previously uploaded dataset exists in localStorage on startup
+  // Determine user storage key
+  const userStorageKey = `cloudcut_dataset_${activeUserId}`
+
+  // STEP 1: Load or Seed user-specific dataset when user changes or mounts
   useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    setIsHydrated(false)
     try {
-      if (typeof window !== 'undefined') {
-        const raw = localStorage.getItem(STORAGE_KEY)
-        if (raw) {
-          const parsed: PersistedState = JSON.parse(raw)
-          if (parsed && Array.isArray(parsed.dataset) && parsed.dataset.length > 0) {
-            setRecords(parsed.dataset)
-            setDataSourceType(parsed.source || 'CSV')
-            setDataSourceName(parsed.fileName || 'Uploaded Dataset.csv')
-            setLastAnalyzedTimestamp(parsed.lastAnalyzed || 'Restored from local storage')
-            if (parsed.pricing) setPricing(parsed.pricing)
-            if (parsed.thresholds) setThresholds(parsed.thresholds)
-            setIsHydrated(true)
-            return
-          }
+      const raw = localStorage.getItem(userStorageKey)
+      if (raw) {
+        const parsed: PersistedState = JSON.parse(raw)
+        if (parsed && Array.isArray(parsed.dataset) && parsed.dataset.length > 0) {
+          setRecords(parsed.dataset)
+          setDataSourceType(parsed.source || 'CSV')
+          setDataSourceName(parsed.fileName || 'Active Dataset.csv')
+          setLastAnalyzedTimestamp(parsed.lastAnalyzed || new Date().toISOString())
+          if (parsed.pricing) setPricing(parsed.pricing)
+          if (parsed.thresholds) setThresholds(parsed.thresholds)
+          setIsHydrated(true)
+          return
         }
+      }
+
+      // If this is a known demo customer without saved data yet, pre-populate their specific demo dataset
+      if (user && user.role === 'user') {
+        const demoCsv = getDemoDatasetForUser(user.id)
+        const rawRows = parseCsvFileContent(demoCsv)
+        const { validRecords, invalidRows: errors } = validateCsvRows(rawRows, defaultThresholds)
+        const timestamp = new Date().toISOString()
+        const defaultName = `${user.companyName} Initial Dataset`
+
+        setRecords(validRecords)
+        setInvalidRows(errors)
+        setDataSourceType('DEMO')
+        setDataSourceName(defaultName)
+        setLastAnalyzedTimestamp(timestamp)
+
+        // Save immediately for this user
+        const stateToSave: PersistedState = {
+          userId: user.id,
+          source: 'DEMO',
+          fileName: defaultName,
+          recordCount: validRecords.length,
+          dataset: validRecords,
+          lastAnalyzed: timestamp,
+          pricing: defaultPricing,
+          thresholds: defaultThresholds
+        }
+        localStorage.setItem(userStorageKey, JSON.stringify(stateToSave))
+        setIsHydrated(true)
+        return
       }
     } catch (e) {
       console.error('Failed to parse persisted dataset from localStorage:', e)
-      try {
-        localStorage.removeItem(STORAGE_KEY)
-      } catch {}
-      toast.error('Saved dataset could not be restored. Please upload the CSV again.')
     }
-    // If no dataset exists or parsing fails: keep empty state
+
+    // Default empty state
     setRecords([])
     setDataSourceType('NONE')
     setDataSourceName('No Dataset Loaded')
     setLastAnalyzedTimestamp('None')
     setIsHydrated(true)
-  }, [])
+  }, [activeUserId, user, userStorageKey])
 
-  // Auto-persist dataset whenever records, source, pricing, or thresholds change
+  // Auto-persist dataset whenever user changes records, source, pricing, or thresholds
   useEffect(() => {
-    if (!isHydrated) return
+    if (!isHydrated || !user) return
 
     try {
       if (typeof window !== 'undefined') {
         if (records.length > 0 && dataSourceType !== 'NONE') {
           const stateToSave: PersistedState = {
+            userId: user.id,
             source: dataSourceType,
             fileName: dataSourceName,
             recordCount: records.length,
@@ -130,25 +189,22 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
             pricing,
             thresholds
           }
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave))
+          localStorage.setItem(userStorageKey, JSON.stringify(stateToSave))
         } else {
-          localStorage.removeItem(STORAGE_KEY)
+          localStorage.removeItem(userStorageKey)
         }
       }
     } catch (e: any) {
       console.error('Failed to save dataset to localStorage:', e)
-      if (e?.name === 'QuotaExceededError' || e?.code === 22) {
-        toast.error('Dataset is too large to persist in browser storage. Please upload it again after refresh.')
-      }
     }
-  }, [records, dataSourceType, dataSourceName, lastAnalyzedTimestamp, pricing, thresholds, isHydrated])
+  }, [records, dataSourceType, dataSourceName, lastAnalyzedTimestamp, pricing, thresholds, isHydrated, user, userStorageKey])
 
-  // Single source of truth calculation engine
+  // Single source of truth calculation engine for active user
   const analysisResult = useMemo(() => {
     return analyzeStorageDataset(records, pricing, thresholds)
   }, [records, pricing, thresholds])
 
-  // Single CSV text import
+  // Single CSV text import for active user
   const importCsvText = useCallback((text: string, sourceName = 'Uploaded Dataset.csv') => {
     setIsLoading(true)
     const rawRows = parseCsvFileContent(text)
@@ -165,7 +221,7 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
     return { validCount: validRecords.length, invalidCount: errors.length }
   }, [thresholds])
 
-  // Multi-CSV files import (replaces old dataset, combines and deduplicates new rows)
+  // Multi-CSV files import for active user
   const importMultipleCsvFiles = useCallback((files: { name: string; content: string }[]) => {
     setIsLoading(true)
     let allRawRows: Record<string, string>[] = []
@@ -191,30 +247,31 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
     return { validCount: validRecords.length, invalidCount: errors.length }
   }, [thresholds])
 
-  // Load built-in demo dataset
+  // Load built-in demo dataset for active user
   const loadDemoData = useCallback(() => {
     setIsLoading(true)
     setTimeout(() => {
-      const demoCsv = generateSampleCsvString()
+      const demoCsv = user ? getDemoDatasetForUser(user.id) : generateSampleCsvString()
       const rawRows = parseCsvFileContent(demoCsv)
       const { validRecords, invalidRows: errors } = validateCsvRows(rawRows, thresholds)
       const timestamp = new Date().toISOString()
+      const dsName = user ? `${user.companyName} Demo Dataset` : 'Built-in Demo Dataset'
 
       setRecords(validRecords)
       setInvalidRows(errors)
       setDataSourceType('DEMO')
-      setDataSourceName('Built-in Demo Dataset')
+      setDataSourceName(dsName)
       setLastAnalyzedTimestamp(timestamp)
       setIsLoading(false)
 
-      toast.success('Loaded sample cloud storage dataset! 41 objects analyzed.', {
+      toast.success(`Loaded ${validRecords.length} objects for ${user?.companyName || 'Demo Account'}!`, {
         icon: '📊',
         style: { background: '#064e3b', color: '#ecfdf5', borderRadius: '12px' }
       })
     }, 400)
-  }, [thresholds])
+  }, [thresholds, user])
 
-  // Reset to empty state (explicitly cleans localStorage)
+  // Reset to empty state for active user only
   const resetDataset = useCallback(() => {
     setRecords([])
     setInvalidRows([])
@@ -224,36 +281,31 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
 
     try {
       if (typeof window !== 'undefined') {
-        localStorage.removeItem(STORAGE_KEY)
+        localStorage.removeItem(userStorageKey)
       }
     } catch {}
 
-    toast('Dataset removed. Dashboard reset to empty state.', { icon: '🧹' })
-  }, [])
+    toast('Your dataset was removed. Workspace reset to empty state.', { icon: '🧹' })
+  }, [userStorageKey])
 
-  // Update pricing rates
   const updatePricing = useCallback((newPricing: Partial<PricingConfig>) => {
     setPricing(prev => ({ ...prev, ...newPricing }))
-    toast.success('Storage tier pricing updated! All ROI calculations refreshed.', { icon: '💰' })
+    toast.success('Storage tier pricing updated! ROI calculations refreshed.', { icon: '💰' })
   }, [])
 
-  // Update thresholds
   const updateThresholds = useCallback((newThresholds: Partial<ThresholdConfig>) => {
     setThresholds(prev => ({ ...prev, ...newThresholds }))
     toast.success('Inspection thresholds updated! Re-evaluating inactivity rules.', { icon: '⚙️' })
   }, [])
 
-  // Delete a single file record
   const deleteRecord = useCallback((id: string) => {
     setRecords(prev => prev.filter(r => r.id !== id))
   }, [])
 
-  // Update a single file record
   const updateRecord = useCallback((id: string, updates: Partial<StorageRecord>) => {
     setRecords(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r))
   }, [])
 
-  // Download Sample CSV
   const downloadSampleCsv = useCallback(() => {
     const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(generateSampleCsvString())
     const link = document.createElement("a")
@@ -265,7 +317,6 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
     toast.success('Downloaded sample CSV template!', { icon: '📥' })
   }, [])
 
-  // Download Invalid Rows CSV
   const downloadInvalidRowsCsv = useCallback(() => {
     if (invalidRows.length === 0) {
       toast('No invalid rows detected in current import.', { icon: 'ℹ️' })
@@ -285,6 +336,61 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
     document.body.removeChild(link)
     toast.success('Downloaded invalid rows report!', { icon: '📥' })
   }, [invalidRows])
+
+  // Admin Helper: Load dataset snapshot for any user without altering session state
+  const getCustomerDatasetSnapshot = useCallback((targetUserId: string) => {
+    let custRecords: StorageRecord[] = []
+    let sourceName = 'Customer Dataset'
+    let sourceType: DataSourceType = 'NONE'
+
+    if (typeof window !== 'undefined') {
+      const raw = localStorage.getItem(`cloudcut_dataset_${targetUserId}`)
+      if (raw) {
+        try {
+          const parsed: PersistedState = JSON.parse(raw)
+          if (parsed && Array.isArray(parsed.dataset)) {
+            custRecords = parsed.dataset
+            sourceName = parsed.fileName
+            sourceType = parsed.source
+          }
+        } catch {}
+      }
+    }
+
+    // If still empty and it's a known demo user, generate demo data
+    if (custRecords.length === 0) {
+      const demoCsv = getDemoDatasetForUser(targetUserId)
+      const rawRows = parseCsvFileContent(demoCsv)
+      const { validRecords } = validateCsvRows(rawRows, defaultThresholds)
+      custRecords = validRecords
+      sourceName = 'Demo Dataset'
+      sourceType = 'DEMO'
+    }
+
+    const analysis = analyzeStorageDataset(custRecords, defaultPricing, defaultThresholds)
+    return { records: custRecords, analysis, sourceName, sourceType }
+  }, [])
+
+  // Admin Helper: Get summary of all registered customer accounts and their live metrics
+  const getAllCustomerSummaries = useCallback((): CustomerSummaryItem[] => {
+    const allUsers = getAllUsers().filter(u => u.role === 'user')
+    return allUsers.map(u => {
+      const { records: userRecords, analysis } = getCustomerDatasetSnapshot(u.id)
+      return {
+        id: u.id,
+        name: u.name,
+        companyName: u.companyName,
+        email: u.email,
+        status: u.status,
+        totalStorageGB: analysis.totalStorageGB,
+        totalObjects: userRecords.length,
+        currentMonthlyCost: analysis.currentMonthlyCost,
+        potentialMonthlySavings: analysis.potentialMonthlySavings,
+        optimizationScore: analysis.optimizationScore,
+        lastActivity: u.lastLogin || u.createdAt
+      }
+    })
+  }, [getCustomerDatasetSnapshot])
 
   return (
     <StorageDataContext.Provider
@@ -310,7 +416,9 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
         deleteRecord,
         updateRecord,
         downloadSampleCsv,
-        downloadInvalidRowsCsv
+        downloadInvalidRowsCsv,
+        getCustomerDatasetSnapshot,
+        getAllCustomerSummaries
       }}
     >
       {children}

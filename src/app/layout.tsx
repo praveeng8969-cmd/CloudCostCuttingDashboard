@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
+import { AppProviders } from '@/components/providers/AppProviders'
 
 export const metadata: Metadata = {
   title: 'CloudCut — Cloud Storage Cost Cutting Dashboard',
@@ -16,18 +17,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <AppProviders>
+          {children}
+        </AppProviders>
         <Toaster
           position="top-right"
           toastOptions={{
             duration: 3500,
             style: {
-              background: '#fff',
-              color: '#111827',
-              border: '1px solid #e5e7eb',
-              borderRadius: '10px',
-              fontSize: '14px',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
+              background: '#0f172a',
+              color: '#f8fafc',
+              border: '1px solid #334155',
+              borderRadius: '12px',
+              fontSize: '13px',
+              fontWeight: 600,
+              boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
             },
             success: {
               iconTheme: { primary: '#10b981', secondary: '#fff' },
