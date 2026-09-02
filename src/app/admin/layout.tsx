@@ -50,7 +50,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex flex-col flex-1 min-w-0 w-full overflow-hidden bg-slate-50">
         <AdminNavbar onMenuClick={() => setMobileOpen(true)} />
 
-        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-slate-50">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-cloud-subtle">
           <div className="page-container page-enter">
             {children}
           </div>

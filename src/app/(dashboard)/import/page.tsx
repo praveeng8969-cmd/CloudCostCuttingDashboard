@@ -114,8 +114,8 @@ export default function ImportPage() {
         }
       />
 
-      {/* Clean Drag-and-Drop Area */}
-      <div className="card p-6 bg-white border border-slate-200">
+      {/* Cloud-Themed Upload Section */}
+      <div className="card p-6 bg-cloud-import border border-slate-200/90 rounded-xl shadow-sm relative overflow-hidden">
         <div
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={() => setIsDragging(false)}
@@ -128,10 +128,10 @@ export default function ImportPage() {
           }}
           onClick={() => fileInputRef.current?.click()}
           className={clsx(
-            'border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition-colors select-none',
+            'border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition-colors select-none shadow-sm',
             isDragging
-              ? 'border-blue-500 bg-blue-50/50'
-              : 'border-slate-300 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-50'
+              ? 'border-blue-500 bg-blue-50/80'
+              : 'border-slate-300 hover:border-slate-400 bg-white/95 hover:bg-white'
           )}
         >
           <input
@@ -147,18 +147,18 @@ export default function ImportPage() {
             className="hidden"
           />
 
-          <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center mx-auto mb-3">
-            <UploadCloud className="w-5 h-5 text-slate-600" />
+          <div className="w-11 h-11 rounded-full bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-3">
+            <UploadCloud className="w-5 h-5 text-blue-600" />
           </div>
 
           <h3 className="text-sm font-semibold text-slate-900">
-            Upload CSV Metadata
+            Upload CSV
           </h3>
-          <p className="text-xs text-slate-500 mt-1">
-            Drag and drop your files here, or <span className="text-blue-600 font-medium">browse local files</span>
+          <p className="text-xs text-slate-600 mt-1">
+            Drag and drop your file here, or <span className="text-blue-600 font-medium hover:underline">browse local files</span>
           </p>
           <p className="text-[11px] text-slate-400 mt-2">
-            Supported format: <strong>.csv</strong> (UTF-8 formatted)
+            Supported format: <strong>.csv</strong> (UTF-8 metadata records)
           </p>
         </div>
 

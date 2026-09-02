@@ -36,10 +36,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       return
     }
 
-    // First visit rule: If no dataset is loaded and user lands on /dashboard, redirect to /import
-    if (isHydrated && !hasData && pathname === '/dashboard') {
-      router.replace('/import')
-    }
+    // Note: If no dataset is loaded, /dashboard will render its custom empty state with the cloud-storage background
   }, [authLoading, isAuthenticated, role, isHydrated, hasData, pathname, router])
 
   if (authLoading || !isAuthenticated || role === 'admin' || !isHydrated) {
@@ -66,8 +63,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Top Sticky Navbar */}
           <Navbar onMenuClick={() => setMobileOpen(true)} />
 
-          {/* Scrollable Page Content */}
-          <main className="flex-1 overflow-y-auto overflow-x-hidden bg-slate-50">
+          {/* Scrollable Page Content with Subtle Cloud Background */}
+          <main className="flex-1 overflow-y-auto overflow-x-hidden bg-cloud-subtle">
             <div className="page-container page-enter">
               <DataSourceBanner />
               {children}

@@ -104,7 +104,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen w-full bg-cloud-login flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 relative">
       <div className="w-full max-w-md space-y-6">
         {/* Brand Header */}
         <div className="text-center">
@@ -114,13 +114,13 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
             Sign in to {APP_NAME}
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-slate-600 mt-1 font-medium">
             Cloud storage cost optimization for growing businesses
           </p>
         </div>
 
         {/* Authentication Card */}
-        <div className="card p-6 sm:p-8 bg-white border border-slate-200 rounded-lg shadow-sm">
+        <div className="card p-6 sm:p-8 bg-white/95 backdrop-blur-sm border border-slate-200/90 rounded-xl shadow-md">
           {errorMsg && (
             <div className="mb-4 p-3 rounded-md bg-red-50 border border-red-200 flex items-start gap-2.5 text-xs text-red-700">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
