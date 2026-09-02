@@ -9,86 +9,104 @@ interface PageBgConfig {
   gradientOverlay?: string
 }
 
+// Default fallback for any unrecognised route
 const DEFAULT_CONFIG: PageBgConfig = {
-  opacity: 0.14,
+  opacity: 0.20,
   position: 'right bottom',
+  gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.18), rgba(248, 250, 252, 0.32))',
 }
 
+// Per-route fine-tuning
+// Opacities bumped ~30% from previous values; overlays reduced from 0.40–0.65 → 0.15–0.50
 const ROUTE_CONFIGS: Record<string, PageBgConfig> = {
   '/login': {
-    opacity: 0.26,
+    // 26% → 34%  |  overlays 0.40/0.65 → 0.22/0.42
+    opacity: 0.34,
     position: 'center center',
-    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.40), rgba(248, 250, 252, 0.65))',
+    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.22), rgba(248, 250, 252, 0.42))',
   },
   '/import': {
-    opacity: 0.20,
+    // 20% → 28%  |  overlays 0.30/0.50 → 0.18/0.36
+    opacity: 0.28,
     position: 'center right',
-    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.30), rgba(248, 250, 252, 0.50))',
+    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.18), rgba(248, 250, 252, 0.36))',
   },
   '/dashboard': {
-    opacity: 0.16,
+    // 16% → 22%  |  overlays 0.20/0.40 → 0.14/0.28
+    opacity: 0.22,
     position: 'right bottom',
-    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.20), rgba(248, 250, 252, 0.40))',
+    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.14), rgba(248, 250, 252, 0.28))',
   },
   '/storage': {
-    opacity: 0.13,
+    // 13% → 19%
+    opacity: 0.19,
     position: 'center center',
-    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.25), rgba(248, 250, 252, 0.45))',
+    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.16), rgba(248, 250, 252, 0.30))',
   },
   '/storage-analysis': {
-    opacity: 0.13,
+    opacity: 0.19,
     position: 'center center',
-    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.25), rgba(248, 250, 252, 0.45))',
+    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.16), rgba(248, 250, 252, 0.30))',
   },
   '/cost-analysis': {
-    opacity: 0.13,
+    // 13% → 19%
+    opacity: 0.19,
     position: 'right bottom',
-    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.20), rgba(248, 250, 252, 0.40))',
+    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.14), rgba(248, 250, 252, 0.28))',
   },
   '/recommendations': {
-    opacity: 0.14,
+    // 14% → 20%
+    opacity: 0.20,
     position: 'center right',
-    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.20), rgba(248, 250, 252, 0.40))',
+    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.14), rgba(248, 250, 252, 0.28))',
   },
   '/duplicates': {
-    opacity: 0.13,
+    // 13% → 19%
+    opacity: 0.19,
     position: 'center center',
-    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.25), rgba(248, 250, 252, 0.45))',
+    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.16), rgba(248, 250, 252, 0.30))',
   },
   '/reports': {
-    opacity: 0.11,
+    // 11% → 17%
+    opacity: 0.17,
     position: 'right bottom',
-    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.25), rgba(248, 250, 252, 0.45))',
+    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.16), rgba(248, 250, 252, 0.30))',
   },
   '/cloud-providers': {
-    opacity: 0.13,
+    // 13% → 19%
+    opacity: 0.19,
     position: 'center right',
-    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.20), rgba(248, 250, 252, 0.40))',
+    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.14), rgba(248, 250, 252, 0.28))',
   },
   '/settings': {
-    opacity: 0.11,
+    // 11% → 17%
+    opacity: 0.17,
     position: 'center center',
-    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.25), rgba(248, 250, 252, 0.45))',
+    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.16), rgba(248, 250, 252, 0.30))',
   },
   '/admin/dashboard': {
-    opacity: 0.11,
+    // 11% → 17%  — admin is more data-heavy, keep slightly more restrained
+    opacity: 0.17,
     position: 'right bottom',
-    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.25), rgba(248, 250, 252, 0.45))',
+    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.16), rgba(248, 250, 252, 0.30))',
   },
   '/admin/users': {
-    opacity: 0.11,
+    // 11% → 17%
+    opacity: 0.17,
     position: 'center right',
-    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.25), rgba(248, 250, 252, 0.45))',
+    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.16), rgba(248, 250, 252, 0.30))',
   },
   '/admin/reports': {
-    opacity: 0.10,
+    // 10% → 16%
+    opacity: 0.16,
     position: 'center center',
-    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.25), rgba(248, 250, 252, 0.45))',
+    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.16), rgba(248, 250, 252, 0.30))',
   },
   '/admin/settings': {
-    opacity: 0.10,
+    // 10% → 16%
+    opacity: 0.16,
     position: 'right bottom',
-    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.25), rgba(248, 250, 252, 0.45))',
+    gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.16), rgba(248, 250, 252, 0.30))',
   },
 }
 
@@ -97,11 +115,12 @@ export default function CloudCutBackground() {
 
   const config = useMemo(() => {
     if (!pathname) return DEFAULT_CONFIG
+    // /admin/users/[id]
     if (pathname.startsWith('/admin/users/')) {
       return {
-        opacity: 0.12,
+        opacity: 0.18,
         position: 'right bottom',
-        gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.25), rgba(248, 250, 252, 0.45))',
+        gradientOverlay: 'linear-gradient(to bottom, rgba(248, 250, 252, 0.16), rgba(248, 250, 252, 0.30))',
       }
     }
     return ROUTE_CONFIGS[pathname] || DEFAULT_CONFIG
@@ -112,10 +131,10 @@ export default function CloudCutBackground() {
       className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden"
       aria-hidden="true"
     >
-      {/* Base Canvas */}
+      {/* Base Canvas — #F8FAFC neutral slate */}
       <div className="absolute inset-0 bg-[#F8FAFC]" />
 
-      {/* Layer 1: Official CloudCut Cloud Storage Background Image */}
+      {/* Layer 1 — Official CloudCut cloud-storage artwork */}
       <div
         className="absolute inset-0 bg-no-repeat transition-all duration-700 ease-in-out"
         style={{
@@ -126,7 +145,7 @@ export default function CloudCutBackground() {
         }}
       />
 
-      {/* Layer 2: Subtle Readability Gradient Overlay */}
+      {/* Layer 2 — Lightweight readability gradient overlay */}
       {config.gradientOverlay && (
         <div
           className="absolute inset-0 transition-all duration-700 ease-in-out"
