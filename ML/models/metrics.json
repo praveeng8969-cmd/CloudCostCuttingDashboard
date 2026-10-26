@@ -1,0 +1,65 @@
+{
+  "model_name": "CloudCut Storage Review Classifier",
+  "model_version": "1.0.0",
+  "algorithm": "Random Forest Classifier",
+  "training_dataset_type": "Synthetic storage metadata",
+  "training_records": 2000,
+  "test_records": 500,
+  "generated_at": "2026-10-26T15:52:56.833222+00:00",
+  "model": {
+    "accuracy": 0.944,
+    "precision_weighted": 0.9458,
+    "recall_weighted": 0.944,
+    "f1_weighted": 0.9425,
+    "confusion_matrix": [
+      [
+        110,
+        0,
+        0
+      ],
+      [
+        8,
+        119,
+        17
+      ],
+      [
+        0,
+        3,
+        243
+      ]
+    ],
+    "labels": [
+      "KEEP",
+      "REVIEW",
+      "ARCHIVE_CANDIDATE"
+    ]
+  },
+  "baseline": {
+    "accuracy": 0.492,
+    "precision_weighted": 0.2421,
+    "recall_weighted": 0.492,
+    "f1_weighted": 0.3245,
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        110
+      ],
+      [
+        0,
+        0,
+        144
+      ],
+      [
+        0,
+        0,
+        246
+      ]
+    ],
+    "labels": [
+      "KEEP",
+      "REVIEW",
+      "ARCHIVE_CANDIDATE"
+    ]
+  }
+}

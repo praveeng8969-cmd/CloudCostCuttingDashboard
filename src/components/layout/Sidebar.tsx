@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, HardDrive, DollarSign, Zap, Copy,
   FileText, Cloud, Settings, LogOut, ChevronLeft, ChevronRight,
-  UploadCloud
+  UploadCloud, BrainCircuit
 } from 'lucide-react'
 import clsx from 'clsx'
 import { APP_NAME } from '@/lib/constants'
@@ -73,6 +73,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
           badge: hasData && analysisResult.recommendations.length > 0 ? `${analysisResult.recommendations.length}` : null,
           badgeAccent: true
         },
+        { label: 'ML Insights', href: '/ml-insights', icon: BrainCircuit },
       ]
     },
     {

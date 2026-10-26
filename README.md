@@ -74,6 +74,12 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Machine Learning Insights
+
+CloudCut includes an optional Random Forest review service in [`ML/`](ML/README.md). It analyzes the active CSV or demo dataset and labels records as `KEEP`, `REVIEW`, or `ARCHIVE_CANDIDATE` without changing files or replacing the existing rule-based recommendations.
+
+Run the Python service with `cd ML` followed by `python -m uvicorn app:app --host 127.0.0.1 --port 8000`, then open `/ml-insights` in CloudCut. The model uses synthetic training data and must be validated with real labeled storage data before production use.
+
 ---
 
 ## 🔑 Demo Access
