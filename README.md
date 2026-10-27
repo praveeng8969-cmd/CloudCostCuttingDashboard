@@ -9,7 +9,7 @@
 
 ## Amazon S3 connections
 
-The customer-facing **Connect AWS** action loads a reproducible simulated S3 environment for the current demonstration. It requests no credentials, clearly labels the connection as sample data, and automatically runs the same shared analysis pipeline used by CSV imports. The repository retains the server-side STS connector for a future production rollout; see [`AWS_SETUP.md`](AWS_SETUP.md).
+The customer-facing **Connect AWS** action opens a CloudCut-branded demonstration login for three fictional sample companies. Credentials are validated only by `/api/demo-aws/session`; they are not AWS credentials and are never sent to AWS. Each profile generates a deterministic, isolated S3-style dataset and runs the same shared analysis pipeline used by CSV imports. Synthetic `lastAccessed` and `lastModified` fields are generated independently and are labeled as sample metadata. The repository retains the server-side STS connector for a future production rollout; see [`AWS_SETUP.md`](AWS_SETUP.md).
 
 CloudCut is an enterprise-grade cloud storage cost monitoring and optimization prototype designed to help organizations inspect storage across multi-cloud environments (AWS S3, Google Cloud Storage, Azure Blob Storage), detect duplicate and stale data, generate analytical reports, and cut redundant storage expenses.
 

@@ -84,7 +84,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
     {
       group: 'Data',
       items: [
-        { label: 'Import Dataset', href: '/import', icon: UploadCloud },
+        { label: 'Import Data', href: '/import', icon: UploadCloud },
       ]
     },
     {

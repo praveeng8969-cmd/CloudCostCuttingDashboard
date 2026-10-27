@@ -19,6 +19,7 @@ interface PersistedState {
   userId: string
   source: 'CSV' | 'DEMO' | 'AWS' | 'AWS_SAMPLE'
   fileName: string
+  dataOwnerName?: string
   recordCount: number
   dataset: StorageRecord[]
   lastAnalyzed: string
@@ -48,6 +49,7 @@ interface StorageDataContextType {
   thresholds: ThresholdConfig
   dataSourceType: DataSourceType
   dataSourceName: string
+  dataOwnerName: string
   recordsAnalyzedCount: number
   lastAnalyzedTimestamp: string
   hasData: boolean
@@ -57,7 +59,7 @@ interface StorageDataContextType {
   // Actions
   importCsvText: (text: string, sourceName?: string) => { validCount: number; invalidCount: number }
   importMultipleCsvFiles: (files: { name: string; content: string }[]) => { validCount: number; invalidCount: number }
-  activateExternalDataset: (records: StorageRecord[], sourceName: string, sourceType?: 'AWS' | 'AWS_SAMPLE') => void
+  activateExternalDataset: (records: StorageRecord[], sourceName: string, sourceType?: 'AWS' | 'AWS_SAMPLE', ownerName?: string) => void
   loadDemoData: () => void
   resetDataset: () => void
   updatePricing: (newPricing: Partial<PricingConfig>) => void
@@ -104,6 +106,7 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
   const [thresholds, setThresholds] = useState<ThresholdConfig>(defaultThresholds)
   const [dataSourceType, setDataSourceType] = useState<DataSourceType>('NONE')
   const [dataSourceName, setDataSourceName] = useState<string>('No Dataset Loaded')
+  const [dataOwnerName, setDataOwnerName] = useState<string>('')
   const [lastAnalyzedTimestamp, setLastAnalyzedTimestamp] = useState<string>('None')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isHydrated, setIsHydrated] = useState<boolean>(false)
@@ -124,6 +127,7 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
           setRecords(parsed.dataset)
           setDataSourceType(parsed.source || 'CSV')
           setDataSourceName(parsed.fileName || 'Active Dataset.csv')
+          setDataOwnerName(parsed.dataOwnerName || user?.companyName || '')
           setLastAnalyzedTimestamp(parsed.lastAnalyzed || new Date().toISOString())
           if (parsed.pricing) setPricing(parsed.pricing)
           if (parsed.thresholds) setThresholds(parsed.thresholds)
@@ -144,6 +148,7 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
         setInvalidRows(errors)
         setDataSourceType('DEMO')
         setDataSourceName(defaultName)
+        setDataOwnerName(user.companyName)
         setLastAnalyzedTimestamp(timestamp)
 
         // Save immediately for this user
@@ -151,6 +156,7 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
           userId: user.id,
           source: 'DEMO',
           fileName: defaultName,
+          dataOwnerName: user.companyName,
           recordCount: validRecords.length,
           dataset: validRecords,
           lastAnalyzed: timestamp,
@@ -169,6 +175,7 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
     setRecords([])
     setDataSourceType('NONE')
     setDataSourceName('No Dataset Loaded')
+    setDataOwnerName('')
     setLastAnalyzedTimestamp('None')
     setIsHydrated(true)
   }, [activeUserId, user, userStorageKey])
@@ -184,6 +191,7 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
             userId: user.id,
             source: dataSourceType,
             fileName: dataSourceName,
+            dataOwnerName,
             recordCount: records.length,
             dataset: records,
             lastAnalyzed: lastAnalyzedTimestamp,
@@ -198,7 +206,7 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
     } catch (e: any) {
       console.error('Failed to save dataset to localStorage:', e)
     }
-  }, [records, dataSourceType, dataSourceName, lastAnalyzedTimestamp, pricing, thresholds, isHydrated, user, userStorageKey])
+  }, [records, dataSourceType, dataSourceName, dataOwnerName, lastAnalyzedTimestamp, pricing, thresholds, isHydrated, user, userStorageKey])
 
   // Single source of truth calculation engine for active user
   const analysisResult = useMemo(() => {
@@ -222,11 +230,12 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
     setInvalidRows(errors)
     setDataSourceType('CSV')
     setDataSourceName(sourceName)
+    setDataOwnerName(user?.companyName || '')
     setLastAnalyzedTimestamp(timestamp)
     setIsLoading(false)
 
     return { validCount: validRecords.length, invalidCount: errors.length }
-  }, [thresholds])
+  }, [thresholds, user?.companyName])
 
   // Multi-CSV files import for active user
   const importMultipleCsvFiles = useCallback((files: { name: string; content: string }[]) => {
@@ -253,20 +262,22 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
     setInvalidRows(errors)
     setDataSourceType('CSV')
     setDataSourceName(label)
+    setDataOwnerName(user?.companyName || '')
     setLastAnalyzedTimestamp(timestamp)
     setIsLoading(false)
 
     return { validCount: validRecords.length, invalidCount: errors.length }
-  }, [thresholds])
+  }, [thresholds, user?.companyName])
 
-  const activateExternalDataset = useCallback((nextRecords: StorageRecord[], sourceName: string, sourceType: 'AWS' | 'AWS_SAMPLE' = 'AWS') => {
+  const activateExternalDataset = useCallback((nextRecords: StorageRecord[], sourceName: string, sourceType: 'AWS' | 'AWS_SAMPLE' = 'AWS', ownerName = '') => {
     const timestamp = new Date().toISOString()
     setRecords(nextRecords)
     setInvalidRows([])
     setDataSourceType(sourceType)
     setDataSourceName(sourceName)
+    setDataOwnerName(ownerName || user?.companyName || '')
     setLastAnalyzedTimestamp(timestamp)
-  }, [])
+  }, [user?.companyName])
 
   // Load built-in demo dataset for active user
   const loadDemoData = useCallback(() => {
@@ -282,6 +293,7 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
       setInvalidRows(errors)
       setDataSourceType('DEMO')
       setDataSourceName(dsName)
+      setDataOwnerName(user?.companyName || '')
       setLastAnalyzedTimestamp(timestamp)
       setIsLoading(false)
 
@@ -298,6 +310,7 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
     setInvalidRows([])
     setDataSourceType('NONE')
     setDataSourceName('No Dataset Loaded')
+    setDataOwnerName('')
     setLastAnalyzedTimestamp('None')
 
     try {
@@ -423,6 +436,7 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
         thresholds,
         dataSourceType,
         dataSourceName,
+        dataOwnerName,
         recordsAnalyzedCount: records.length,
         lastAnalyzedTimestamp,
         hasData: records.length > 0 && dataSourceType !== 'NONE',

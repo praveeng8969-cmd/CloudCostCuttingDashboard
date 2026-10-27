@@ -28,4 +28,7 @@ export interface UserReportRecord {
   potentialAnnualSavings: number
   optimizationScore: number
   summaryText: string
+  dataSourceType?: string
+  isSampleData?: boolean
+  analysisTimestamp?: string
 }

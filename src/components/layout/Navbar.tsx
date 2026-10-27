@@ -23,7 +23,7 @@ const pageTitles: Record<string, string> = {
   '/duplicates': 'Duplicate File Candidates',
   '/reports': 'Storage Reports',
   '/cloud-providers': 'Connected Cloud Providers',
-  '/import': 'Import Storage Data',
+  '/import': 'Import Data',
   '/settings': 'Workspace Settings',
 }
 

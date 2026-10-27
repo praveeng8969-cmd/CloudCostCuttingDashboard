@@ -92,7 +92,7 @@ export default function DataSourceBanner() {
             className="btn-primary"
           >
             <UploadCloud className="w-3.5 h-3.5" />
-            Import Storage Data
+            Import Data
           </Link>
 
           {!hasData ? (
