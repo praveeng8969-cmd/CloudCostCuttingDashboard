@@ -53,7 +53,15 @@ export default function DataSourceBanner() {
               </span>
 
               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                {dataSourceType === 'CSV' ? 'CSV Upload' : dataSourceType === 'DEMO' ? 'Demo Dataset' : 'Inactive'}
+                {dataSourceType === 'CSV'
+                  ? 'CSV Upload'
+                  : dataSourceType === 'DEMO'
+                    ? 'Demo Dataset'
+                    : dataSourceType === 'AWS_SAMPLE'
+                      ? 'AWS Sample Data'
+                      : dataSourceType === 'AWS'
+                        ? 'Amazon S3'
+                        : 'Inactive'}
               </span>
 
               {hasData ? (

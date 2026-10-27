@@ -9,7 +9,7 @@
 
 ## Amazon S3 connections
 
-CloudCut supports on-demand, metadata-only S3 synchronization through customer IAM roles, STS temporary credentials, unique external IDs, and explicit bucket selection. Complete syncs activate the AWS dataset and start analysis automatically. See [`AWS_SETUP.md`](AWS_SETUP.md) for IAM policies, setup, deployment requirements, and limitations.
+The customer-facing **Connect AWS** action loads a reproducible simulated S3 environment for the current demonstration. It requests no credentials, clearly labels the connection as sample data, and automatically runs the same shared analysis pipeline used by CSV imports. The repository retains the server-side STS connector for a future production rollout; see [`AWS_SETUP.md`](AWS_SETUP.md).
 
 CloudCut is an enterprise-grade cloud storage cost monitoring and optimization prototype designed to help organizations inspect storage across multi-cloud environments (AWS S3, Google Cloud Storage, Azure Blob Storage), detect duplicate and stale data, generate analytical reports, and cut redundant storage expenses.
 

@@ -13,11 +13,11 @@ import { useAuth } from '@/context/AuthContext'
 import { getAllUsers } from '@/lib/services/authService'
 import toast from 'react-hot-toast'
 
-export type DataSourceType = 'CSV' | 'DEMO' | 'AWS' | 'NONE'
+export type DataSourceType = 'CSV' | 'DEMO' | 'AWS' | 'AWS_SAMPLE' | 'NONE'
 
 interface PersistedState {
   userId: string
-  source: 'CSV' | 'DEMO' | 'AWS'
+  source: 'CSV' | 'DEMO' | 'AWS' | 'AWS_SAMPLE'
   fileName: string
   recordCount: number
   dataset: StorageRecord[]
@@ -57,7 +57,7 @@ interface StorageDataContextType {
   // Actions
   importCsvText: (text: string, sourceName?: string) => { validCount: number; invalidCount: number }
   importMultipleCsvFiles: (files: { name: string; content: string }[]) => { validCount: number; invalidCount: number }
-  activateExternalDataset: (records: StorageRecord[], sourceName: string) => void
+  activateExternalDataset: (records: StorageRecord[], sourceName: string, sourceType?: 'AWS' | 'AWS_SAMPLE') => void
   loadDemoData: () => void
   resetDataset: () => void
   updatePricing: (newPricing: Partial<PricingConfig>) => void
@@ -259,11 +259,11 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
     return { validCount: validRecords.length, invalidCount: errors.length }
   }, [thresholds])
 
-  const activateExternalDataset = useCallback((nextRecords: StorageRecord[], sourceName: string) => {
+  const activateExternalDataset = useCallback((nextRecords: StorageRecord[], sourceName: string, sourceType: 'AWS' | 'AWS_SAMPLE' = 'AWS') => {
     const timestamp = new Date().toISOString()
     setRecords(nextRecords)
     setInvalidRows([])
-    setDataSourceType('AWS')
+    setDataSourceType(sourceType)
     setDataSourceName(sourceName)
     setLastAnalyzedTimestamp(timestamp)
   }, [])
