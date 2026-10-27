@@ -17,12 +17,15 @@ import ChartCard from '@/components/ui/ChartCard'
 import ProgressBar from '@/components/ui/ProgressBar'
 import { useStorageData } from '@/context/StorageDataContext'
 import { useAuth } from '@/context/AuthContext'
+import { useMLAnalysis } from '@/context/MLAnalysisContext'
 import toast from 'react-hot-toast'
+import AnalysisStatus from '@/components/features/AnalysisStatus'
 
 export default function DashboardPage() {
   const router = useRouter()
   const { analysisResult, records, hasData, dataSourceName, loadDemoData } = useStorageData()
   const { user } = useAuth()
+  const { analysis: completedAnalysis, optimization: storageOptimization } = useMLAnalysis()
 
   if (!hasData) {
     return (
@@ -81,9 +84,9 @@ export default function DashboardPage() {
   }
 
   const currentMonthly = analysisResult.currentMonthlyCost
-  const optimizedMonthly = analysisResult.potentialMonthlyCost
-  const potentialSavings = analysisResult.potentialMonthlySavings
-  const annualSavings = analysisResult.potentialAnnualSavings
+  const potentialSavings = completedAnalysis ? storageOptimization.grossPotentialMonthlySavings : analysisResult.potentialMonthlySavings
+  const optimizedMonthly = completedAnalysis ? Math.max(0, currentMonthly - potentialSavings) : analysisResult.potentialMonthlyCost
+  const annualSavings = potentialSavings * 12
 
   const totalStorageDisplay = analysisResult.totalStorageGB >= 1000
     ? `${(analysisResult.totalStorageGB / 1000).toFixed(2)} TB`
@@ -174,6 +177,23 @@ export default function DashboardPage() {
           subtitle="Based on tiering & duplicate efficiency"
           icon={<ShieldCheck className="w-4 h-4 text-blue-600" />}
         />
+      </div>
+
+      <div className="card p-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-md bg-blue-50 border border-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0"><Zap className="w-4 h-4" /></div>
+            <div><h3 className="section-title">Storage Optimization Summary</h3><p className="section-sub">Automatic storage reviews and non-overlapping storage-only savings scenarios.</p></div>
+          </div>
+          <div className="flex gap-2 flex-wrap"><Link href="/recommendations" className="btn-primary">Review Storage Recommendations</Link>{completedAnalysis && <Link href="/cost-analysis" className="btn-secondary">View Cost Analysis</Link>}</div>
+        </div>
+        <div className="mt-4"><AnalysisStatus compact /></div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded"><p className="text-xs text-slate-500">Consider archiving</p><p className="text-xl font-semibold text-purple-700 mt-1">{storageOptimization.counts.ARCHIVE_CANDIDATE}</p></div>
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded"><p className="text-xs text-slate-500">Needs review</p><p className="text-xl font-semibold text-amber-700 mt-1">{storageOptimization.counts.REVIEW}</p></div>
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded"><p className="text-xs text-slate-500">Estimated monthly savings</p><p className="text-xl font-semibold text-emerald-700 mt-1">₹{storageOptimization.grossPotentialMonthlySavings.toLocaleString('en-IN')}</p></div>
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded"><p className="text-xs text-slate-500">Last analysis</p><p className="text-sm font-semibold text-slate-900 mt-1">{completedAnalysis ? new Date(completedAnalysis.analyzedAt).toLocaleString() : 'Preparing results'}</p></div>
+        </div>
       </div>
 
       {/* Main Charts Row */}

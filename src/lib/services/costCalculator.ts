@@ -32,7 +32,7 @@ export function calculateRecordCosts(
     } else if (rec.isInactive && rec.storageClass === 'STANDARD') {
       // Tier down to Infrequent Access
       optimizedRate = pricing.STANDARD_IA ?? 1.25
-    } else if (rec.fileType === 'Logs' && rec.ageDays > 90) {
+    } else if (rec.fileType === 'Logs' && typeof rec.ageDays === 'number' && rec.ageDays > 90) {
       // Stale logs pruned
       optimizedRate = 0
     } else if (rec.isLarge && rec.fileType === 'Backup') {

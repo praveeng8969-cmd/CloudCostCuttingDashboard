@@ -26,6 +26,18 @@ def test_predict_and_validation():
                           "file_type": "backup"}]},
     )
     assert response.status_code == 200
+    assert response.json()["model_version"] == "1.0.0"
     assert response.json()["predictions"][0]["file_id"] == "file-001"
     assert client.post("/predict", json={"files": []}).status_code == 422
     assert client.post("/predict", json={"files": [{"file_id": "bad", "size_gb": -1}]}).status_code == 422
+
+
+def test_prediction_order_matches_request():
+    files = [
+        {"file_id": f"file-{index}", "size_gb": index + 1, "days_since_last_accessed": index * 100,
+         "storage_class": "UNKNOWN_TIER", "file_type": "custom"}
+        for index in range(5)
+    ]
+    response = client.post("/predict", json={"files": files})
+    assert response.status_code == 200
+    assert [item["file_id"] for item in response.json()["predictions"]] == [item["file_id"] for item in files]

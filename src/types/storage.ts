@@ -6,11 +6,13 @@ export interface StorageRecord {
   id: string
   fileName: string
   sizeGB: number
-  lastAccessed: string // YYYY-MM-DD
+  lastAccessed: string | null // YYYY-MM-DD; unavailable for S3 listings
+  lastModified?: string
+  activityDataAvailable?: boolean
   storageClass: StorageClass
   fileType: FileCategory
   bucket: string
-  ageDays: number
+  ageDays: number | null
   isInactive: boolean
   isHighlyInactive: boolean
   isLarge: boolean

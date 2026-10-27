@@ -38,7 +38,11 @@ export function detectDuplicateCandidates(
   clusters.forEach((items, clusterKey) => {
     if (items.length > 1) {
       // Sort so the oldest / most standard becomes canonical
-      items.sort((a, b) => new Date(a.lastAccessed).getTime() - new Date(b.lastAccessed).getTime())
+      items.sort((a, b) => {
+        const first = a.lastAccessed ? new Date(a.lastAccessed).getTime() : Number.MAX_SAFE_INTEGER
+        const second = b.lastAccessed ? new Date(b.lastAccessed).getTime() : Number.MAX_SAFE_INTEGER
+        return first - second
+      })
       const canonicalFile = items[0]
       const duplicateItems = items.slice(1)
 

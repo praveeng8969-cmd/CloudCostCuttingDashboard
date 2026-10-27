@@ -3,13 +3,13 @@
 import React, { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  UploadCloud, FileText, Download, CheckCircle2, AlertTriangle,
-  Trash2, RefreshCw, X, FolderOpen
+  UploadCloud, FileText, Download, CheckCircle2, AlertTriangle
 } from 'lucide-react'
 import PageHeader from '@/components/layout/PageHeader'
 import { useStorageData } from '@/context/StorageDataContext'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
+import AnalysisStatus from '@/components/features/AnalysisStatus'
 
 interface UploadedFileItem {
   id: string
@@ -38,59 +38,37 @@ export default function ImportPage() {
   const [importStats, setImportStats] = useState<{ validCount: number; invalidCount: number } | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
-  function handleFileSelection(selectedFiles: FileList | File[]) {
+  async function handleFileSelection(selectedFiles: FileList | File[]) {
     const fileArray = Array.from(selectedFiles)
-
-    fileArray.forEach(f => {
-      if (!f.name.endsWith('.csv') && !f.type.includes('csv') && !f.type.includes('text')) {
-        toast.error(`"${f.name}" is not a CSV file.`)
-        return
-      }
-
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const content = e.target?.result as string
-        setFiles(prev => [
-          ...prev,
-          {
-            id: `file_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-            file: f,
-            name: f.name,
-            sizeBytes: f.size,
-            content
-          }
-        ])
-      }
-      reader.readAsText(f)
-    })
-  }
-
-  function handleRemoveFile(id: string) {
-    setFiles(prev => prev.filter(f => f.id !== id))
-  }
-
-  function handleProcessFiles() {
-    if (files.length === 0) return
-
+    const invalidFile = fileArray.find(file => !file.name.endsWith('.csv') && !file.type.includes('csv') && !file.type.includes('text'))
+    if (invalidFile) {
+      toast.error(`"${invalidFile.name}" is not a CSV file.`)
+      return
+    }
     setProcessing(true)
-    setTimeout(() => {
-      try {
-        const filePayload = files.map(f => ({ name: f.name, content: f.content }))
-        const stats = importMultipleCsvFiles(filePayload)
-
-        setImportStats(stats)
-        setProcessing(false)
-
-        if (stats.validCount > 0) {
-          toast.success(`Successfully analyzed ${stats.validCount} records!`)
-        } else {
-          toast.error('No valid records found in the provided CSV file(s).')
-        }
-      } catch (err: any) {
-        setProcessing(false)
-        toast.error(err?.message || 'Error parsing CSV data.')
+    setImportStats(null)
+    try {
+      const uploadedFiles = await Promise.all(fileArray.map(async file => ({
+        id: `file_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        file,
+        name: file.name,
+        sizeBytes: file.size,
+        content: await file.text()
+      })))
+      setFiles(uploadedFiles)
+      const stats = importMultipleCsvFiles(uploadedFiles.map(file => ({ name: file.name, content: file.content })))
+      setImportStats(stats)
+      if (stats.validCount > 0) {
+        toast.success(`${stats.validCount} records imported. Storage analysis started automatically.`)
+      } else {
+        toast.error('No valid records were found. Your current dataset was not replaced.')
       }
-    }, 400)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'The CSV file could not be imported.')
+    } finally {
+      setProcessing(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
   }
 
   function handleLoadDemo() {
@@ -162,18 +140,12 @@ export default function ImportPage() {
           </p>
         </div>
 
-        {/* Selected Files Queue */}
+        {/* Imported Files */}
         {files.length > 0 && (
           <div className="mt-6 space-y-3">
             <div className="flex items-center justify-between text-xs text-slate-600 border-b border-slate-200 pb-2">
-              <span className="font-semibold text-slate-900">Queued Files ({files.length})</span>
-              <button
-                type="button"
-                onClick={() => setFiles([])}
-                className="text-xs text-red-600 hover:text-red-700"
-              >
-                Clear all
-              </button>
+              <span className="font-semibold text-slate-900">Selected Files ({files.length})</span>
+              <span>{processing ? 'Importing and checking data…' : 'Import complete'}</span>
             </div>
 
             <div className="space-y-2">
@@ -184,26 +156,8 @@ export default function ImportPage() {
                     <span className="font-medium text-slate-900 truncate">{f.name}</span>
                     <span className="text-slate-400 font-mono text-[11px]">({(f.sizeBytes / 1024).toFixed(1)} KB)</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveFile(f.id)}
-                    className="text-slate-400 hover:text-red-600 p-1"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
                 </div>
               ))}
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                type="button"
-                onClick={handleProcessFiles}
-                disabled={processing}
-                className="btn-primary"
-              >
-                {processing ? 'Processing CSV...' : `Analyze ${files.length} File${files.length > 1 ? 's' : ''}`}
-              </button>
             </div>
           </div>
         )}
@@ -246,6 +200,8 @@ export default function ImportPage() {
           </div>
         </div>
       )}
+
+      {hasData && <AnalysisStatus />}
 
       {/* Demo Dataset Option */}
       <div className="card p-5 bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

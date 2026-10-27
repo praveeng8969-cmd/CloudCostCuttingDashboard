@@ -1,224 +1,70 @@
 'use client'
 
-import React, { useState } from 'react'
-import {
-  DollarSign, TrendingDown, Layers, SlidersHorizontal,
-  Download, ArrowRight, ShieldCheck, Database, FileText
-} from 'lucide-react'
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  Legend, ResponsiveContainer, BarChart, Bar
-} from 'recharts'
+import { useMemo } from 'react'
+import { DollarSign, Download, Search, ShieldCheck, TrendingDown } from 'lucide-react'
+import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import PageHeader from '@/components/layout/PageHeader'
 import MetricCard from '@/components/ui/MetricCard'
 import { useStorageData } from '@/context/StorageDataContext'
-import ProgressBar from '@/components/ui/ProgressBar'
-import toast from 'react-hot-toast'
+import { useMLAnalysis } from '@/context/MLAnalysisContext'
+import AnalysisStatus from '@/components/features/AnalysisStatus'
+
+const COLORS = { KEEP: '#10b981', REVIEW: '#f59e0b', ARCHIVE_CANDIDATE: '#8b5cf6' }
 
 export default function CostAnalysisPage() {
-  const { analysisResult, pricing, hasData } = useStorageData()
+  const { analysisResult, records, pricing } = useStorageData()
+  const { analysis, optimization } = useMLAnalysis()
+  const recordMap = useMemo(() => new Map(records.map(record => [record.id, record])), [records])
+  const predictionMap = useMemo(() => new Map((analysis?.predictions || []).map(item => [item.fileId, item.prediction])), [analysis])
+  const scenarioSavings = analysis ? optimization.grossPotentialMonthlySavings : 0
+  const optimizedMonthlyCost = Math.max(0, analysisResult.currentMonthlyCost - scenarioSavings)
 
-  // Interactive ROI Simulator slider (0% to 100% policy adoption)
-  const [adoptionRate, setAdoptionRate] = useState<number>(100)
-
-  const currentMonthly = analysisResult.currentMonthlyCost
-  const maxSavings = analysisResult.potentialMonthlySavings
-  const simulatedSavings = Math.round(maxSavings * (adoptionRate / 100))
-  const simulatedOptimizedBill = Math.max(0, currentMonthly - simulatedSavings)
-  const simulatedAnnualSavings = simulatedSavings * 12
-
-  // Simulated Trajectory
-  const trajectoryData = [
-    { month: 'Apr', current: Math.round(currentMonthly * 0.90), optimized: Math.round(simulatedOptimizedBill * 0.95) },
-    { month: 'May', current: Math.round(currentMonthly * 0.93), optimized: Math.round(simulatedOptimizedBill * 0.96) },
-    { month: 'Jun', current: Math.round(currentMonthly * 0.95), optimized: Math.round(simulatedOptimizedBill * 0.97) },
-    { month: 'Jul', current: Math.round(currentMonthly * 0.98), optimized: Math.round(simulatedOptimizedBill * 0.99) },
-    { month: 'Aug', current: currentMonthly, optimized: simulatedOptimizedBill },
-    { month: 'Sep (Sim)', current: Math.round(currentMonthly * 1.04), optimized: simulatedOptimizedBill },
-  ]
+  const categoryCosts = useMemo(() => (['KEEP', 'REVIEW', 'ARCHIVE_CANDIDATE'] as const).map(category => ({
+    name: category.replace('_', ' '), key: category,
+    value: Math.round(optimization.scenarios.filter(item => item.prediction === category).reduce((sum, item) => sum + item.currentMonthlyCost, 0) * 100) / 100
+  })), [optimization.scenarios])
+  const savingsByClass = useMemo(() => Array.from(optimization.scenarios.filter(item => item.eligible).reduce((map, item) => map.set(item.currentStorageClass, (map.get(item.currentStorageClass) || 0) + item.grossMonthlySavings), new Map<string, number>())).map(([name, savings]) => ({ name, savings: Math.round(savings * 100) / 100 })), [optimization.scenarios])
+  const comparison = [{ name: 'Current', cost: analysisResult.currentMonthlyCost }, { name: 'Optimized scenario', cost: optimizedMonthlyCost }]
 
   function exportCostReport() {
-    let csv = "category,name,storage_gb,estimated_monthly_cost_inr\n"
-    analysisResult.byStorageClass.forEach(c => {
-      csv += `"Storage Class","${c.name}",${c.storageGB},${c.cost}\n`
+    let csv = 'file_name,current_storage_class,proposed_storage_class,size_gb,review_status,current_cost,proposed_cost,estimated_storage_only_savings,status\n'
+    optimization.scenarios.forEach(item => {
+      const record = recordMap.get(item.fileId)
+      csv += `"${record?.fileName || item.fileId}","${item.currentStorageClass}","${item.proposedStorageClass || ''}",${record?.sizeGB || 0},"${customerStatus(item.prediction)}",${item.currentMonthlyCost},${item.proposedMonthlyCost},${item.grossMonthlySavings},"${item.eligible ? 'Eligible scenario' : 'Review only'}"\n`
     })
-    analysisResult.byBucket.forEach(b => {
-      csv += `"Bucket Container","${b.name}",${b.storageGB},${b.cost}\n`
-    })
-    const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(csv)
-    const link = document.createElement("a")
-    link.setAttribute("href", csvContent)
-    link.setAttribute("download", "cloudcut_cost_analytics_breakdown.csv")
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    toast.success('Downloaded Cost Analytics CSV report!')
+    const link = document.createElement('a')
+    link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
+    link.download = 'cloudcut_storage_cost_scenarios.csv'
+    document.body.appendChild(link); link.click(); document.body.removeChild(link)
   }
 
   return (
     <div className="space-y-6 w-full min-w-0 pb-12">
-      <PageHeader
-        title="Cost Analysis"
-        subtitle="Financial breakdown of storage spend across tiers and simulated savings from lifecycle optimization."
-        actions={
-          <button
-            onClick={exportCostReport}
-            className="btn-secondary text-xs"
-          >
-            <Download className="w-3.5 h-3.5" />
-            Export Cost CSV
-          </button>
-        }
-      />
+      <PageHeader title="Cost Analysis" subtitle="Current storage pricing and automatically generated lower-cost storage scenarios." actions={<button onClick={exportCostReport} disabled={!analysis} className="btn-secondary"><Download className="w-3.5 h-3.5" />Export Cost Scenarios</button>} />
 
-      {/* 4 Financial Metric Cards */}
+      <AnalysisStatus />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          title="Estimated Monthly Cost"
-          value={`₹${currentMonthly.toLocaleString('en-IN')}`}
-          subtitle="Active storage tier baseline"
-          icon={<DollarSign className="w-4 h-4 text-slate-600" />}
-        />
-
-        <MetricCard
-          title="Estimated Optimized Cost"
-          value={`₹${simulatedOptimizedBill.toLocaleString('en-IN')}`}
-          subtitle={`At ${adoptionRate}% remediation adoption`}
-          icon={<ShieldCheck className="w-4 h-4 text-blue-600" />}
-        />
-
-        <MetricCard
-          title="Potential Monthly Savings"
-          value={`₹${simulatedSavings.toLocaleString('en-IN')}`}
-          change={`${Math.round((simulatedSavings / (currentMonthly || 1)) * 100)}%`}
-          changeType="positive"
-          changeLabel="reduction"
-          icon={<TrendingDown className="w-4 h-4 text-emerald-600" />}
-        />
-
-        <MetricCard
-          title="Potential Annual Savings"
-          value={`₹${simulatedAnnualSavings.toLocaleString('en-IN')}`}
-          subtitle="Compounded annual recovery"
-          icon={<TrendingDown className="w-4 h-4 text-emerald-600" />}
-        />
+        <MetricCard title="Current Estimated Monthly Cost" value={`₹${analysisResult.currentMonthlyCost.toLocaleString('en-IN')}`} subtitle="Existing CloudCut pricing engine" icon={<DollarSign className="w-4 h-4 text-slate-600" />} />
+        <MetricCard title="Storage Requiring Review" value={`₹${optimization.mlFlaggedStorageCost.toLocaleString('en-IN')}`} subtitle="Needs review + archive opportunities" icon={<Search className="w-4 h-4 text-blue-600" />} />
+        <MetricCard title="Potential Monthly Savings" value={`₹${scenarioSavings.toLocaleString('en-IN')}`} subtitle="Estimated storage-only savings" icon={<TrendingDown className="w-4 h-4 text-emerald-600" />} />
+        <MetricCard title="Estimated Optimized Monthly Cost" value={`₹${optimizedMonthlyCost.toLocaleString('en-IN')}`} subtitle="Excludes retrieval and transition fees" icon={<ShieldCheck className="w-4 h-4 text-blue-600" />} />
       </div>
 
-      {/* Interactive ROI Simulator */}
-      <div className="card p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <div>
-            <h3 className="section-title flex items-center gap-2">
-              <SlidersHorizontal className="w-4 h-4 text-blue-600" />
-              Lifecycle Adoption Simulator
-            </h3>
-            <p className="section-sub">Adjust the policy adoption rate to forecast monthly and annual cost impact.</p>
-          </div>
-          <div className="text-right">
-            <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded">
-              {adoptionRate}% Policy Adoption
-            </span>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <input
-            type="range"
-            min="0"
-            max="100"
-            step="5"
-            value={adoptionRate}
-            onChange={e => setAdoptionRate(parseInt(e.target.value))}
-            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-          />
-          <div className="flex justify-between text-[11px] text-slate-400">
-            <span>0% (Current baseline)</span>
-            <span>50% (Partial lifecycle rules)</span>
-            <span>100% (Full automated tiering)</span>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <Chart title="Current vs Optimized Cost"><BarChart data={comparison}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="name" fontSize={11} /><YAxis fontSize={11} tickFormatter={value => `₹${value}`} /><Tooltip formatter={(value: any) => `₹${Number(value).toLocaleString('en-IN')}`} /><Bar dataKey="cost" fill="#2563eb" radius={[4, 4, 0, 0]} /></BarChart></Chart>
+        <Chart title="Cost Distribution by Review Status"><PieChart><Pie data={categoryCosts.map(item => ({ ...item, name: customerStatus(item.key) }))} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80}>{categoryCosts.map(item => <Cell key={item.key} fill={COLORS[item.key]} />)}</Pie><Tooltip formatter={(value: any) => `₹${Number(value).toLocaleString('en-IN')}`} /><Legend wrapperStyle={{ fontSize: 11 }} /></PieChart></Chart>
+        <Chart title="Potential Savings by Current Tier"><BarChart data={savingsByClass} layout="vertical"><CartesianGrid strokeDasharray="3 3" horizontal={false} /><XAxis type="number" fontSize={11} /><YAxis type="category" dataKey="name" width={90} fontSize={10} /><Tooltip formatter={(value: any) => `₹${Number(value).toLocaleString('en-IN')}`} /><Bar dataKey="savings" fill="#10b981" radius={[0, 4, 4, 0]} /></BarChart></Chart>
       </div>
 
-      {/* Trajectory Area Chart */}
-      <div className="card p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="section-title">6-Month Spend Trajectory</h3>
-            <p className="section-sub">Historical trend vs projected post-optimization cost</p>
-          </div>
-        </div>
+      <section className="card p-0"><div className="p-5 border-b border-slate-200"><h2 className="section-title">Storage Optimization Scenarios</h2><p className="section-sub">One primary tier-transition scenario per file prevents savings from being counted twice.</p></div><div className="overflow-x-auto max-h-[620px]"><table className="w-full text-left text-xs"><thead className="bg-slate-50 text-slate-600 sticky top-0"><tr><th className="p-3">File</th><th className="p-3">Current tier</th><th className="p-3">Proposed tier</th><th className="p-3 text-right">Size</th><th className="p-3">Review status</th><th className="p-3 text-right">Current</th><th className="p-3 text-right">Proposed</th><th className="p-3 text-right">Estimated savings</th><th className="p-3">Status</th></tr></thead><tbody className="divide-y divide-slate-100">{!analysis ? <tr><td colSpan={9} className="p-12 text-center text-slate-500">Storage recommendations are being prepared.</td></tr> : optimization.scenarios.map(item => { const record = recordMap.get(item.fileId); return <tr key={item.fileId} className="hover:bg-slate-50"><td className="p-3 font-medium max-w-[220px] truncate" title={record?.fileName}>{record?.fileName}</td><td className="p-3 font-mono text-[11px]">{item.currentStorageClass}</td><td className="p-3 font-mono text-[11px]">{item.proposedStorageClass || '—'}</td><td className="p-3 text-right">{record?.sizeGB} GB</td><td className="p-3">{customerStatus(predictionMap.get(item.fileId) || item.prediction)}</td><td className="p-3 text-right">₹{item.currentMonthlyCost}</td><td className="p-3 text-right">₹{item.proposedMonthlyCost}</td><td className="p-3 text-right font-semibold text-emerald-700">₹{item.grossMonthlySavings}</td><td className="p-3">{item.eligible ? <span className="badge-success">Eligible scenario</span> : <span className="badge-neutral">Review only</span>}</td></tr> })}</tbody></table></div></section>
 
-        <div className="h-72 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={trajectoryData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="currentSpendArea" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#2563EB" stopOpacity={0.15}/>
-                  <stop offset="95%" stopColor="#2563EB" stopOpacity={0.0}/>
-                </linearGradient>
-                <linearGradient id="optSpendArea" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.15}/>
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0.0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
-              <XAxis dataKey="month" stroke="#94A3B8" fontSize={12} tickLine={false} axisLine={{ stroke: '#E2E8F0' }} />
-              <YAxis stroke="#94A3B8" fontSize={12} tickLine={false} axisLine={{ stroke: '#E2E8F0' }} tickFormatter={v => `₹${v}`} />
-              <Tooltip
-                contentStyle={{ backgroundColor: '#0F172A', borderColor: '#334155', borderRadius: '6px', color: '#FFFFFF', fontSize: '12px' }}
-                itemStyle={{ color: '#FFFFFF' }}
-                formatter={(v: any) => [`₹${Number(v).toLocaleString('en-IN')}`, '']}
-              />
-              <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '12px' }} />
-              <Area type="monotone" dataKey="current" name="Baseline Cost" stroke="#2563EB" strokeWidth={2} fillOpacity={1} fill="url(#currentSpendArea)" />
-              <Area type="monotone" dataKey="optimized" name="Optimized Projection" stroke="#10B981" strokeWidth={2} strokeDasharray="4 4" fillOpacity={1} fill="url(#optSpendArea)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+      <section className="card p-5"><h2 className="section-title">Pricing and calculation assumptions</h2><p className="section-sub mb-3">Current cost = size × configured current-tier rate. Proposed cost = size × configured target-tier rate. Gross savings = max(0, current − proposed).</p><div className="flex flex-wrap gap-2">{Object.entries(pricing).filter((entry): entry is [string, number] => typeof entry[1] === 'number').map(([name, rate]) => <span key={name} className="badge-neutral">{name}: ₹{rate}/GB-month</span>)}</div><p className="text-xs text-amber-700 mt-3">Actual bills may include retrieval charges, minimum storage duration, early deletion fees, transition requests, API charges, provider restrictions, and retention requirements.</p></section>
 
-      {/* Storage Class Breakdown Table */}
-      <div className="card p-0 overflow-hidden">
-        <div className="p-4 border-b border-slate-200">
-          <h3 className="section-title">Storage Tier Cost Breakdown</h3>
-          <p className="section-sub">Detailed allocation across standard, infrequent access, and archive tiers</p>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/75 text-slate-600 font-medium">
-                <th className="py-3 px-4">Storage Class</th>
-                <th className="py-3 px-4 text-right">Capacity</th>
-                <th className="py-3 px-4 text-right">Share</th>
-                <th className="py-3 px-4 text-right">Rate (₹/GB)</th>
-                <th className="py-3 px-4 text-right">Monthly Spend</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {analysisResult.byStorageClass.map(c => (
-                <tr key={c.name} className="hover:bg-slate-50/75 transition-colors">
-                  <td className="py-3 px-4 font-medium text-slate-900 font-mono">
-                    {c.name}
-                  </td>
-                  <td className="py-3 px-4 text-right font-medium text-slate-900">
-                    {c.storageGB} GB
-                  </td>
-                  <td className="py-3 px-4 text-right text-slate-600">
-                    {c.percentage}%
-                  </td>
-                  <td className="py-3 px-4 text-right text-slate-600">
-                    ₹{(pricing as any)[c.name] ?? 2.0}
-                  </td>
-                  <td className="py-3 px-4 text-right font-medium text-slate-900">
-                    ₹{c.cost.toLocaleString('en-IN')}/mo
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <section className="card p-5"><h2 className="section-title">Independent Storage Rule Estimate</h2><p className="section-sub">Available even when additional recommendations cannot be prepared. Original potential monthly estimate: <strong>₹{analysisResult.potentialMonthlySavings.toLocaleString('en-IN')}</strong>. This aggregate may include overlapping categories and is not added to the primary scenario headline.</p></section>
     </div>
   )
 }
+
+function Chart({ title, children }: { title: string; children: React.ReactElement }) { return <div className="card p-4"><h3 className="text-sm font-semibold text-slate-900 mb-3">{title}</h3><div className="h-64"><ResponsiveContainer width="100%" height="100%">{children}</ResponsiveContainer></div></div> }
+function customerStatus(value: 'KEEP' | 'REVIEW' | 'ARCHIVE_CANDIDATE') { return value === 'KEEP' ? 'No Immediate Action' : value === 'REVIEW' ? 'Needs Review' : 'Consider Archiving' }

@@ -7,6 +7,10 @@
 
 > **"See where your cloud money goes. Cut unnecessary storage costs."**
 
+## Amazon S3 connections
+
+CloudCut supports on-demand, metadata-only S3 synchronization through customer IAM roles, STS temporary credentials, unique external IDs, and explicit bucket selection. Complete syncs activate the AWS dataset and start analysis automatically. See [`AWS_SETUP.md`](AWS_SETUP.md) for IAM policies, setup, deployment requirements, and limitations.
+
 CloudCut is an enterprise-grade cloud storage cost monitoring and optimization prototype designed to help organizations inspect storage across multi-cloud environments (AWS S3, Google Cloud Storage, Azure Blob Storage), detect duplicate and stale data, generate analytical reports, and cut redundant storage expenses.
 
 ---
@@ -74,11 +78,21 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Machine Learning Insights
+## Automatic Storage Analysis
 
-CloudCut includes an optional Random Forest review service in [`ML/`](ML/README.md). It analyzes the active CSV or demo dataset and labels records as `KEEP`, `REVIEW`, or `ARCHIVE_CANDIDATE` without changing files or replacing the existing rule-based recommendations.
+CloudCut includes an internal Random Forest review service in [`ML/`](ML/README.md). After a valid CSV or demo dataset is activated, analysis starts automatically and populates Dashboard, Recommendations, Cost Analysis, and Reports. Customers do not need to select an algorithm or start a separate analysis step.
 
-Run the Python service with `cd ML` followed by `python -m uvicorn app:app --host 127.0.0.1 --port 8000`, then open `/ml-insights` in CloudCut. The model uses synthetic training data and must be validated with real labeled storage data before production use.
+Run the Python service with `cd ML` followed by `python -m uvicorn app:app --host 127.0.0.1 --port 8000`, then start Next.js. The internal model uses synthetic training data and must be validated with real labeled storage data before production use.
+
+### Unified optimization workflow
+
+The active customer dataset feeds both the existing deterministic storage analyzer and the Python Random Forest classifier. A customer-scoped shared analysis provider persists predictions using a dataset and pricing fingerprint plus model version, invalidates stale results after dataset/account/pricing changes, and exposes one prediction source to Recommendations, Cost Analysis, Dashboard, and Reports.
+
+The hybrid recommendation workflow preserves original rule-based recommendations and adds ML-supported file review scenarios. Storage costs are never predicted by ML. CloudCut calculates `current cost = size × current-tier rate`, `proposed cost = size × target-tier rate`, and `gross savings = max(0, current − proposed)` using configured prices. The headline ML scenario assigns at most one tier-transition action per file to prevent double counting. Retrieval, transition, request, minimum-duration, and early-deletion charges are excluded.
+
+If FastAPI is unavailable, storage analysis, deterministic current costs, and rule-based recommendations continue working. ML-specific controls display an unavailable state instead of fabricated results. For deployments such as Vercel, host FastAPI separately and configure server-side `ML_SERVICE_URL`; Vercel does not automatically run the local Python service.
+
+The prototype job lifecycle is `PENDING → VALIDATING → PROCESSING → COMPLETED/FAILED`. It is persisted in browser storage per customer. A refresh during processing safely restarts an incomplete request instead of reusing partial results. This is appropriate for local/college demonstration, but it is not a durable production worker: production deployments that must survive browser closure or service restarts should move job and result persistence to an authenticated backend database and worker.
 
 ---
 

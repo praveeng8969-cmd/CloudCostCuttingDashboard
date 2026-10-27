@@ -26,4 +26,21 @@ class PredictionResult(BaseModel):
 
 
 class PredictionResponse(BaseModel):
+    model_version: str
     predictions: list[PredictionResult]
+
+
+class AwsConnectionCreate(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    customer_id: str = Field(min_length=1, max_length=200)
+    role_arn: str = Field(min_length=20, max_length=600)
+    display_name: str = Field(default="", max_length=100)
+
+
+class AwsOwnedRequest(BaseModel):
+    customer_id: str = Field(min_length=1, max_length=200)
+
+
+class AwsSyncRequest(AwsOwnedRequest):
+    buckets: list[str] = Field(min_length=1, max_length=100)

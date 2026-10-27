@@ -52,9 +52,11 @@ export default function StoragePage() {
         let valA: any = a[sortBy]
         let valB: any = b[sortBy]
         if (sortBy === 'lastAccessed') {
-          valA = new Date(a.lastAccessed).getTime()
-          valB = new Date(b.lastAccessed).getTime()
+          valA = a.lastAccessed ? new Date(a.lastAccessed).getTime() : -1
+          valB = b.lastAccessed ? new Date(b.lastAccessed).getTime() : -1
         }
+        if (valA === null) valA = -1
+        if (valB === null) valB = -1
         if (typeof valA === 'string') {
           return sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA)
         }
@@ -291,7 +293,7 @@ export default function StoragePage() {
                         </span>
                       </td>
                       <td className="py-3 px-4 text-right text-slate-600 whitespace-nowrap">
-                        {r.ageDays}d
+                        {r.ageDays === null ? 'Unavailable' : `${r.ageDays}d`}
                       </td>
                       <td className="py-3 px-4">
                         <span className={clsx(

@@ -13,11 +13,11 @@ import { useAuth } from '@/context/AuthContext'
 import { getAllUsers } from '@/lib/services/authService'
 import toast from 'react-hot-toast'
 
-export type DataSourceType = 'CSV' | 'DEMO' | 'NONE'
+export type DataSourceType = 'CSV' | 'DEMO' | 'AWS' | 'NONE'
 
 interface PersistedState {
   userId: string
-  source: 'CSV' | 'DEMO'
+  source: 'CSV' | 'DEMO' | 'AWS'
   fileName: string
   recordCount: number
   dataset: StorageRecord[]
@@ -57,6 +57,7 @@ interface StorageDataContextType {
   // Actions
   importCsvText: (text: string, sourceName?: string) => { validCount: number; invalidCount: number }
   importMultipleCsvFiles: (files: { name: string; content: string }[]) => { validCount: number; invalidCount: number }
+  activateExternalDataset: (records: StorageRecord[], sourceName: string) => void
   loadDemoData: () => void
   resetDataset: () => void
   updatePricing: (newPricing: Partial<PricingConfig>) => void
@@ -210,6 +211,12 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
     const rawRows = parseCsvFileContent(text)
     const { validRecords, invalidRows: errors } = validateCsvRows(rawRows, thresholds)
 
+    if (validRecords.length === 0) {
+      setInvalidRows(errors)
+      setIsLoading(false)
+      return { validCount: 0, invalidCount: errors.length }
+    }
+
     const timestamp = new Date().toISOString()
     setRecords(validRecords)
     setInvalidRows(errors)
@@ -232,6 +239,11 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
     })
 
     const { validRecords, invalidRows: errors } = validateCsvRows(allRawRows, thresholds)
+    if (validRecords.length === 0) {
+      setInvalidRows(errors)
+      setIsLoading(false)
+      return { validCount: 0, invalidCount: errors.length }
+    }
     const timestamp = new Date().toISOString()
     const label = files.length === 1
       ? files[0].name
@@ -246,6 +258,15 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
 
     return { validCount: validRecords.length, invalidCount: errors.length }
   }, [thresholds])
+
+  const activateExternalDataset = useCallback((nextRecords: StorageRecord[], sourceName: string) => {
+    const timestamp = new Date().toISOString()
+    setRecords(nextRecords)
+    setInvalidRows([])
+    setDataSourceType('AWS')
+    setDataSourceName(sourceName)
+    setLastAnalyzedTimestamp(timestamp)
+  }, [])
 
   // Load built-in demo dataset for active user
   const loadDemoData = useCallback(() => {
@@ -409,6 +430,7 @@ export function StorageDataProvider({ children }: { children: ReactNode }) {
         isHydrated,
         importCsvText,
         importMultipleCsvFiles,
+        activateExternalDataset,
         loadDemoData,
         resetDataset,
         updatePricing,

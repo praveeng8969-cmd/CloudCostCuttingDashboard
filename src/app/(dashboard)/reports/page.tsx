@@ -13,13 +13,16 @@ import PageHeader from '@/components/layout/PageHeader'
 import MetricCard from '@/components/ui/MetricCard'
 import { useStorageData } from '@/context/StorageDataContext'
 import { useAuth } from '@/context/AuthContext'
+import { useMLAnalysis } from '@/context/MLAnalysisContext'
 import { saveReportRecord } from '@/lib/services/authService'
 import type { UserReportRecord } from '@/types/auth'
 import clsx from 'clsx'
+import AnalysisStatus from '@/components/features/AnalysisStatus'
 
 export default function ReportsPage() {
   const { analysisResult, records, dataSourceName, hasData } = useStorageData()
   const { user } = useAuth()
+  const { analysis: completedAnalysis, optimization } = useMLAnalysis()
 
   const [generating, setGenerating] = useState(false)
   const [reportStep, setReportStep] = useState(0)
@@ -33,6 +36,8 @@ export default function ReportsPage() {
   const leastActiveCategory = analysisResult.byFileType[analysisResult.byFileType.length - 1]?.name || 'N/A'
   const largeFilesCount = records.filter(r => r.isLarge).length
   const archiveCandidatesCount = records.filter(r => r.storageClass === 'STANDARD' && (r.isInactive || r.isHighlyInactive)).length
+  const displayedMonthlySavings = completedAnalysis ? optimization.grossPotentialMonthlySavings : analysisResult.potentialMonthlySavings
+  const displayedOptimizedCost = Math.max(0, analysisResult.currentMonthlyCost - displayedMonthlySavings)
 
   function handleCompileReport() {
     if (!hasData) {
@@ -57,8 +62,8 @@ export default function ReportsPage() {
         totalStorageGB: analysisResult.totalStorageGB,
         totalFiles: analysisResult.totalObjects,
         currentMonthlyCost: analysisResult.currentMonthlyCost,
-        potentialMonthlySavings: analysisResult.potentialMonthlySavings,
-        potentialAnnualSavings: analysisResult.potentialAnnualSavings,
+        potentialMonthlySavings: displayedMonthlySavings,
+        potentialAnnualSavings: displayedMonthlySavings * 12,
         optimizationScore: analysisResult.optimizationScore,
         summaryText: `Storage audit compiled for ${user?.companyName || 'Workspace'}. ${analysisResult.totalObjects} objects analyzed across storage classes.`
       }
@@ -84,7 +89,7 @@ export default function ReportsPage() {
     csv += `Average File Size (GB):,${analysisResult.averageFileSizeGB}\n`
     csv += `Buckets Monitored:,${analysisResult.byBucket.length}\n`
     csv += `Current Monthly Cost (INR):,${analysisResult.currentMonthlyCost}\n`
-    csv += `Potential Monthly Savings (INR):,${analysisResult.potentialMonthlySavings}\n`
+    csv += `Potential Monthly Savings (INR):,${displayedMonthlySavings}\n`
     csv += `Optimization Health Score:,${analysisResult.optimizationScore}/100\n\n`
 
     csv += "--- CATEGORY BREAKDOWN ---\n"
@@ -92,6 +97,19 @@ export default function ReportsPage() {
     analysisResult.byFileType.forEach(f => {
       csv += `"${f.name}",${f.storageGB},${f.percentage},${f.cost}\n`
     })
+
+    if (completedAnalysis) {
+      csv += "\n--- STORAGE OPTIMIZATION SUMMARY ---\n"
+      csv += `Analysis Date:,"${completedAnalysis.analyzedAt}"\n`
+      csv += `Files Analyzed:,${completedAnalysis.predictions.length}\n`
+      csv += `No Immediate Action:,${optimization.counts.KEEP}\n`
+      csv += `Needs Review:,${optimization.counts.REVIEW}\n`
+      csv += `Consider Archiving:,${optimization.counts.ARCHIVE_CANDIDATE}\n`
+      csv += `Current Estimated Storage Cost (INR):,${optimization.currentMonthlyCost}\n`
+      csv += `Gross Potential Storage-Only Savings (INR):,${optimization.grossPotentialMonthlySavings}\n`
+      csv += `Estimated Optimized Storage-Only Cost (INR):,${optimization.estimatedOptimizedMonthlyCost}\n`
+      csv += `Assumptions:,"Configured storage rates only; excludes retrieval, transition, request, and early-deletion charges."\n`
+    }
 
     const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(csv)
     const link = document.createElement("a")
@@ -130,6 +148,8 @@ export default function ReportsPage() {
         }
       />
 
+      <AnalysisStatus />
+
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
@@ -148,7 +168,7 @@ export default function ReportsPage() {
 
         <MetricCard
           title="Recoverable Savings"
-          value={`₹${analysisResult.potentialMonthlySavings.toLocaleString('en-IN')}`}
+          value={`₹${displayedMonthlySavings.toLocaleString('en-IN')}`}
           change={`${analysisResult.savingsPercentage}%`}
           changeType="positive"
           changeLabel="recoverable"
@@ -279,11 +299,11 @@ export default function ReportsPage() {
               </div>
               <div>
                 <p className="text-[11px] text-slate-500">Optimized Cost</p>
-                <p className="text-base font-bold text-slate-900">₹{analysisResult.potentialMonthlyCost.toLocaleString('en-IN')}</p>
+                <p className="text-base font-bold text-slate-900">₹{displayedOptimizedCost.toLocaleString('en-IN')}</p>
               </div>
               <div>
                 <p className="text-[11px] text-slate-500">Monthly Savings</p>
-                <p className="text-base font-bold text-emerald-700">₹{analysisResult.potentialMonthlySavings.toLocaleString('en-IN')}</p>
+                <p className="text-base font-bold text-emerald-700">₹{displayedMonthlySavings.toLocaleString('en-IN')}</p>
               </div>
               <div>
                 <p className="text-[11px] text-slate-500">Annual Savings</p>
@@ -338,14 +358,25 @@ export default function ReportsPage() {
           </div>
 
           {/* Section 6: Savings Summary & ROI */}
+          {completedAnalysis && <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">6. Storage Optimization Summary</h4>
+            <div className="border border-blue-200 bg-blue-50/50 rounded-md p-3 text-xs space-y-2">
+              <div className="flex justify-between gap-3"><span>Analysis date</span><strong>{new Date(completedAnalysis.analyzedAt).toLocaleString()}</strong></div>
+              <div className="grid grid-cols-3 gap-2 text-center"><div className="bg-white border rounded p-2"><span className="block text-slate-500">No Immediate Action</span><strong>{optimization.counts.KEEP}</strong></div><div className="bg-white border rounded p-2"><span className="block text-slate-500">Needs Review</span><strong>{optimization.counts.REVIEW}</strong></div><div className="bg-white border rounded p-2"><span className="block text-slate-500">Consider Archiving</span><strong>{optimization.counts.ARCHIVE_CANDIDATE}</strong></div></div>
+              <div className="flex justify-between gap-3"><span>Gross storage-only savings</span><strong className="text-emerald-700">₹{optimization.grossPotentialMonthlySavings.toLocaleString('en-IN')}/month</strong></div>
+              <p className="text-[11px] text-slate-600">Configured storage rates calculate advisory scenarios. Results do not represent realized savings and exclude retrieval, transition, and request charges.</p>
+            </div>
+          </div>}
+
+          {/* Section 7: Savings Summary & ROI */}
           <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-md text-xs text-emerald-900 flex justify-between items-center">
             <div>
-              <p className="font-semibold">6. Savings Summary & Projected ROI</p>
+              <p className="font-semibold">{completedAnalysis ? '7' : '6'}. Savings Summary & Projected ROI</p>
               <p className="text-[11px] text-emerald-700">Estimated payback period: Immediate upon lifecycle transition.</p>
             </div>
             <div className="text-right">
               <span className="text-base font-bold text-emerald-700">
-                ₹{analysisResult.potentialAnnualSavings.toLocaleString('en-IN')} / year
+                ₹{(displayedMonthlySavings * 12).toLocaleString('en-IN')} / year
               </span>
             </div>
           </div>

@@ -109,7 +109,7 @@ export function generateRecommendations(
   }
 
   // 4. Stale Logs & Temporary Files (> 90 days)
-  const staleLogs = records.filter(r => (r.fileType === 'Logs' || r.fileName.includes('.tmp')) && r.ageDays > 90)
+  const staleLogs = records.filter(r => (r.fileType === 'Logs' || r.fileName.includes('.tmp')) && typeof r.ageDays === 'number' && r.ageDays > 90)
   if (staleLogs.length > 0) {
     const storageGB = staleLogs.reduce((s, r) => s + r.sizeGB, 0)
     const savings = Math.round(staleLogs.reduce((s, r) => s + r.estimatedMonthlyCost, 0))

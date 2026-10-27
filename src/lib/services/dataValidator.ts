@@ -130,6 +130,7 @@ export function validateCsvRows(
       fileName,
       sizeGB: Math.round(sizeGB * 100) / 100,
       lastAccessed,
+      activityDataAvailable: true,
       storageClass,
       fileType,
       bucket,

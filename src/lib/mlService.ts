@@ -4,13 +4,13 @@ export function getMlServiceUrl(): string {
   return (process.env.ML_SERVICE_URL || DEFAULT_ML_SERVICE_URL).replace(/\/$/, '')
 }
 
-export async function proxyMlRequest(path: string, init?: RequestInit): Promise<Response> {
+export async function proxyMlRequest(path: string, init?: RequestInit, timeoutMs = 15_000): Promise<Response> {
   try {
     const response = await fetch(`${getMlServiceUrl()}${path}`, {
       ...init,
       cache: 'no-store',
       headers: { 'Content-Type': 'application/json', ...init?.headers },
-      signal: AbortSignal.timeout(15_000)
+      signal: AbortSignal.timeout(timeoutMs)
     })
     const body = await response.text()
     return new Response(body, {
@@ -19,7 +19,7 @@ export async function proxyMlRequest(path: string, init?: RequestInit): Promise<
     })
   } catch {
     return Response.json(
-      { detail: 'The local ML service is unavailable. Start FastAPI on http://127.0.0.1:8000.' },
+      { detail: 'The CloudCut analysis service is unavailable. Check the backend service configuration.' },
       { status: 503 }
     )
   }

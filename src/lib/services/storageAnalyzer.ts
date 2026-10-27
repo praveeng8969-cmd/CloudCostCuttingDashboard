@@ -144,7 +144,7 @@ export function analyzeStorageDataset(
   ]
 
   const byAge: AgeBreakdown[] = ageBuckets.map(b => {
-    const matching = records.filter(r => r.ageDays >= b.min && r.ageDays <= b.max)
+    const matching = records.filter(r => typeof r.ageDays === 'number' && r.ageDays >= b.min && r.ageDays <= b.max)
     const storageGB = Math.round(matching.reduce((s, r) => s + r.sizeGB, 0) * 10) / 10
     const percentage = totalStorageGB > 0 ? Math.round((storageGB / totalStorageGB) * 100) : 0
     return {
